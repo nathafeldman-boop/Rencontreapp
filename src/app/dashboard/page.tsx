@@ -1,79 +1,171 @@
 import Link from "next/link";
-import { ArrowRight, Camera, MessageCircle, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Camera,
+  MessageCircle,
+  Sparkles,
+  Swords,
+  TrendingUp,
+  TrendingDown,
+  CalendarCheck,
+} from "lucide-react";
 
+import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { SubScoreCard } from "@/components/dashboard/sub-score-card";
+import { ScoreHistoryChart } from "@/components/dashboard/score-history-chart";
+import type { Recommendation } from "@/types/database.types";
 
-/**
- * Placeholder widgets — wired to `analyses` / `subscriptions` once the AI
- * pipeline and Stripe Checkout are built.
- */
-export default function DashboardPage() {
+const TOOLS = [
+  { href: "/dashboard/photos", icon: Camera, label: "Photo Optimizer" },
+  { href: "/dashboard/bio", icon: Sparkles, label: "Bio Generator" },
+  { href: "/dashboard/coach", icon: MessageCircle, label: "Conversation Coach" },
+  { href: "/dashboard/simulator", icon: Swords, label: "Match Simulator" },
+  { href: "/dashboard/plan", icon: CalendarCheck, label: "My Improvement Plan" },
+];
+
+function findRecommendation(recommendations: Recommendation[], category: Recommendation["category"]) {
+  return recommendations.find((r) => r.category === category)?.detail;
+}
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: analyses } = await supabase
+    .from("analyses")
+    .select(
+      "overall_score, photo_score, bio_score, attractiveness_score, conversation_score, recommendations, created_at"
+    )
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  const { data: plan } = await supabase.from("dating_plans").select("days").eq("user_id", user?.id ?? "").maybeSingle();
+
+  if (!analyses || analyses.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-16 text-center">
+        <h1 className="text-xl font-semibold">No analysis yet</h1>
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Complete your profile upload to get your first Dating Score.
+        </p>
+        <Button asChild>
+          <Link href="/onboarding">Start my analysis</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const [latest, previous] = analyses;
+  const recommendations = (latest.recommendations ?? []) as Recommendation[];
+  const delta = previous ? latest.overall_score - previous.overall_score : null;
+
+  const history = [...analyses]
+    .reverse()
+    .map((a) => ({ date: a.created_at, score: a.overall_score }));
+
+  const planProgress = plan?.days ? plan.days.filter((d) => d.done).length : 0;
+
+  const badges = [
+    delta !== null && delta > 0 && { icon: "🔥", label: `Profile upgraded — +${delta} points` },
+    plan && planProgress > 0 && { icon: "✅", label: `${planProgress}/${plan.days.length} plan days done` },
+    latest.overall_score >= 80 && { icon: "⭐", label: "Top-tier profile score" },
+  ].filter(Boolean) as { icon: string; label: string }[];
+
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Your dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          An overview of your profile and your progress.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Your coach&apos;s read on your profile, updated live.</p>
+      </div>
+
+      <Card className="overflow-hidden border-primary/30">
+        <CardContent className="flex flex-col items-center gap-4 py-8 text-center">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            🔥 Dating Score
+          </span>
+          <div className="flex size-32 items-center justify-center rounded-full bg-brand-gradient text-4xl font-semibold text-primary-foreground shadow-lg shadow-primary/20">
+            {latest.overall_score}
+          </div>
+          {delta !== null && (
+            <Badge variant={delta >= 0 ? "default" : "secondary"} className="gap-1">
+              {delta >= 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
+              {delta >= 0 ? "+" : ""}
+              {delta} points since last analysis
+            </Badge>
+          )}
+        </CardContent>
+      </Card>
+
+      {badges.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {badges.map((badge) => (
+            <span
+              key={badge.label}
+              className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium"
+            >
+              <span>{badge.icon}</span>
+              {badge.label}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <SubScoreCard
+          label="Photo Score"
+          score={latest.photo_score ?? 0}
+          recommendation={findRecommendation(recommendations, "photos")}
+          improveHref="/dashboard/photos"
+        />
+        <SubScoreCard
+          label="Bio Score"
+          score={latest.bio_score ?? 0}
+          recommendation={findRecommendation(recommendations, "bio")}
+          improveHref="/dashboard/bio"
+        />
+        <SubScoreCard
+          label="Attractiveness Score"
+          score={latest.attractiveness_score ?? 0}
+          improveHref="/dashboard/photos"
+        />
+        <SubScoreCard
+          label="Conversation Score"
+          score={latest.conversation_score ?? 0}
+          recommendation={findRecommendation(recommendations, "conversation")}
+          improveHref="/dashboard/coach"
+        />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Latest overall score</CardTitle>
+          <CardTitle className="text-base">Progress over time</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center gap-6">
-          <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-2xl font-semibold text-primary-foreground">
-            62
-          </div>
-          <div className="flex-1 space-y-3">
-            <ScoreLine label="Photos" value={58} />
-            <ScoreLine label="Bio" value={71} />
-            <ScoreLine label="Conversation" value={55} />
-          </div>
+        <CardContent>
+          <ScoreHistoryChart points={history} />
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <QuickAction href="/onboarding" icon={Camera} label="Run a new analysis" />
-        <QuickAction href="/results" icon={Sparkles} label="View my recommendations" />
-        <QuickAction href="/settings" icon={MessageCircle} label="Manage my subscription" />
+      <div>
+        <h2 className="mb-3 text-sm font-medium text-muted-foreground">Your coach, on demand</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {TOOLS.map((tool) => (
+            <Button key={tool.href} variant="outline" className="h-auto justify-between py-4" asChild>
+              <Link href={tool.href}>
+                <span className="flex items-center gap-2">
+                  <tool.icon className="size-4" />
+                  {tool.label}
+                </span>
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
-  );
-}
-
-function ScoreLine({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-        <span>{label}</span>
-        <span>{value}/100</span>
-      </div>
-      <Progress value={value} />
-    </div>
-  );
-}
-
-function QuickAction({
-  href,
-  icon: Icon,
-  label,
-}: {
-  href: string;
-  icon: typeof Camera;
-  label: string;
-}) {
-  return (
-    <Button variant="outline" className="h-auto justify-between py-4" asChild>
-      <Link href={href}>
-        <span className="flex items-center gap-2">
-          <Icon className="size-4" />
-          {label}
-        </span>
-        <ArrowRight className="size-4" />
-      </Link>
-    </Button>
   );
 }

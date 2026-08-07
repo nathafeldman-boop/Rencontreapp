@@ -3,14 +3,11 @@ import type Stripe from "stripe";
 
 import { getStripeClient } from "@/lib/stripe/client";
 import { serverEnv } from "@/lib/env";
+import { syncSubscriptionFromStripe } from "@/lib/stripe/sync-subscription";
+import { trackServer } from "@/lib/analytics/server";
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { planIdFromPriceId } from "@/lib/stripe/plans";
 
-/**
- * Signature verification is wired up now so the endpoint is safe to point
- * Stripe at as soon as it exists. The event handlers themselves are
- * intentionally TODO — writing to `subscriptions` (via the service-role
- * client in src/lib/supabase/admin.ts) lands with the Checkout flow in a
- * later step.
- */
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("stripe-signature");
@@ -19,30 +16,53 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
   }
 
+  const stripe = getStripeClient();
   let event: Stripe.Event;
 
   try {
-    event = getStripeClient().webhooks.constructEvent(
-      body,
-      signature,
-      serverEnv.STRIPE_WEBHOOK_SECRET
-    );
+    event = stripe.webhooks.constructEvent(body, signature, serverEnv.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Invalid signature";
     return NextResponse.json({ error: `Webhook signature verification failed: ${message}` }, { status: 400 });
   }
 
-  switch (event.type) {
-    case "checkout.session.completed":
-      // TODO: upsert `subscriptions` (plan, status, stripe ids) for the
-      // customer, then trackServer(..., AnalyticsEvent.SubscriptionPurchased, ...)
-      break;
-    case "customer.subscription.updated":
-    case "customer.subscription.deleted":
-      // TODO: sync `subscriptions.status` / `current_period_end`
-      break;
-    default:
-      break;
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const userId = session.client_reference_id;
+        if (userId && session.subscription) {
+          const subscriptionId =
+            typeof session.subscription === "string" ? session.subscription : session.subscription.id;
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          await syncSubscriptionFromStripe(subscription, userId);
+
+          const priceId = subscription.items.data[0]?.price.id;
+          trackServer(userId, AnalyticsEvent.SubscriptionPurchased, {
+            plan: planIdFromPriceId(priceId) as "premium_monthly" | "premium_annual",
+          });
+        }
+        break;
+      }
+
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const userId = subscription.metadata?.user_id;
+        if (userId) {
+          await syncSubscriptionFromStripe(subscription, userId);
+        }
+        break;
+      }
+
+      default:
+        break;
+    }
+  } catch (err) {
+    // Signature already verified — a processing failure here should not
+    // read as "malicious request", but Stripe should still retry.
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: `Webhook handler failed: ${message}` }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

@@ -18,6 +18,33 @@ export interface Recommendation {
   detail: string;
 }
 
+export type PhotoSuggestedRole = "primary" | "secondary" | "remove";
+export type AiFeature = "profile_analysis" | "bio_generator" | "conversation_coach" | "match_simulator" | "dating_plan";
+export type BioStyle = "funny" | "mysterious" | "confident" | "romantic" | "premium";
+
+export interface ConversationSuggestion {
+  tone: "funny" | "flirty" | "natural";
+  message: string;
+  explanation: string;
+}
+
+export interface MatchPersona {
+  gender: Gender;
+  personality: string;
+}
+
+export interface MatchMessage {
+  role: "user" | "match";
+  content: string;
+}
+
+export interface PlanDay {
+  day: number;
+  title: string;
+  description: string;
+  done: boolean;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -151,6 +178,118 @@ export interface Database {
             referencedColumns: ["id"];
           },
         ];
+      };
+      photo_analyses: {
+        Row: {
+          id: string;
+          analysis_id: string;
+          user_id: string;
+          photo_path: string;
+          position: number;
+          score: number;
+          confidence_score: number | null;
+          attractiveness_score: number | null;
+          technical_score: number | null;
+          pros: string[];
+          cons: string[];
+          recommendation: string;
+          suggested_role: PhotoSuggestedRole;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["photo_analyses"]["Row"], "id">> & {
+          analysis_id: string;
+          user_id: string;
+          photo_path: string;
+          position: number;
+          score: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["photo_analyses"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "photo_analyses_analysis_id_fkey";
+            columns: ["analysis_id"];
+            isOneToOne: false;
+            referencedRelation: "analyses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bio_generations: {
+        Row: {
+          id: string;
+          user_id: string;
+          style: string;
+          source_bio: string | null;
+          generated_bios: string[];
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["bio_generations"]["Row"], "id">> & {
+          user_id: string;
+          style: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["bio_generations"]["Row"]>;
+        Relationships: [];
+      };
+      conversation_coach_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          input_text: string;
+          suggestions: ConversationSuggestion[];
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["conversation_coach_sessions"]["Row"], "id">> & {
+          user_id: string;
+          input_text: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["conversation_coach_sessions"]["Row"]>;
+        Relationships: [];
+      };
+      match_simulator_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          persona: MatchPersona;
+          messages: MatchMessage[];
+          conversation_score: number | null;
+          ended_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["match_simulator_sessions"]["Row"], "id">> & {
+          user_id: string;
+          persona: MatchPersona;
+        };
+        Update: Partial<Database["public"]["Tables"]["match_simulator_sessions"]["Row"]>;
+        Relationships: [];
+      };
+      dating_plans: {
+        Row: {
+          id: string;
+          user_id: string;
+          days: PlanDay[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["dating_plans"]["Row"], "id">> & {
+          user_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["dating_plans"]["Row"]>;
+        Relationships: [];
+      };
+      ai_usage_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          feature: AiFeature;
+          credits_used: number;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["ai_usage_events"]["Row"], "id">> & {
+          user_id: string;
+          feature: AiFeature;
+        };
+        Update: Partial<Database["public"]["Tables"]["ai_usage_events"]["Row"]>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;

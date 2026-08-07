@@ -8,6 +8,8 @@ const serverEnvSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   STRIPE_SECRET_KEY: z.string().min(1),
   STRIPE_WEBHOOK_SECRET: z.string().min(1),
+  STRIPE_PRICE_ID_MONTHLY: z.string().min(1),
+  STRIPE_PRICE_ID_ANNUAL: z.string().optional(),
   MISTRAL_API_KEY: z.string().min(1),
   POSTHOG_API_KEY: z.string().optional(),
 });
@@ -50,6 +52,8 @@ function loadServerEnv() {
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    STRIPE_PRICE_ID_MONTHLY: process.env.STRIPE_PRICE_ID_MONTHLY,
+    STRIPE_PRICE_ID_ANNUAL: process.env.STRIPE_PRICE_ID_ANNUAL,
     MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
     POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
   });

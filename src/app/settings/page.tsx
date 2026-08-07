@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { BillingCard } from "@/components/settings/billing-card";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -10,7 +10,7 @@ export default async function SettingsPage() {
 
   const { data: subscription } = await supabase
     .from("subscriptions")
-    .select("plan, status, current_period_end")
+    .select("plan, status, current_period_end, stripe_customer_id")
     .eq("user_id", user?.id ?? "")
     .maybeSingle();
 
@@ -30,21 +30,12 @@ export default async function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Subscription</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {subscription?.plan === "free" || !subscription
-              ? "No active subscription"
-              : `Plan: ${subscription.plan}`}
-          </p>
-          <Badge variant={subscription?.status === "active" ? "default" : "secondary"}>
-            {subscription?.status ?? "free"}
-          </Badge>
-        </CardContent>
-      </Card>
+      <BillingCard
+        plan={subscription?.plan ?? null}
+        status={subscription?.status ?? null}
+        currentPeriodEnd={subscription?.current_period_end ?? null}
+        hasBillingAccount={Boolean(subscription?.stripe_customer_id)}
+      />
     </div>
   );
 }
