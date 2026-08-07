@@ -14,10 +14,10 @@ export function FinalCta() {
   return (
     <section className="px-6 py-24 text-center">
       <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-        Ready to see what&apos;s holding your matches back?
+        Prêt à découvrir ce qui freine tes matchs ?
       </h2>
       <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-        Free analysis. No credit card. Results in under a minute.
+        Analyse gratuite. Pas de carte bancaire. Résultats en moins d&apos;une minute.
       </p>
       <div className="mt-8">
         <Button

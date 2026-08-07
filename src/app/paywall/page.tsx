@@ -19,20 +19,20 @@ const Testimonials = dynamic(() => import("@/components/marketing/testimonials")
 const FaqAccordion = dynamic(() => import("@/components/marketing/faq-accordion").then((m) => m.FaqAccordion));
 
 const TRUST_BADGES = [
-  { icon: ShieldCheck, label: "Secure payment via Stripe" },
-  { icon: RotateCcw, label: "Cancel anytime, one click" },
-  { icon: Lock, label: "Your data stays private" },
+  { icon: ShieldCheck, label: "Paiement sécurisé via Stripe" },
+  { icon: RotateCcw, label: "Annulation en un clic, à tout moment" },
+  { icon: Lock, label: "Tes données restent privées" },
 ];
 
 const PLAN_ID = "premium_monthly";
-const PRICE = "7.99€";
+const PRICE = "7,99€";
 
 const BENEFITS = [
-  "Full profile analysis",
-  "Unlimited optimizations",
-  "AI dating coach",
-  "Conversation assistant",
-  "Match improvement plan",
+  "Analyse complète du profil",
+  "Optimisations illimitées",
+  "Coach de rencontre IA",
+  "Assistant de conversation",
+  "Plan d'amélioration personnalisé",
 ];
 
 export default function PaywallPage() {
@@ -48,7 +48,7 @@ export default function PaywallPage() {
     // once payment is actually confirmed — see src/app/api/stripe/webhook.
     await redirect("/api/stripe/checkout", {
       body: { plan: PLAN_ID },
-      errorMessage: "Checkout is launching very soon — come back in a few days!",
+      errorMessage: "Le paiement arrive très bientôt — reviens dans quelques jours !",
     });
   }
 
@@ -56,12 +56,12 @@ export default function PaywallPage() {
     <main className="flex flex-1 flex-col">
       <div className="mx-auto flex w-full max-w-md flex-col px-6 py-16">
         <div className="text-center">
-          <Badge variant="accent">Launch offer</Badge>
+          <Badge variant="accent">Offre de lancement</Badge>
           <h1 className="mt-4 text-2xl font-semibold tracking-tight">
-            Unlock your full dating potential.
+            Débloque tout ton potentiel sur les apps de rencontre.
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Stop guessing what&apos;s not working. Join MatchAI Premium.
+            Arrête de deviner ce qui ne marche pas. Rejoins MatchAI Premium.
           </p>
         </div>
 
@@ -73,7 +73,7 @@ export default function PaywallPage() {
         >
           <p>
             <span className="text-3xl font-semibold">{PRICE}</span>
-            <span className="text-sm text-muted-foreground"> / month</span>
+            <span className="text-sm text-muted-foreground"> / mois</span>
           </p>
 
           <ul className="mt-5 flex flex-col gap-2.5">
@@ -87,7 +87,7 @@ export default function PaywallPage() {
 
           <Button className="mt-6 w-full" size="lg" disabled={loading} onClick={handleSubscribe}>
             {loading ? <Loader2 className="animate-spin" /> : null}
-            Unlock My Full Analysis
+            Débloquer mon analyse complète
           </Button>
 
           {error && <p className="mt-3 text-center text-xs text-muted-foreground">{error}</p>}
@@ -106,7 +106,7 @@ export default function PaywallPage() {
           href="/premium"
           className="mt-4 text-center text-xs text-primary underline underline-offset-2"
         >
-          See the full free vs premium comparison
+          Voir le comparatif complet Gratuit vs Premium
         </Link>
       </div>
 

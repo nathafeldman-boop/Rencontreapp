@@ -17,13 +17,13 @@ export default async function SettingsPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Your account and subscription.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Réglages</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Ton compte et ton abonnement.</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Account</CardTitle>
+          <CardTitle className="text-base">Compte</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">{user?.email}</p>

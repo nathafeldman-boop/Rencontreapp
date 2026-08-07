@@ -4,16 +4,18 @@ test.describe("Free funnel: public pages load", () => {
   test("landing page has a headline and a working CTA", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("h1")).toBeVisible();
-    const cta = page.getByRole("link", { name: /free/i }).first();
+    const cta = page.getByRole("link", { name: /gratuit/i }).first();
     await expect(cta).toBeVisible();
     await cta.click();
     await expect(page).toHaveURL(/\/auth\/login/);
   });
 
-  test("login page renders both auth methods", async ({ page }) => {
+  // Signup is temporarily disabled (SIGNUP_ENABLED = false in auth/login/page.tsx)
+  // while server-side Supabase config is confirmed. Update this test to check
+  // for the Google/email form again once signup is re-enabled.
+  test("login page shows the temporary signup-closed notice", async ({ page }) => {
     await page.goto("/auth/login");
-    await expect(page.getByRole("button", { name: /continue with google/i })).toBeVisible();
-    await expect(page.getByRole("textbox", { name: /email/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /on revient très vite/i })).toBeVisible();
   });
 
   for (const path of ["/tinder-profile-review", "/hinge-profile-review", "/bumble-profile-review"]) {
@@ -21,7 +23,7 @@ test.describe("Free funnel: public pages load", () => {
       const res = await page.goto(path);
       expect(res?.status()).toBe(200);
       await expect(page.locator("h1")).toBeVisible();
-      await expect(page.getByRole("link", { name: /free/i }).first()).toBeVisible();
+      await expect(page.getByRole("link", { name: /gratuit/i }).first()).toBeVisible();
     });
   }
 
@@ -43,7 +45,7 @@ test.describe("Free funnel: public pages load", () => {
     await expect(firstPost).toBeVisible();
     await firstPost.click();
     await expect(page.locator("h1")).toBeVisible();
-    await expect(page.getByRole("link", { name: /analyze my profile free/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /analyser mon profil gratuitement/i })).toBeVisible();
   });
 
   test("sitemap.xml is valid XML listing known pages", async ({ request }) => {

@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
             marginBottom: 20,
           }}
         >
-          🔥 My Dating Score
+          Mon Dating Score
         </div>
 
         <div

@@ -13,18 +13,18 @@ const TESTIMONIALS = [
   {
     name: "Marc R.",
     quote:
-      "Changed my main photo based on the analysis and matches basically doubled in a week. Didn't expect that.",
+      "J'ai changé ma photo principale suite à l'analyse et mes matchs ont quasiment doublé en une semaine. Je ne m'y attendais pas.",
     rating: 5,
   },
   {
     name: "Julie T.",
     quote:
-      "The bio rewrite was the useful part for me — I'd never have written it that way myself.",
+      "La réécriture de la bio a été le plus utile pour moi — je ne l'aurais jamais écrite comme ça toute seule.",
     rating: 5,
   },
   {
     name: "Karim B.",
-    quote: "Blunt about what wasn't working, which is exactly what I needed. Worth it.",
+    quote: "Direct sur ce qui ne fonctionnait pas, exactement ce dont j'avais besoin. Ça vaut le coup.",
     rating: 4,
   },
 ];
@@ -40,7 +40,7 @@ export function Testimonials() {
           transition={{ duration: 0.4 }}
           className="text-2xl font-semibold tracking-tight sm:text-3xl"
         >
-          People are getting real results
+          Des résultats concrets pour de vrai
         </motion.h2>
       </div>
 

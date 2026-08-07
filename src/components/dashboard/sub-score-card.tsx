@@ -6,9 +6,9 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 
 function tierExplanation(label: string, score: number) {
-  if (score >= 80) return `${label} is a real strength on your profile right now.`;
-  if (score >= 60) return `${label} is solid, with clear room to push higher.`;
-  return `${label} is holding your matches back the most.`;
+  if (score >= 80) return `${label} est un vrai point fort de ton profil en ce moment.`;
+  if (score >= 60) return `${label} est solide, avec une marge claire de progression.`;
+  return `${label} est ce qui freine le plus tes matchs.`;
 }
 
 export function SubScoreCard({
@@ -38,7 +38,7 @@ export function SubScoreCard({
         )}
         <Button variant="outline" size="sm" className="w-fit" asChild>
           <Link href={improveHref}>
-            Improve this
+            Améliorer
             <ArrowRight className="size-3.5" />
           </Link>
         </Button>

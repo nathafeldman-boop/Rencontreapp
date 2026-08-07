@@ -98,7 +98,7 @@ export function Hero() {
             <span className="font-semibold text-foreground">
               <AnimatedCounter />
             </span>{" "}
-            profiles analyzed and counting
+            profils analysés, et ça continue
           </p>
         </motion.div>
       </div>

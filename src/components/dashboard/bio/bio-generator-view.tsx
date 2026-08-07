@@ -14,10 +14,10 @@ import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { BioStyle } from "@/types/database.types";
 
 const STYLES: { value: BioStyle; label: string }[] = [
-  { value: "funny", label: "Funny" },
-  { value: "mysterious", label: "Mysterious" },
-  { value: "confident", label: "Confident" },
-  { value: "romantic", label: "Romantic" },
+  { value: "funny", label: "Drôle" },
+  { value: "mysterious", label: "Mystérieux" },
+  { value: "confident", label: "Confiant" },
+  { value: "romantic", label: "Romantique" },
   { value: "premium", label: "Premium" },
 ];
 
@@ -44,8 +44,8 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
       if (!res.ok) {
         setError(
           res.status === 429
-            ? "You've used all your AI credits for this month."
-            : "Couldn't generate bios — try again."
+            ? "Tu as utilisé tous tes crédits IA pour ce mois-ci."
+            : "Impossible de générer des bios — réessaie."
         );
         return;
       }
@@ -54,7 +54,7 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
       setBios(data.bios);
       track(AnalyticsEvent.BioGenerated, { style });
     } catch {
-      setError("Couldn't generate bios — check your connection and try again.");
+      setError("Impossible de générer des bios — vérifie ta connexion et réessaie.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
       {currentBio && (
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Current bio</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bio actuelle</p>
             <p className="mt-1 text-sm">{currentBio}</p>
           </CardContent>
         </Card>
@@ -93,7 +93,7 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
 
       <Button onClick={generate} disabled={loading} className="w-fit">
         {loading ? <Loader2 className="animate-spin" /> : <Sparkles />}
-        {bios.length > 0 ? "Regenerate" : "Generate 5 bios"}
+        {bios.length > 0 ? "Régénérer" : "Générer 5 bios"}
       </Button>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -113,11 +113,11 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => copy(bio, i)}>
                       {copiedKey === i ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                      {copiedKey === i ? "Copied" : "Copy"}
+                      {copiedKey === i ? "Copié" : "Copier"}
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => applyBio(bio, i)} disabled={savedIndex === i}>
                       {savedIndex === i ? <Check className="size-3.5" /> : null}
-                      {savedIndex === i ? "Saved to profile" : "Use this bio"}
+                      {savedIndex === i ? "Enregistrée sur le profil" : "Utiliser cette bio"}
                     </Button>
                   </div>
                 </CardContent>
@@ -126,10 +126,10 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
           ))}
           <Button variant="ghost" size="sm" onClick={generate} disabled={loading} className="w-fit">
             <RefreshCw className="size-3.5" />
-            Generate 5 more
+            Générer 5 de plus
           </Button>
 
-          <FeedbackWidget context="bio_generator" prompt="Did these bios help you?" />
+          <FeedbackWidget context="bio_generator" prompt="Ces bios t'ont-elles aidé ?" />
         </div>
       )}
     </div>

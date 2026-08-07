@@ -6,23 +6,23 @@ import { Camera, Gauge, MessageCircle, Sparkles } from "lucide-react";
 const SOLUTIONS = [
   {
     icon: Camera,
-    title: "AI Photo Analysis",
-    description: "We rank your photos by swipe-right potential and tell you exactly which to lead with.",
+    title: "Analyse IA des photos",
+    description: "On classe tes photos par potentiel de swipe et on te dit exactement laquelle mettre en premier.",
   },
   {
     icon: Sparkles,
-    title: "AI Bio Optimization",
-    description: "A rewritten bio built around what actually makes you interesting — not generic filler.",
+    title: "Optimisation IA de la bio",
+    description: "Une bio réécrite autour de ce qui te rend vraiment intéressant — pas du remplissage générique.",
   },
   {
     icon: MessageCircle,
-    title: "Conversation Coach",
-    description: "Opening lines and reply strategies tailored to your profile, not copy-pasted templates.",
+    title: "Coach de conversation",
+    description: "Des accroches et des stratégies de réponse adaptées à ton profil, pas des templates copiés-collés.",
   },
   {
     icon: Gauge,
-    title: "Match Score",
-    description: "A single number that tracks your profile strength — and moves every time you improve it.",
+    title: "Dating Score",
+    description: "Un seul chiffre qui suit la force de ton profil — et qui bouge à chaque amélioration.",
   },
 ];
 
@@ -37,10 +37,10 @@ export function SolutionSection() {
           transition={{ duration: 0.4 }}
           className="text-2xl font-semibold tracking-tight sm:text-3xl"
         >
-          What MatchAI actually does
+          Ce que MatchAI fait concrètement
         </motion.h2>
         <p className="mt-3 text-muted-foreground">
-          One upload. A complete, personalized breakdown.
+          Un envoi. Une analyse complète et personnalisée.
         </p>
       </div>
 

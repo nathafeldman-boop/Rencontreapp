@@ -24,19 +24,19 @@ export function PhotoDropzone({ photos, onChange }: PhotoDropzoneProps) {
 
     const invalid = incoming.find((f) => !f.type.startsWith("image/"));
     if (invalid) {
-      setError(`"${invalid.name}" isn't an image.`);
+      setError(`"${invalid.name}" n'est pas une image.`);
       return;
     }
 
     const tooLarge = incoming.find((f) => f.size > MAX_FILE_SIZE);
     if (tooLarge) {
-      setError(`"${tooLarge.name}" is over 10MB.`);
+      setError(`"${tooLarge.name}" dépasse 10 Mo.`);
       return;
     }
 
     const merged = [...photos, ...incoming].slice(0, MAX_PHOTOS);
     if (photos.length + incoming.length > MAX_PHOTOS) {
-      setError(`You can upload up to ${MAX_PHOTOS} photos — kept the first ${MAX_PHOTOS}.`);
+      setError(`Tu peux envoyer jusqu'à ${MAX_PHOTOS} photos — les ${MAX_PHOTOS} premières ont été gardées.`);
     }
     onChange(merged);
   }
@@ -72,8 +72,8 @@ export function PhotoDropzone({ photos, onChange }: PhotoDropzoneProps) {
         }`}
       >
         <Upload className="size-5 text-muted-foreground" />
-        <p className="font-medium">Drag & drop your photos here</p>
-        <p className="text-xs text-muted-foreground">or click to browse — {MIN_PHOTOS} to {MAX_PHOTOS} photos, JPG or PNG</p>
+        <p className="font-medium">Glisse-dépose tes photos ici</p>
+        <p className="text-xs text-muted-foreground">ou clique pour parcourir — {MIN_PHOTOS} à {MAX_PHOTOS} photos, JPG ou PNG</p>
         <input
           ref={inputRef}
           type="file"
@@ -100,7 +100,7 @@ export function PhotoDropzone({ photos, onChange }: PhotoDropzoneProps) {
       )}
 
       <p className="mt-2 text-xs text-muted-foreground">
-        {photos.length}/{MAX_PHOTOS} photos {photos.length < MIN_PHOTOS && `— add ${MIN_PHOTOS - photos.length} more to continue`}
+        {photos.length}/{MAX_PHOTOS} photos {photos.length < MIN_PHOTOS && `— ajoute ${MIN_PHOTOS - photos.length} photo(s) de plus pour continuer`}
       </p>
     </div>
   );
@@ -116,7 +116,7 @@ function PhotoPreview({ file, onRemove }: { file: File; onRemove: () => void }) 
         type="button"
         onClick={onRemove}
         className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground opacity-100 shadow outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-ring sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
-        aria-label={`Remove ${file.name}`}
+        aria-label={`Supprimer ${file.name}`}
       >
         <X className="size-3" />
       </button>

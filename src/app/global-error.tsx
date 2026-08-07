@@ -22,7 +22,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en">
+    <html lang="fr">
       <body
         style={{
           display: "flex",
@@ -39,9 +39,9 @@ export default function GlobalError({
           color: "#171717",
         }}
       >
-        <h1 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>Something went wrong</h1>
+        <h1 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>Une erreur est survenue</h1>
         <p style={{ maxWidth: "24rem", color: "#6b7280", fontSize: "0.875rem", margin: 0 }}>
-          MatchAI hit an unexpected error loading this page. Please try again.
+          MatchAI a rencontré une erreur inattendue en chargeant cette page. Réessaie.
         </p>
         <button
           onClick={reset}
@@ -56,7 +56,7 @@ export default function GlobalError({
             cursor: "pointer",
           }}
         >
-          Try again
+          Réessayer
         </button>
       </body>
     </html>

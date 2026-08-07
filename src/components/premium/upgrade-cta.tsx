@@ -15,14 +15,14 @@ export function UpgradeCta({ hasBillingAccount }: { hasBillingAccount: boolean }
 
   async function go() {
     if (hasBillingAccount) {
-      await redirect("/api/stripe/portal", { errorMessage: "Couldn't open billing — try again in a moment." });
+      await redirect("/api/stripe/portal", { errorMessage: "Impossible d'ouvrir la facturation — réessaie dans un instant." });
       return;
     }
 
     track(AnalyticsEvent.CheckoutStarted, { plan: PLAN_ID });
     await redirect("/api/stripe/checkout", {
       body: { plan: PLAN_ID },
-      errorMessage: "Couldn't start checkout — try again in a moment.",
+      errorMessage: "Impossible de démarrer le paiement — réessaie dans un instant.",
     });
   }
 
@@ -30,7 +30,7 @@ export function UpgradeCta({ hasBillingAccount }: { hasBillingAccount: boolean }
     <div className="flex flex-col items-center gap-2">
       <Button size="lg" className="w-full" disabled={loading} onClick={go}>
         {loading ? <Loader2 className="animate-spin" /> : null}
-        {hasBillingAccount ? "Manage billing" : "Unlock Premium — 7.99€/month"}
+        {hasBillingAccount ? "Gérer l'abonnement" : "Débloquer Premium — 7,99€/mois"}
       </Button>
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>

@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/premium", label: "Premium", icon: Crown },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Réglages", icon: Settings },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -50,7 +50,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ))}
             <button
               onClick={handleSignOut}
-              aria-label="Sign out"
+              aria-label="Se déconnecter"
               className="ml-1 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground outline-none transition-colors hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <LogOut className="size-4" />

@@ -22,21 +22,21 @@ export interface WeeklyReport {
  * everything else, so this whole report is computed on read, no new table.
  */
 const OPENER_BANK = [
-  "Okay I have to ask — what's the story behind your third photo?",
-  "You seem like the kind of person with a strong opinion on pineapple pizza. Convince me.",
-  "Two truths and a lie: you pick, I'll guess.",
-  "What's the last thing that made you laugh out loud?",
-  "If we matched purely on your bio, what's the first thing we'd argue about?",
-  "Be honest — best trip you've ever taken, and why.",
-  "What's a hill you'll die on that most people would call minor?",
-  "Coffee, tea, or you're just here for the chaos?",
-  "What's something you're weirdly good at?",
-  "Give me your best 'this or that': beach or mountains?",
-  "What's on your weekend agenda that you're actually excited about?",
-  "If your friends had to describe you in three words, what would they say?",
-  "What's a show or movie you'd defend to the death?",
-  "Tell me about the last thing you got way too invested in.",
-  "What's your go-to order that says a lot about you?",
+  "Bon, il faut que je demande — c'est quoi l'histoire derrière ta troisième photo ?",
+  "Tu as l'air d'être le genre de personne à avoir un avis tranché sur l'ananas sur la pizza. Convaincs-moi.",
+  "Deux vérités et un mensonge : tu choisis, je devine.",
+  "C'est quoi la dernière chose qui t'a fait éclater de rire ?",
+  "Si on matchait juste sur ta bio, sur quoi on se disputerait en premier ?",
+  "Sois honnête — le meilleur voyage que tu aies fait, et pourquoi.",
+  "Sur quel sujet mineur es-tu prêt à mourir pour défendre ton avis ?",
+  "Café, thé, ou tu es juste là pour le chaos ?",
+  "Il y a un truc dans lequel tu es bizarrement doué ?",
+  "Donne-moi ton meilleur dilemme : plage ou montagne ?",
+  "C'est quoi au programme ce week-end qui t'excite vraiment ?",
+  "Si tes amis devaient te décrire en trois mots, ce serait quoi ?",
+  "C'est quoi une série ou un film que tu défendrais jusqu'au bout ?",
+  "Raconte-moi la dernière chose dans laquelle tu t'es beaucoup trop investi.",
+  "C'est quoi ta commande habituelle qui en dit long sur toi ?",
 ];
 
 function weekIndex(date: Date): number {

@@ -11,7 +11,7 @@ export function AnimatedCounter({ fallback = 12_847 }: { fallback?: number }) {
   const [target, setTarget] = useState(fallback);
   const motionValue = useMotionValue(0);
   const spring = useSpring(motionValue, { damping: 30, stiffness: 90 });
-  const display = useTransform(spring, (v) => Math.round(v).toLocaleString("en-US"));
+  const display = useTransform(spring, (v) => Math.round(v).toLocaleString("fr-FR"));
 
   useEffect(() => {
     let cancelled = false;

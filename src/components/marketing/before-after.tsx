@@ -14,10 +14,10 @@ export function BeforeAfterSection() {
           transition={{ duration: 0.4 }}
           className="text-2xl font-semibold tracking-tight sm:text-3xl"
         >
-          Small changes, real difference
+          Petits changements, vrai résultat
         </motion.h2>
         <p className="mt-3 text-muted-foreground">
-          This is the kind of shift our recommendations produce.
+          C&apos;est le type de transformation que nos recommandations produisent.
         </p>
       </div>
 
@@ -25,7 +25,7 @@ export function BeforeAfterSection() {
         <ProfileCard
           variant="before"
           score={41}
-          bio="Love to travel, love to laugh, love my dog"
+          bio="J'aime voyager, j'aime rire, j'aime mon chien"
         />
 
         <div className="flex items-center justify-center py-2 sm:py-0">
@@ -37,7 +37,7 @@ export function BeforeAfterSection() {
         <ProfileCard
           variant="after"
           score={89}
-          bio="Currently training for a half-marathon and losing badly to my dog at every race. Ask me about the worst trail I've ever picked."
+          bio="En ce moment je m'entraîne pour un semi-marathon et je perds lamentablement contre mon chien à chaque course. Demande-moi quel est le pire sentier que j'ai choisi."
         />
       </div>
     </section>
@@ -75,7 +75,7 @@ function ProfileCard({
       <div className="p-4">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {isAfter ? "After" : "Before"}
+            {isAfter ? "Après" : "Avant"}
           </span>
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-semibold ${

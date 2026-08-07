@@ -33,10 +33,10 @@ const OBJECTIVE_QUESTION = "What's your main objective?";
 const TOOLS = [
   { href: "/dashboard/photos", icon: Camera, label: "Photo Optimizer" },
   { href: "/dashboard/bio", icon: Sparkles, label: "Bio Generator" },
-  { href: "/dashboard/coach", icon: MessageCircle, label: "Conversation Coach" },
-  { href: "/dashboard/simulator", icon: Swords, label: "Match Simulator" },
-  { href: "/dashboard/plan", icon: CalendarCheck, label: "My Improvement Plan" },
-  { href: "/referrals", icon: Gift, label: "Invite Friends" },
+  { href: "/dashboard/coach", icon: MessageCircle, label: "Coach de conversation" },
+  { href: "/dashboard/simulator", icon: Swords, label: "Simulateur de match" },
+  { href: "/dashboard/plan", icon: CalendarCheck, label: "Mon plan d'amélioration" },
+  { href: "/referrals", icon: Gift, label: "Inviter des amis" },
 ];
 
 function findRecommendation(recommendations: Recommendation[], category: Recommendation["category"]) {
@@ -83,11 +83,11 @@ export default async function DashboardPage() {
         <ViewTracker event={AnalyticsEvent.DashboardViewed} properties={{ has_active_plan: true }} />
         <EmptyState
           icon={Sparkles}
-          title="No analysis yet"
-          description="Complete your profile upload to get your first Dating Score."
+          title="Aucune analyse pour le moment"
+          description="Complète l'envoi de ton profil pour obtenir ton premier Dating Score."
           action={
             <Button asChild>
-              <Link href="/onboarding">Start my analysis</Link>
+              <Link href="/onboarding">Lancer mon analyse</Link>
             </Button>
           }
         />
@@ -124,12 +124,12 @@ export default async function DashboardPage() {
       <ViewTracker event={AnalyticsEvent.DashboardViewed} properties={{ has_active_plan: true }} />
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          {firstName ? `Hey ${firstName} 👋` : "Your dashboard"}
+          {firstName ? `Salut ${firstName} 👋` : "Ton tableau de bord"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {objectiveAnswer?.answer
-            ? `Your coach's read on your profile — working toward "${objectiveAnswer.answer}".`
-            : "Your coach's read on your profile, updated live."}
+            ? `L'avis de ton coach sur ton profil — objectif : "${objectiveAnswer.answer}".`
+            : "L'avis de ton coach sur ton profil, mis à jour en direct."}
         </p>
       </div>
 
@@ -147,7 +147,7 @@ export default async function DashboardPage() {
             <Badge variant="secondary">{level.name}</Badge>
             {upNext && (
               <p className="text-xs text-muted-foreground">
-                {upNext.min - latest.overall_score} points to {upNext.name}
+                {upNext.min - latest.overall_score} points avant {upNext.name}
               </p>
             )}
           </div>
@@ -155,7 +155,7 @@ export default async function DashboardPage() {
             <Badge variant={delta >= 0 ? "default" : "secondary"} className="gap-1">
               {delta >= 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
               {delta >= 0 ? "+" : ""}
-              {delta} points since last analysis
+              {delta} points depuis la dernière analyse
             </Badge>
           )}
           <ShareScoreCard
@@ -183,24 +183,24 @@ export default async function DashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <SubScoreCard
-          label="Photo Score"
+          label="Score Photos"
           score={latest.photo_score ?? 0}
           recommendation={findRecommendation(recommendations, "photos")}
           improveHref="/dashboard/photos"
         />
         <SubScoreCard
-          label="Bio Score"
+          label="Score Bio"
           score={latest.bio_score ?? 0}
           recommendation={findRecommendation(recommendations, "bio")}
           improveHref="/dashboard/bio"
         />
         <SubScoreCard
-          label="Attractiveness Score"
+          label="Score Attractivité"
           score={latest.attractiveness_score ?? 0}
           improveHref="/dashboard/photos"
         />
         <SubScoreCard
-          label="Conversation Score"
+          label="Score Conversation"
           score={latest.conversation_score ?? 0}
           recommendation={findRecommendation(recommendations, "conversation")}
           improveHref="/dashboard/coach"
@@ -209,7 +209,7 @@ export default async function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Progress over time</CardTitle>
+          <CardTitle className="text-base">Progression dans le temps</CardTitle>
         </CardHeader>
         <CardContent>
           <ScoreHistoryChart points={history} />
@@ -219,7 +219,7 @@ export default async function DashboardPage() {
       {weeklyReport && <WeeklyReportCard report={weeklyReport} />}
 
       <div>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">Your coach, on demand</h2>
+        <h2 className="mb-3 text-sm font-medium text-muted-foreground">Ton coach, à la demande</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {TOOLS.map((tool) => (
             <Button key={tool.href} variant="outline" className="h-auto justify-between py-4" asChild>

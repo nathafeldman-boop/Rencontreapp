@@ -29,17 +29,17 @@ export default function ErrorBoundary({
       <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
         <AlertTriangle className="size-6" />
       </div>
-      <h1 className="text-xl font-semibold">Something went wrong</h1>
+      <h1 className="text-xl font-semibold">Une erreur est survenue</h1>
       <p className="max-w-sm text-sm text-muted-foreground">
-        That&apos;s on us, not you. Try again, or head back home.
+        C&apos;est de notre côté, pas du tien. Réessaie, ou reviens à l&apos;accueil.
       </p>
       <div className="flex gap-3">
         <Button onClick={reset}>
           <RotateCw className="size-4" />
-          Try again
+          Réessayer
         </Button>
         <Button variant="outline" asChild>
-          <Link href="/">Back to home</Link>
+          <Link href="/">Retour à l&apos;accueil</Link>
         </Button>
       </div>
     </main>

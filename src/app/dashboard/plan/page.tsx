@@ -20,13 +20,13 @@ export default async function DatingPlanPage() {
     <div className="flex flex-col gap-6">
       <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" />
-        Dashboard
+        Tableau de bord
       </Link>
 
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">My Dating Improvement Plan</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Mon plan d&apos;amélioration</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          A personalized 7-day plan built from your latest analysis.
+          Un plan personnalisé sur 7 jours construit à partir de ta dernière analyse.
         </p>
       </div>
 

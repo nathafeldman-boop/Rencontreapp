@@ -9,12 +9,12 @@ export default function NotFound() {
       <div className="flex size-14 items-center justify-center rounded-full bg-secondary text-muted-foreground">
         <Compass className="size-6" />
       </div>
-      <h1 className="text-xl font-semibold">Page not found</h1>
+      <h1 className="text-xl font-semibold">Page introuvable</h1>
       <p className="max-w-sm text-sm text-muted-foreground">
-        The page you&apos;re looking for doesn&apos;t exist or has moved.
+        La page que tu cherches n&apos;existe pas ou a été déplacée.
       </p>
       <Button asChild>
-        <Link href="/">Back to home</Link>
+        <Link href="/">Retour à l&apos;accueil</Link>
       </Button>
     </main>
   );

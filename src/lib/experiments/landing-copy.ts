@@ -22,31 +22,31 @@ export interface LandingCopy {
  */
 export const LANDING_COPY: Record<LandingVariant, LandingCopy> = {
   v1: {
-    badge: "Free AI analysis in 60 seconds",
-    headlineBefore: "Get More ",
-    headlineHighlight: "Matches",
-    headlineAfter: " With AI",
+    badge: "Analyse IA gratuite en 60 secondes",
+    headlineBefore: "Obtiens plus de ",
+    headlineHighlight: "matchs",
+    headlineAfter: " grâce à l'IA",
     subheadline:
-      "Upload your dating profile and discover exactly what's preventing you from getting more matches — on Tinder, Hinge, or Bumble.",
-    ctaLabel: "Analyze My Profile Free",
+      "Envoie ton profil de rencontre et découvre exactement ce qui t'empêche d'avoir plus de matchs — sur Tinder, Hinge ou Bumble.",
+    ctaLabel: "Analyser mon profil gratuitement",
   },
   v2: {
-    badge: "Free AI analysis in 60 seconds",
-    headlineBefore: "Find Out Why You Get ",
-    headlineHighlight: "No Matches",
+    badge: "Analyse IA gratuite en 60 secondes",
+    headlineBefore: "Découvre pourquoi tu n'as ",
+    headlineHighlight: "aucun match",
     headlineAfter: "",
     subheadline:
-      "Your photos, bio, and conversations get scored by AI — see exactly what's costing you matches before you swipe another day away.",
-    ctaLabel: "Show Me What's Wrong",
+      "Tes photos, ta bio et tes conversations sont notées par l'IA — vois exactement ce qui te coûte des matchs avant de swiper une journée de plus pour rien.",
+    ctaLabel: "Montre-moi ce qui cloche",
   },
   v3: {
-    badge: "Free AI analysis in 60 seconds",
-    headlineBefore: "Your Dating Profile Is ",
-    headlineHighlight: "Holding You Back",
+    badge: "Analyse IA gratuite en 60 secondes",
+    headlineBefore: "Ton profil de rencontre te ",
+    headlineHighlight: "freine",
     headlineAfter: "",
     subheadline:
-      "Most profiles are one photo swap away from way more matches. Find out exactly what's wrong with yours in 60 seconds.",
-    ctaLabel: "Fix My Profile Free",
+      "La plupart des profils sont à une photo près d'avoir beaucoup plus de matchs. Découvre exactement ce qui ne va pas avec le tien en 60 secondes.",
+    ctaLabel: "Corriger mon profil gratuitement",
   },
 };
 

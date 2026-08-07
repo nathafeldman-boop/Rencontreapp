@@ -4,27 +4,27 @@ import { ChevronDown } from "lucide-react";
 
 const FAQ_ITEMS = [
   {
-    q: "Can I cancel anytime?",
-    a: "Yes — one click from Settings > Manage billing, no phone call, no retention flow. You keep access until the end of your current billing period.",
+    q: "Puis-je annuler à tout moment ?",
+    a: "Oui — en un clic depuis Réglages > Gérer l'abonnement, sans appel téléphonique, sans parcours de rétention. Tu gardes l'accès jusqu'à la fin de ta période de facturation en cours.",
   },
   {
-    q: "Is my payment secure?",
-    a: "Payments are processed by Stripe. MatchAI never sees or stores your card number.",
+    q: "Mon paiement est-il sécurisé ?",
+    a: "Les paiements sont traités par Stripe. MatchAI ne voit ni ne stocke jamais ton numéro de carte.",
   },
   {
-    q: "What happens to my data if I cancel?",
-    a: "Your past analyses and history stay in your account — you just lose access to the premium tools until you resubscribe.",
+    q: "Qu'advient-il de mes données si j'annule ?",
+    a: "Tes analyses passées et ton historique restent dans ton compte — tu perds juste l'accès aux outils premium jusqu'à ton réabonnement.",
   },
   {
-    q: "Will this actually work for me?",
-    a: "Every recommendation is generated from your own photos, bio, and stated goal — not a generic checklist.",
+    q: "Est-ce que ça va vraiment marcher pour moi ?",
+    a: "Chaque recommandation est générée à partir de tes propres photos, ta bio et ton objectif déclaré — pas une checklist générique.",
   },
 ];
 
 export function FaqAccordion() {
   return (
     <div className="mx-auto w-full max-w-md px-6 py-4">
-      <h2 className="mb-3 text-sm font-medium text-muted-foreground">Frequently asked</h2>
+      <h2 className="mb-3 text-sm font-medium text-muted-foreground">Questions fréquentes</h2>
       <div className="flex flex-col divide-y divide-border rounded-xl border border-border">
         {FAQ_ITEMS.map((item) => (
           <details key={item.q} className="group p-4">

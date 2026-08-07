@@ -24,25 +24,25 @@ export function computeBadges(input: BadgeInput): Badge[] {
   const badges: Badge[] = [];
 
   if (input.photoScore >= 85) {
-    badges.push({ key: "photo_master", icon: "📸", label: "Photo Master" });
+    badges.push({ key: "photo_master", icon: "📸", label: "Maître de la photo" });
   }
   if (input.conversationScore >= 85) {
-    badges.push({ key: "conversation_expert", icon: "💬", label: "Conversation Expert" });
+    badges.push({ key: "conversation_expert", icon: "💬", label: "Expert en conversation" });
   }
   if (input.scoreDelta !== null && input.scoreDelta >= 10) {
-    badges.push({ key: "profile_upgrade", icon: "🔥", label: `Profile Upgrade — +${input.scoreDelta} points` });
+    badges.push({ key: "profile_upgrade", icon: "🔥", label: `Profil boosté — +${input.scoreDelta} points` });
   }
   if (input.overallScore >= 80) {
-    badges.push({ key: "rising_star", icon: "⭐", label: "Rising Star — top-tier score" });
+    badges.push({ key: "rising_star", icon: "⭐", label: "Étoile montante — score d'élite" });
   }
   if (input.planDaysTotal > 0 && input.planDaysDone === input.planDaysTotal) {
-    badges.push({ key: "consistency", icon: "✅", label: "Consistency — full plan completed" });
+    badges.push({ key: "consistency", icon: "✅", label: "Régularité — plan complété en entier" });
   }
   if (input.bioGenerationCount >= 3) {
-    badges.push({ key: "bio_wordsmith", icon: "✍️", label: "Bio Wordsmith" });
+    badges.push({ key: "bio_wordsmith", icon: "✍️", label: "Plume affûtée" });
   }
   if (input.simulatorSessionCount >= 3) {
-    badges.push({ key: "conversation_practice", icon: "🎯", label: "Conversation Practice" });
+    badges.push({ key: "conversation_practice", icon: "🎯", label: "Entraînement conversation" });
   }
 
   return badges;
@@ -55,11 +55,11 @@ export interface Level {
 }
 
 const LEVELS: Level[] = [
-  { name: "Getting Started", min: 0, max: 40 },
-  { name: "Improving", min: 41, max: 60 },
-  { name: "Solid", min: 61, max: 75 },
-  { name: "Strong", min: 76, max: 89 },
-  { name: "Elite", min: 90, max: 100 },
+  { name: "Débutant", min: 0, max: 40 },
+  { name: "En progrès", min: 41, max: 60 },
+  { name: "Solide", min: 61, max: 75 },
+  { name: "Fort", min: 76, max: 89 },
+  { name: "Élite", min: 90, max: 100 },
 ];
 
 export function getLevel(overallScore: number): Level {

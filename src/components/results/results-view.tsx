@@ -27,14 +27,14 @@ export interface ResultsData {
   biggestProblem?: string;
 }
 
-const SUB_SCORE_LABELS = { photo: "Photos", bio: "Bio", attractiveness: "Attractiveness", conversation: "Conversation" };
+const SUB_SCORE_LABELS = { photo: "Photos", bio: "Bio", attractiveness: "Attractivité", conversation: "Conversation" };
 
 const LOCKED_TEASERS = [
-  "Your #1 photo swap — exactly which one to lead with, and why it matters most",
-  "3 full bio rewrites tailored to your goal, ready to paste in",
-  "5 ready-to-send openers picked for your weakest conversations",
-  "The one detail sabotaging your first impression right now",
-  "A 7-day action plan ordered by biggest impact first",
+  "Ta photo n°1 à changer — exactement laquelle mettre en avant, et pourquoi c'est le plus important",
+  "3 réécritures complètes de bio adaptées à ton objectif, prêtes à coller",
+  "5 accroches prêtes à envoyer, choisies pour tes conversations les plus faibles",
+  "Le seul détail qui sabote ta première impression en ce moment",
+  "Un plan d'action sur 7 jours classé par impact décroissant",
 ];
 
 export function ResultsView({ data }: { data: ResultsData }) {
@@ -56,7 +56,7 @@ export function ResultsView({ data }: { data: ResultsData }) {
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">
       {data.isDemo && (
         <p className="mb-6 rounded-lg bg-secondary px-4 py-2 text-center text-xs text-muted-foreground">
-          Demo preview — sign in and complete onboarding for your real score.
+          Aperçu de démo — connecte-toi et complète l&apos;onboarding pour ton vrai score.
         </p>
       )}
 
@@ -69,7 +69,7 @@ export function ResultsView({ data }: { data: ResultsData }) {
           transition={{ delay: 0.5, duration: 0.4 }}
           className="mt-5 text-xl font-semibold"
         >
-          Your profile scores {data.overall}/100
+          Ton profil obtient {data.overall}/100
         </motion.h1>
 
         <motion.p
@@ -79,8 +79,8 @@ export function ResultsView({ data }: { data: ResultsData }) {
           className="mt-1 text-sm text-muted-foreground"
         >
           {data.biggestProblem
-            ? `You told us "${data.biggestProblem}" is your biggest struggle — here's exactly why.`
-            : `Here's exactly why you're not getting more matches.`}
+            ? `Tu nous as dit que "${data.biggestProblem}" est ta plus grosse difficulté — voici exactement pourquoi.`
+            : `Voici exactement pourquoi tu n'as pas plus de matchs.`}
         </motion.p>
 
         {!data.isDemo && (
@@ -110,7 +110,7 @@ export function ResultsView({ data }: { data: ResultsData }) {
         {data.freeInsights.map((insight, i) => (
           <Card key={i}>
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">Free insight</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Conseil gratuit</CardTitle>
             </CardHeader>
             <CardContent className="-mt-2">
               <p className="text-sm">{insight}</p>
@@ -125,13 +125,13 @@ export function ResultsView({ data }: { data: ResultsData }) {
         transition={{ delay: 1.4, duration: 0.4 }}
       >
         <p className="mt-8 text-sm font-medium">
-          What Premium unlocks — this is what&apos;s actually holding you back.
+          Ce que Premium débloque — voici ce qui te freine vraiment.
         </p>
 
         <div className="mt-3 flex flex-col gap-3">
           {data.lockedCount > 0 && (
             <div className="rounded-xl border border-primary/30 bg-accent/50 p-4">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-primary">Sneak peek</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-primary">Aperçu</span>
               <p className="mt-1 text-sm text-accent-foreground">{LOCKED_TEASERS[0]}</p>
             </div>
           )}
@@ -147,7 +147,7 @@ export function ResultsView({ data }: { data: ResultsData }) {
               </ul>
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/70">
                 <Lock className="size-5 text-muted-foreground" />
-                <p className="text-sm font-medium">{data.lockedCount - 1} more personalized recommendations</p>
+                <p className="text-sm font-medium">{data.lockedCount - 1} recommandations personnalisées de plus</p>
               </div>
             </div>
           )}
@@ -155,7 +155,7 @@ export function ResultsView({ data }: { data: ResultsData }) {
 
         <Button size="lg" className="mt-8 w-full" asChild>
           <Link href="/paywall">
-            Unlock My Full Analysis
+            Débloquer mon analyse complète
             <ArrowRight />
           </Link>
         </Button>
@@ -178,7 +178,7 @@ function ScoreRow({ label, value, isWeakest }: { label: string; value: number; i
           {label}
           {isWeakest && (
             <span className="rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] font-medium text-destructive">
-              Biggest opportunity
+              Plus grosse opportunité
             </span>
           )}
         </span>

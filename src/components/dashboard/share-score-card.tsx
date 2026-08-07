@@ -42,8 +42,8 @@ export function ShareScoreCard({ overallScore, photoScore, bioScore, conversatio
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: "My Dating Score",
-          text: `I scored ${overallScore}/100 on MatchAI 🔥`,
+          title: "Mon Dating Score",
+          text: `J'ai obtenu ${overallScore}/100 sur MatchAI 🔥`,
         });
         track(AnalyticsEvent.ScoreShared, { overall_score: overallScore, method: "share_sheet" });
       } else {
@@ -65,7 +65,7 @@ export function ShareScoreCard({ overallScore, photoScore, bioScore, conversatio
   return (
     <Button variant="outline" onClick={share} disabled={loading} className={className}>
       {loading ? <Loader2 className="animate-spin" /> : <Share2 className="size-4" />}
-      Share my Dating Score
+      Partager mon Dating Score
     </Button>
   );
 }

@@ -8,13 +8,13 @@ export default function MatchSimulatorPage() {
     <div className="flex flex-col gap-6">
       <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" />
-        Dashboard
+        Tableau de bord
       </Link>
 
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Match Simulator</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Simulateur de match</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Practice a conversation with an AI match, then get your score.
+          Entraîne-toi à discuter avec un match IA, puis obtiens ton score.
         </p>
       </div>
 

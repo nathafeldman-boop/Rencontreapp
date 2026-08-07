@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 export const OBJECTIVE_OPTIONS = [
-  { value: "more_matches", label: "More matches" },
-  { value: "more_dates", label: "More dates" },
-  { value: "better_conversations", label: "Better conversations" },
-  { value: "serious_relationship", label: "Serious relationship" },
+  { value: "more_matches", label: "Plus de matchs" },
+  { value: "more_dates", label: "Plus de rendez-vous" },
+  { value: "better_conversations", label: "De meilleures conversations" },
+  { value: "serious_relationship", label: "Une relation sérieuse" },
 ] as const;
 
 export const WEEKLY_MATCHES_OPTIONS = [
@@ -15,10 +15,10 @@ export const WEEKLY_MATCHES_OPTIONS = [
 ] as const;
 
 export const BIGGEST_PROBLEM_OPTIONS = [
-  { value: "no_matches", label: "No matches" },
-  { value: "no_replies", label: "Matches don't reply" },
-  { value: "bad_profile", label: "Bad profile" },
-  { value: "bad_conversations", label: "Bad conversations" },
+  { value: "no_matches", label: "Aucun match" },
+  { value: "no_replies", label: "Les matchs ne répondent pas" },
+  { value: "bad_profile", label: "Mauvais profil" },
+  { value: "bad_conversations", label: "Mauvaises conversations" },
 ] as const;
 
 const objectiveValues = OBJECTIVE_OPTIONS.map((o) => o.value) as [string, ...string[]];

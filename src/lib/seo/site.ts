@@ -5,7 +5,7 @@ import { clientEnv } from "@/lib/env";
 export const SITE_NAME = "MatchAI";
 export const SITE_URL = clientEnv.NEXT_PUBLIC_SITE_URL;
 export const SITE_DESCRIPTION =
-  "Upload your Tinder, Hinge, or Bumble profile and get an AI-powered analysis with concrete recommendations to get more matches.";
+  "Envoie ton profil Tinder, Hinge ou Bumble et obtiens une analyse par IA avec des recommandations concrètes pour avoir plus de matchs.";
 
 /**
  * Shared metadata builder so every page gets consistent OpenGraph/Twitter
@@ -36,7 +36,7 @@ export function buildMetadata({
       url,
       siteName: SITE_NAME,
       type: "website",
-      locale: "en_US",
+      locale: "fr_FR",
     },
     twitter: {
       card: "summary_large_image",

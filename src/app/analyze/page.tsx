@@ -10,10 +10,10 @@ import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 
 const STEPS = [
-  { icon: Camera, label: "Analyzing your photos..." },
-  { icon: ScanFace, label: "Comparing your profile..." },
-  { icon: TrendingUp, label: "Finding improvements..." },
-  { icon: Sparkles, label: "Building your strategy..." },
+  { icon: Camera, label: "Analyse de tes photos..." },
+  { icon: ScanFace, label: "Comparaison de ton profil..." },
+  { icon: TrendingUp, label: "Recherche d'améliorations..." },
+  { icon: Sparkles, label: "Construction de ta stratégie..." },
 ];
 
 const TOTAL_DURATION_MS = 13_000;
@@ -91,8 +91,8 @@ export default function AnalyzePage() {
         <Sparkles className="size-7 text-primary-foreground" />
       </motion.div>
 
-      <h1 className="text-xl font-semibold">Analyzing your profile…</h1>
-      <p className="mt-1 text-sm text-muted-foreground">This takes about 15 seconds.</p>
+      <h1 className="text-xl font-semibold">Analyse de ton profil…</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Ça prend environ 15 secondes.</p>
 
       <div className="mt-8 w-full max-w-xs">
         <Progress value={progress} />

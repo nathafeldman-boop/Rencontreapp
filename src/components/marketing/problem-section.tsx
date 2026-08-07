@@ -6,23 +6,23 @@ import { ImageOff, MessageCircleOff, Ban, FileQuestion } from "lucide-react";
 const PAIN_POINTS = [
   {
     icon: ImageOff,
-    title: "Your photos aren't doing you justice",
-    description: "You look better in person, but your pictures don't show it.",
+    title: "Tes photos ne te mettent pas en valeur",
+    description: "Tu es mieux en vrai, mais tes photos ne le montrent pas.",
   },
   {
     icon: FileQuestion,
-    title: "Your bio sounds like everyone else's",
-    description: '"Love to travel, love to laugh" — swiped past in half a second.',
+    title: "Ta bio ressemble à toutes les autres",
+    description: '"J\'aime voyager, j\'aime rire" — swipée en une demi-seconde.',
   },
   {
     icon: Ban,
-    title: "Matches, but barely any replies",
-    description: "You're getting seen. You're just not getting picked.",
+    title: "Des matchs, mais presque aucune réponse",
+    description: "On te voit. On ne te choisit juste pas.",
   },
   {
     icon: MessageCircleOff,
-    title: "Conversations that go nowhere",
-    description: "\"Hey\" gets a \"hey\" back, then... silence.",
+    title: "Des conversations qui ne mènent nulle part",
+    description: "\"Salut\" reçoit un \"salut\", puis... silence.",
   },
 ];
 
@@ -37,10 +37,10 @@ export function ProblemSection() {
           transition={{ duration: 0.4 }}
           className="text-2xl font-semibold tracking-tight sm:text-3xl"
         >
-          Sound familiar?
+          Ça te parle ?
         </motion.h2>
         <p className="mt-3 text-muted-foreground">
-          It&apos;s not you. It&apos;s your profile — and it&apos;s fixable.
+          Ce n&apos;est pas toi. C&apos;est ton profil — et ça se corrige.
         </p>
       </div>
 

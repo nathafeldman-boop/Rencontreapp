@@ -20,19 +20,19 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: `${SITE_NAME} — Get More Matches With AI`, template: `%s — ${SITE_NAME}` },
+  title: { default: `${SITE_NAME} — Obtiens plus de matchs grâce à l'IA`, template: `%s — ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
   openGraph: {
-    title: `${SITE_NAME} — Get More Matches With AI`,
+    title: `${SITE_NAME} — Obtiens plus de matchs grâce à l'IA`,
     description: SITE_DESCRIPTION,
     url: SITE_URL,
     siteName: SITE_NAME,
     type: "website",
-    locale: "en_US",
+    locale: "fr_FR",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Get More Matches With AI`,
+    title: `${SITE_NAME} — Obtiens plus de matchs grâce à l'IA`,
     description: SITE_DESCRIPTION,
   },
   robots: { index: true, follow: true },
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >

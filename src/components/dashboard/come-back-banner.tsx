@@ -16,7 +16,7 @@ export function ComeBackBanner({ daysSinceLastAnalysis }: { daysSinceLastAnalysi
     >
       <span className="flex items-center gap-2">
         <RotateCw className="size-4 shrink-0" />
-        It&apos;s been {daysSinceLastAnalysis} days — re-run your analysis to see what changed.
+        Ça fait {daysSinceLastAnalysis} jours — relance ton analyse pour voir ce qui a changé.
       </span>
       <ArrowRight className="size-4 shrink-0" />
     </Link>

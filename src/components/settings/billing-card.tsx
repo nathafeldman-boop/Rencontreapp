@@ -17,9 +17,9 @@ interface BillingCardProps {
 }
 
 const PLAN_LABEL: Record<SubscriptionPlan, string> = {
-  free: "No active subscription",
-  premium_monthly: "Premium — 7.99€/month",
-  premium_annual: "Premium — annual",
+  free: "Aucun abonnement actif",
+  premium_monthly: "Premium — 7,99€/mois",
+  premium_annual: "Premium — annuel",
 };
 
 export function BillingCard({ plan, status, currentPeriodEnd, hasBillingAccount }: BillingCardProps) {
@@ -27,13 +27,13 @@ export function BillingCard({ plan, status, currentPeriodEnd, hasBillingAccount 
   const isActive = status === "active" || status === "trialing";
 
   async function openPortal() {
-    await redirect("/api/stripe/portal", { errorMessage: "Couldn't open billing — try again in a moment." });
+    await redirect("/api/stripe/portal", { errorMessage: "Impossible d'ouvrir la facturation — réessaie dans un instant." });
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Subscription</CardTitle>
+        <CardTitle className="text-base">Abonnement</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
@@ -43,19 +43,19 @@ export function BillingCard({ plan, status, currentPeriodEnd, hasBillingAccount 
 
         {currentPeriodEnd && (
           <p className="text-xs text-muted-foreground">
-            {status === "canceled" ? "Access ends" : "Renews"} on{" "}
-            {new Date(currentPeriodEnd).toLocaleDateString("en-US", { dateStyle: "medium" })}
+            {status === "canceled" ? "Accès jusqu'au" : "Renouvellement le"}{" "}
+            {new Date(currentPeriodEnd).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
           </p>
         )}
 
         {hasBillingAccount ? (
           <Button variant="outline" onClick={openPortal} disabled={loading} className="w-fit">
             {loading ? <Loader2 className="animate-spin" /> : null}
-            Manage billing
+            Gérer la facturation
           </Button>
         ) : (
           <Button asChild className="w-fit">
-            <Link href="/paywall">Upgrade to Premium</Link>
+            <Link href="/paywall">Passer à Premium</Link>
           </Button>
         )}
 

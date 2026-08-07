@@ -11,47 +11,47 @@ const MONTHLY_TOOLS = [
   {
     icon: Camera,
     label: "Photo Optimizer",
-    detail: "Unlimited photo-by-photo scoring and ordering advice, refreshed anytime you swap a photo.",
+    detail: "Notation illimitée photo par photo et conseils d'ordre, actualisés à chaque changement de photo.",
   },
   {
     icon: Sparkles,
     label: "Bio Generator",
-    detail: "Unlimited AI-written bios tailored to your voice, goal, and dating app.",
+    detail: "Bios générées par IA en illimité, adaptées à ton style, ton objectif et ton app de rencontre.",
   },
   {
     icon: MessageCircle,
-    label: "Conversation Coach",
-    detail: "Unlimited reply suggestions across Flirt, Funny, Natural, and Confident modes.",
+    label: "Coach de conversation",
+    detail: "Suggestions de réponses illimitées dans les modes Flirt, Drôle, Naturel et Confiant.",
   },
   {
     icon: Swords,
-    label: "Match Simulator",
-    detail: "Practice real conversations with an AI match and get a scored breakdown after every session.",
+    label: "Simulateur de match",
+    detail: "Entraîne-toi sur de vraies conversations avec un match IA et obtiens un bilan noté après chaque session.",
   },
   {
     icon: CalendarCheck,
-    label: "Improvement Plan",
-    detail: "A personalized day-by-day plan that adapts to your goal and biggest sticking point.",
+    label: "Plan d'amélioration",
+    detail: "Un plan personnalisé jour par jour qui s'adapte à ton objectif et à ton plus gros point de blocage.",
   },
   {
     icon: Trophy,
-    label: "Score tracking & badges",
-    detail: "Full score history, levels, and badges as your profile improves week over week.",
+    label: "Suivi du score & badges",
+    detail: "Historique complet du score, niveaux et badges au fil de l'amélioration de ton profil.",
   },
 ];
 
 const COMPARISON_ROWS: { label: string; free: string | boolean; premium: string | boolean }[] = [
-  { label: "Dating Score overview", free: true, premium: true },
-  { label: "Full score breakdown (photo, bio, attractiveness, conversation)", free: false, premium: true },
-  { label: "Personalized recommendations", free: "2 free insights", premium: "Unlimited" },
+  { label: "Aperçu du Dating Score", free: true, premium: true },
+  { label: "Détail complet du score (photo, bio, attractivité, conversation)", free: false, premium: true },
+  { label: "Recommandations personnalisées", free: "2 conseils gratuits", premium: "Illimité" },
   { label: "Photo Optimizer", free: false, premium: true },
   { label: "Bio Generator", free: false, premium: true },
-  { label: "Conversation Coach (4 modes)", free: false, premium: true },
-  { label: "Match Simulator", free: false, premium: true },
-  { label: "Personalized Improvement Plan", free: false, premium: true },
-  { label: "Score history, levels & badges", free: false, premium: true },
-  { label: "Shareable Dating Score card", free: false, premium: true },
-  { label: "Invite friends for rewards", free: true, premium: true },
+  { label: "Coach de conversation (4 modes)", free: false, premium: true },
+  { label: "Simulateur de match", free: false, premium: true },
+  { label: "Plan d'amélioration personnalisé", free: false, premium: true },
+  { label: "Historique du score, niveaux & badges", free: false, premium: true },
+  { label: "Carte de Dating Score partageable", free: false, premium: true },
+  { label: "Inviter des amis pour des récompenses", free: true, premium: true },
 ];
 
 export default async function PremiumPage() {
@@ -74,9 +74,9 @@ export default async function PremiumPage() {
 
       <div className="text-center">
         <Badge variant="accent">Premium</Badge>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Everything you get, every month</h1>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Tout ce que tu reçois, chaque mois</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          One subscription, five AI tools, and a coach that gets sharper the more you use it.
+          Un seul abonnement, cinq outils IA, et un coach qui s&apos;affine à chaque utilisation.
         </p>
       </div>
 
@@ -96,15 +96,15 @@ export default async function PremiumPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Free vs Premium</CardTitle>
+          <CardTitle className="text-base">Gratuit vs Premium</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-xs text-muted-foreground">
-                  <th className="px-4 py-3 text-left font-medium">Feature</th>
-                  <th className="px-4 py-3 text-center font-medium">Free</th>
+                  <th className="px-4 py-3 text-left font-medium">Fonctionnalité</th>
+                  <th className="px-4 py-3 text-center font-medium">Gratuit</th>
                   <th className="px-4 py-3 text-center font-medium">Premium</th>
                 </tr>
               </thead>
@@ -128,7 +128,7 @@ export default async function PremiumPage() {
 
       <div className="mx-auto w-full max-w-sm">
         <UpgradeCta hasBillingAccount={hasBillingAccount} />
-        <p className="mt-3 text-center text-xs text-muted-foreground">Cancel anytime. No commitment.</p>
+        <p className="mt-3 text-center text-xs text-muted-foreground">Annulation à tout moment. Sans engagement.</p>
       </div>
     </div>
   );

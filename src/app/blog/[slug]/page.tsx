@@ -48,13 +48,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       <Link href="/blog" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" />
-        All articles
+        Tous les articles
       </Link>
 
       <article className="mt-6">
         <h1 className="text-3xl font-semibold tracking-tight">{post.title}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {new Date(post.publishedAt).toLocaleDateString("en-US", { dateStyle: "medium" })} · {post.readingMinutes} min read
+          {new Date(post.publishedAt).toLocaleDateString("fr-FR", { dateStyle: "medium" })} · {post.readingMinutes} min de lecture
         </p>
 
         <div className="mt-8 flex flex-col gap-8">
@@ -74,11 +74,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       </article>
 
       <div className="mt-12 rounded-xl border border-primary/30 bg-accent p-6 text-center">
-        <p className="font-medium text-accent-foreground">See what this looks like on your own profile</p>
+        <p className="font-medium text-accent-foreground">Découvre ce que ça donne sur ton propre profil</p>
         <div className="mt-4">
           <Button asChild>
             <Link href="/auth/login">
-              Analyze My Profile Free
+              Analyser mon profil gratuitement
               <ArrowRight />
             </Link>
           </Button>

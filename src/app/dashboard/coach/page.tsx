@@ -8,13 +8,13 @@ export default function ConversationCoachPage() {
     <div className="flex flex-col gap-6">
       <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" />
-        Dashboard
+        Tableau de bord
       </Link>
 
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Conversation Coach</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Coach de conversation</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Paste your conversation so far — get 3 replies to choose from.
+          Colle ta conversation en cours — obtiens 3 réponses parmi lesquelles choisir.
         </p>
       </div>
 

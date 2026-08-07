@@ -39,13 +39,13 @@ export default async function PhotoOptimizerPage() {
     <div className="flex flex-col gap-6">
       <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" />
-        Dashboard
+        Tableau de bord
       </Link>
 
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Photo Optimizer</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Per-photo AI scoring, with a recommended role for each one.
+          Notation IA photo par photo, avec un rôle recommandé pour chacune.
         </p>
       </div>
 

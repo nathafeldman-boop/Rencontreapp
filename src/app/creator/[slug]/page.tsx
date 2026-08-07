@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
 
   return buildMetadata({
     title: `${creator.name} x MatchAI`,
-    description: `${creator.name} sent you to MatchAI — get a free AI analysis of your dating profile.`,
+    description: `${creator.name} t'envoie vers MatchAI — obtiens une analyse IA gratuite de ton profil de rencontre.`,
     path: `/creator/${slug}`,
   });
 }
@@ -55,24 +55,24 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
             {creator.name} x MatchAI
           </Badge>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            {creator.headline ?? `${creator.name} sent you here — get more matches with AI`}
+            {creator.headline ?? `${creator.name} t'envoie ici — obtiens plus de matchs avec l'IA`}
           </h1>
           <p className="mt-5 text-balance text-lg text-muted-foreground">
-            Upload your dating profile and get a free AI analysis — photos, bio, and conversation potential,
-            scored in about a minute.
+            Envoie ton profil de rencontre et obtiens une analyse IA gratuite — photos, bio, et potentiel de
+            conversation, notés en environ une minute.
           </p>
 
           {creator.promo_code && (
             <div className="mt-6 flex items-center gap-2 rounded-full border border-primary/40 bg-accent px-4 py-2 text-sm font-medium text-accent-foreground">
               <Tag className="size-4" />
-              Use code {creator.promo_code} for 20% off your first month
+              Utilise le code {creator.promo_code} pour 20% de réduction sur ton premier mois
             </div>
           )}
 
           <div className="mt-8">
             <Button size="lg" asChild>
               <Link href="/auth/login">
-                Analyze My Profile Free
+                Analyser mon profil gratuitement
                 <ArrowRight />
               </Link>
             </Button>

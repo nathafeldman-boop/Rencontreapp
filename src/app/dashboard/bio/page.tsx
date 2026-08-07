@@ -22,12 +22,12 @@ export default async function BioGeneratorPage() {
     <div className="flex flex-col gap-6">
       <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" />
-        Dashboard
+        Tableau de bord
       </Link>
 
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Bio Generator</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Pick a style, get 5 bios built from your real profile.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Choisis un style, obtiens 5 bios construites à partir de ton vrai profil.</p>
       </div>
 
       <BioGeneratorView currentBio={profile?.bio ?? ""} />

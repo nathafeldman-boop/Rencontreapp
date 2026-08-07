@@ -26,8 +26,8 @@ interface NextThreshold {
 }
 
 const REASON_LABEL: Record<string, string> = {
-  first_invite: "First friend invited",
-  five_invites: "Five friends invited",
+  first_invite: "Premier ami invité",
+  five_invites: "Cinq amis invités",
 };
 
 export function ReferralsView({
@@ -56,40 +56,40 @@ export function ReferralsView({
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Invite friends, earn premium</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Invite tes amis, gagne du Premium</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          1 friend joins → +7 days premium. 5 friends → +1 month free.
+          1 ami rejoint → +7 jours de Premium. 5 amis → +1 mois offert.
         </p>
       </div>
 
       {activeBonusUntil && (
         <Badge variant="accent" className="w-fit gap-1.5">
           <Gift className="size-3.5" />
-          Premium unlocked until {new Date(activeBonusUntil).toLocaleDateString("en-US", { dateStyle: "medium" })}
+          Premium débloqué jusqu&apos;au {new Date(activeBonusUntil).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
         </Badge>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Your invite link</CardTitle>
+          <CardTitle className="text-base">Ton lien d&apos;invitation</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex gap-2">
             <Input readOnly value={referralUrl} className="font-mono text-xs" />
             <Button variant="outline" onClick={copyLink} className="shrink-0">
               {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-              {copied ? "Copied" : "Copy"}
+              {copied ? "Copié" : "Copier"}
             </Button>
           </div>
 
           <div>
             <div className="mb-1.5 flex justify-between text-sm">
               <span className="text-muted-foreground">
-                {inviteCount} friend{inviteCount === 1 ? "" : "s"} joined
+                {inviteCount} ami{inviteCount === 1 ? "" : "s"} inscrit{inviteCount === 1 ? "" : "s"}
               </span>
               {nextThreshold && (
                 <span className="font-medium">
-                  {nextThreshold.atInviteCount - inviteCount} more for +{nextThreshold.days} days
+                  {nextThreshold.atInviteCount - inviteCount} de plus pour +{nextThreshold.days} jours
                 </span>
               )}
             </div>
@@ -101,13 +101,13 @@ export function ReferralsView({
       {rewards.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Rewards earned</CardTitle>
+            <CardTitle className="text-base">Récompenses obtenues</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {rewards.map((reward) => (
               <div key={reward.reason} className="flex items-center justify-between text-sm">
                 <span>{REASON_LABEL[reward.reason] ?? reward.reason}</span>
-                <span className="text-muted-foreground">+{reward.reward_days} days</span>
+                <span className="text-muted-foreground">+{reward.reward_days} jours</span>
               </div>
             ))}
           </CardContent>
@@ -115,7 +115,7 @@ export function ReferralsView({
       )}
 
       <Button variant="ghost" size="sm" asChild className="w-fit">
-        <Link href="/dashboard">Back to dashboard</Link>
+        <Link href="/dashboard">Retour au tableau de bord</Link>
       </Button>
     </div>
   );

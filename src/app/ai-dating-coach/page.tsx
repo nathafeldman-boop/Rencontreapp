@@ -11,34 +11,34 @@ import { buildMetadata } from "@/lib/seo/site";
 
 const FAQ = [
   {
-    question: "What does an AI dating coach actually do?",
+    question: "Que fait concrètement un coach de rencontre IA ?",
     answer:
-      "MatchAI scores your photos, bio, and conversation potential, then gives you specific, actionable fixes — a rewritten bio, a recommended photo order, and suggested replies for real conversations.",
+      "MatchAI note tes photos, ta bio et ton potentiel de conversation, puis te donne des corrections précises et actionnables — une bio réécrite, un ordre de photos recommandé, et des suggestions de réponses pour de vraies conversations.",
   },
   {
-    question: "Is it available any time?",
-    answer: "Yes — every tool (analysis, bio generator, conversation coach, match simulator) is available on demand, 24/7.",
+    question: "Est-il disponible à tout moment ?",
+    answer: "Oui — chaque outil (analyse, générateur de bio, coach de conversation, simulateur de match) est disponible à la demande, 24h/24.",
   },
   {
-    question: "Do I need to already have a dating profile?",
-    answer: "No — you can upload photos and a draft bio during onboarding even before you've created a profile on Tinder, Hinge, or Bumble.",
+    question: "Dois-je déjà avoir un profil de rencontre ?",
+    answer: "Non — tu peux envoyer des photos et une ébauche de bio pendant l'onboarding, même avant d'avoir créé un profil sur Tinder, Hinge ou Bumble.",
   },
 ];
 
 export const metadata: Metadata = buildMetadata({
-  title: "AI Dating Coach — Personalized Profile & Conversation Coaching",
+  title: "Coach de rencontre IA — Coaching personnalisé profil & conversation",
   description:
-    "MatchAI is an AI dating coach available 24/7: profile analysis, photo optimization, bio generation, conversation coaching, and a live practice simulator.",
+    "MatchAI est un coach de rencontre IA disponible 24h/24 : analyse de profil, optimisation photo, génération de bio, coaching de conversation, et un simulateur d'entraînement en direct.",
   path: "/ai-dating-coach",
-  keywords: ["ai dating coach", "dating coach app", "ai dating assistant", "online dating coach"],
+  keywords: ["coach de rencontre ia", "application coach de rencontre", "assistant de rencontre ia", "coach de rencontre en ligne"],
 });
 
 const FEATURES = [
-  { icon: Camera, title: "Photo Optimizer", description: "Per-photo scoring and a recommended lead photo." },
-  { icon: Sparkles, title: "Bio Generator", description: "5 bios in your style, built from your real profile." },
-  { icon: MessageCircle, title: "Conversation Coach", description: "Paste a stalled chat, get 3 ways to revive it." },
-  { icon: Swords, title: "Match Simulator", description: "Practice real conversations with an AI persona." },
-  { icon: Gauge, title: "Dating Score", description: "One number that tracks your profile strength over time." },
+  { icon: Camera, title: "Photo Optimizer", description: "Notation photo par photo et une photo principale recommandée." },
+  { icon: Sparkles, title: "Bio Generator", description: "5 bios dans ton style, construites à partir de ton vrai profil." },
+  { icon: MessageCircle, title: "Coach de conversation", description: "Colle une conversation en panne, obtiens 3 façons de la relancer." },
+  { icon: Swords, title: "Simulateur de match", description: "Entraîne-toi à de vraies conversations avec un persona IA." },
+  { icon: Gauge, title: "Dating Score", description: "Un seul chiffre qui suit la solidité de ton profil dans le temps." },
 ];
 
 export default function AiDatingCoachPage() {
@@ -49,17 +49,17 @@ export default function AiDatingCoachPage() {
       <section className="px-6 pt-20 pb-16 sm:pt-28">
         <div className="mx-auto flex max-w-xl flex-col items-center text-center">
           <Badge variant="accent" className="mb-6">
-            Your dating coach, available 24/7
+            Ton coach de rencontre, disponible 24h/24
           </Badge>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">An AI Dating Coach That Actually Coaches</h1>
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Un coach de rencontre IA qui coache vraiment</h1>
           <p className="mt-5 text-balance text-lg text-muted-foreground">
-            Not just a score — a full toolkit that rewrites your bio, ranks your photos, and helps you practice
-            conversations before they count.
+            Pas juste un score — une boîte à outils complète qui réécrit ta bio, classe tes photos, et t&apos;aide à
+            t&apos;entraîner aux conversations avant qu&apos;elles ne comptent vraiment.
           </p>
           <div className="mt-8">
             <Button size="lg" asChild>
               <Link href="/auth/login">
-                Try It Free
+                Essayer gratuitement
                 <ArrowRight />
               </Link>
             </Button>
@@ -87,7 +87,7 @@ export default function AiDatingCoachPage() {
 
       <section className="px-6 py-16">
         <div className="mx-auto max-w-2xl">
-          <h2 className="text-2xl font-semibold tracking-tight">Frequently asked questions</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Questions fréquentes</h2>
           <div className="mt-6 flex flex-col gap-4">
             {FAQ.map((item) => (
               <div key={item.question} className="rounded-xl border border-border bg-card p-5">
@@ -103,11 +103,11 @@ export default function AiDatingCoachPage() {
       </section>
 
       <section className="px-6 py-24 text-center">
-        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Meet your AI dating coach</h2>
+        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Découvre ton coach de rencontre IA</h2>
         <div className="mt-8">
           <Button size="lg" asChild>
             <Link href="/auth/login">
-              Analyze My Profile Free
+              Analyser mon profil gratuitement
               <ArrowRight />
             </Link>
           </Button>

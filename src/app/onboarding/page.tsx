@@ -26,7 +26,7 @@ const DATING_APPS: { value: DatingApp; label: string }[] = [
   { value: "tinder", label: "Tinder" },
   { value: "hinge", label: "Hinge" },
   { value: "bumble", label: "Bumble" },
-  { value: "other", label: "Other" },
+  { value: "other", label: "Autre" },
 ];
 
 const STEP_COUNT = 7;
@@ -108,10 +108,10 @@ export default function OnboardingPage() {
             confidence: form.confidence,
           }),
         });
-        if (!res.ok) throw new Error("Couldn't save your answers — try again.");
+        if (!res.ok) throw new Error("Impossible d'enregistrer tes réponses — réessaie.");
         track(AnalyticsEvent.OnboardingCompleted, { steps_completed: 6 });
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Something went wrong.");
+        setError(e instanceof Error ? e.message : "Une erreur est survenue.");
         setSubmittingAnswers(false);
         return;
       }
@@ -131,7 +131,7 @@ export default function OnboardingPage() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) throw new Error("Your session expired — sign in again.");
+      if (!user) throw new Error("Ta session a expiré — reconnecte-toi.");
 
       const photoPaths: string[] = [];
       for (const photo of form.photos) {
@@ -139,7 +139,7 @@ export default function OnboardingPage() {
         const { error: uploadError } = await supabase.storage
           .from("profile-photos")
           .upload(path, photo, { upsert: false });
-        if (uploadError) throw new Error(`Photo upload failed: ${uploadError.message}`);
+        if (uploadError) throw new Error(`Échec de l'envoi de la photo : ${uploadError.message}`);
         photoPaths.push(path);
       }
       track(AnalyticsEvent.ProfileUploadCompleted, { photo_count: photoPaths.length });
@@ -154,11 +154,11 @@ export default function OnboardingPage() {
         }),
       });
 
-      if (!profileRes.ok) throw new Error("Couldn't save your profile — try again.");
+      if (!profileRes.ok) throw new Error("Impossible d'enregistrer ton profil — réessaie.");
 
       router.push("/analyze");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
       setSubmittingProfile(false);
     }
   }
@@ -170,7 +170,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-md">
         <Progress value={(step / STEP_COUNT) * 100} />
         <p className="mt-2 text-xs text-muted-foreground">
-          Step {step} / {STEP_COUNT}
+          Étape {step} / {STEP_COUNT}
         </p>
 
         <AnimatePresence mode="wait">
@@ -184,9 +184,9 @@ export default function OnboardingPage() {
           >
             {step === 1 && (
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl font-semibold">Let&apos;s personalize your analysis</h1>
+                <h1 className="text-xl font-semibold">Personnalisons ton analyse</h1>
                 <div>
-                  <Label htmlFor="age">Age</Label>
+                  <Label htmlFor="age">Âge</Label>
                   <Input
                     id="age"
                     type="number"
@@ -198,21 +198,21 @@ export default function OnboardingPage() {
                   />
                 </div>
                 <div>
-                  <Label>Gender</Label>
+                  <Label>Genre</Label>
                   <div className="mt-1.5 grid grid-cols-2 gap-2">
                     {(["male", "female", "non_binary", "other"] as Gender[]).map((g) => (
                       <ChipButton key={g} active={form.gender === g} onClick={() => setForm((f) => ({ ...f, gender: g }))}>
-                        {{ male: "Man", female: "Woman", non_binary: "Non-binary", other: "Other" }[g]}
+                        {{ male: "Homme", female: "Femme", non_binary: "Non-binaire", other: "Autre" }[g]}
                       </ChipButton>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="location">Location</Label>
+                  <Label htmlFor="location">Localisation</Label>
                   <Input
                     id="location"
                     className="mt-1.5"
-                    placeholder="City, country"
+                    placeholder="Ville, pays"
                     value={form.location}
                     onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
                   />
@@ -222,7 +222,7 @@ export default function OnboardingPage() {
 
             {step === 2 && (
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl font-semibold">Which dating app do you use most?</h1>
+                <h1 className="text-xl font-semibold">Quelle application de rencontre utilises-tu le plus ?</h1>
                 <div className="grid grid-cols-2 gap-2">
                   {DATING_APPS.map((app) => (
                     <ChipButton
@@ -239,7 +239,7 @@ export default function OnboardingPage() {
 
             {step === 3 && (
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl font-semibold">What&apos;s your main objective?</h1>
+                <h1 className="text-xl font-semibold">Quel est ton objectif principal ?</h1>
                 <div className="grid grid-cols-1 gap-2">
                   {OBJECTIVE_OPTIONS.map((option) => (
                     <ChipButton
@@ -256,7 +256,7 @@ export default function OnboardingPage() {
 
             {step === 4 && (
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl font-semibold">How many matches do you get weekly?</h1>
+                <h1 className="text-xl font-semibold">Combien de matchs obtiens-tu par semaine ?</h1>
                 <div className="grid grid-cols-4 gap-2">
                   {WEEKLY_MATCHES_OPTIONS.map((option) => (
                     <ChipButton
@@ -273,7 +273,7 @@ export default function OnboardingPage() {
 
             {step === 5 && (
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl font-semibold">What&apos;s your biggest problem right now?</h1>
+                <h1 className="text-xl font-semibold">Quel est ton plus gros problème en ce moment ?</h1>
                 <div className="grid grid-cols-1 gap-2">
                   {BIGGEST_PROBLEM_OPTIONS.map((option) => (
                     <ChipButton
@@ -290,7 +290,7 @@ export default function OnboardingPage() {
 
             {step === 6 && (
               <div className="flex flex-col gap-6">
-                <h1 className="text-xl font-semibold">How confident are you with your profile?</h1>
+                <h1 className="text-xl font-semibold">Quel est ton niveau de confiance sur ton profil ?</h1>
                 <ConfidenceSlider
                   value={form.confidence}
                   onChange={(confidence) => setForm((f) => ({ ...f, confidence }))}
@@ -300,13 +300,13 @@ export default function OnboardingPage() {
 
             {step === 7 && (
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl font-semibold">Upload your profile</h1>
+                <h1 className="text-xl font-semibold">Envoie ton profil</h1>
                 <p className="-mt-2 text-sm text-muted-foreground">
-                  This is what we&apos;ll analyze — the more it looks like your real profile, the
-                  better the results.
+                  C&apos;est ce qu&apos;on va analyser — plus ça ressemble à ton vrai profil, meilleurs
+                  seront les résultats.
                 </p>
                 <div>
-                  <Label htmlFor="bio">Your current bio</Label>
+                  <Label htmlFor="bio">Ta bio actuelle</Label>
                   <textarea
                     id="bio"
                     rows={4}
@@ -333,18 +333,18 @@ export default function OnboardingPage() {
 
         <div className="mt-8 flex justify-between">
           <Button variant="ghost" disabled={step === 1 || isBusy} onClick={() => setStep((s) => s - 1)}>
-            Back
+            Retour
           </Button>
           {step < STEP_COUNT ? (
             <Button disabled={!canAdvance() || isBusy} onClick={handleNext}>
               {submittingAnswers ? <Loader2 className="animate-spin" /> : null}
-              Continue
+              Continuer
               <ArrowRight />
             </Button>
           ) : (
             <Button disabled={!canAdvance() || isBusy} onClick={handleLaunchAnalysis}>
               {submittingProfile ? <Loader2 className="animate-spin" /> : null}
-              Launch my analysis
+              Lancer mon analyse
             </Button>
           )}
         </div>

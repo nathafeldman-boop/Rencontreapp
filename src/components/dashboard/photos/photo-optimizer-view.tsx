@@ -24,7 +24,7 @@ interface OptimizerPhoto {
 }
 
 const ROLE_ORDER = { primary: 0, secondary: 1, remove: 2 } as const;
-const ROLE_LABEL = { primary: "Primary photo", secondary: "Secondary", remove: "Consider removing" } as const;
+const ROLE_LABEL = { primary: "Photo principale", secondary: "Secondaire", remove: "À envisager de retirer" } as const;
 
 export function PhotoOptimizerView({
   initialPhotos,
@@ -45,7 +45,7 @@ export function PhotoOptimizerView({
     try {
       const res = await fetch("/api/photos/optimize", { method: "POST" });
       if (!res.ok) {
-        setError("Couldn't reorder your photos — try again.");
+        setError("Impossible de réorganiser tes photos — réessaie.");
         return;
       }
 
@@ -53,7 +53,7 @@ export function PhotoOptimizerView({
       setBuilt(true);
       track(AnalyticsEvent.PhotoOptimizerUsed, { photo_count: photos.length });
     } catch {
-      setError("Couldn't reorder your photos — check your connection and try again.");
+      setError("Impossible de réorganiser tes photos — vérifie ta connexion et réessaie.");
     } finally {
       setBuilding(false);
     }
@@ -62,11 +62,11 @@ export function PhotoOptimizerView({
   if (!hasAnalysis || photos.length === 0) {
     return (
       <EmptyState
-        title="No photo analysis yet"
-        description="Run your profile analysis first to get per-photo scores and ordering advice."
+        title="Pas encore d'analyse photo"
+        description="Lance d'abord ton analyse de profil pour obtenir un score par photo et des conseils d'ordre."
         action={
           <Button asChild>
-            <Link href="/dashboard">Back to dashboard</Link>
+            <Link href="/dashboard">Retour au tableau de bord</Link>
           </Button>
         }
       />
@@ -77,20 +77,20 @@ export function PhotoOptimizerView({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col items-start gap-3 rounded-xl border border-primary/30 bg-accent p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-medium text-accent-foreground">Build my best profile</p>
+          <p className="font-medium text-accent-foreground">Construire mon meilleur profil</p>
           <p className="text-sm text-muted-foreground">
-            Automatically reorder your photos: strongest lead photo first, weakest deprioritized.
+            Réorganise automatiquement tes photos : la plus forte en premier, les plus faibles reléguées.
           </p>
         </div>
         <Button onClick={buildBestProfile} disabled={building} className="w-full shrink-0 sm:w-auto">
           {building ? <Loader2 className="animate-spin" /> : <Sparkles />}
-          {built ? "Rebuild order" : "Build my best profile"}
+          {built ? "Reconstruire l'ordre" : "Construire mon meilleur profil"}
         </Button>
       </div>
 
       {built && (
         <p className="rounded-lg bg-secondary px-4 py-2 text-sm text-secondary-foreground">
-          ✓ Your profile order has been updated.
+          ✓ L&apos;ordre de ton profil a été mis à jour.
         </p>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -109,7 +109,7 @@ export function PhotoOptimizerView({
                 {photo.url && (
                   <Image
                     src={photo.url}
-                    alt={`Your profile photo, scored ${photo.score}/100`}
+                    alt={`Ta photo de profil, notée ${photo.score}/100`}
                     fill
                     sizes="300px"
                     className="object-cover"

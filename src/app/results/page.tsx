@@ -8,13 +8,13 @@ const DEMO_RESULTS: ResultsData = {
   attractiveness: 65,
   conversation: 55,
   freeInsights: [
-    "Your first photo is your biggest weakness — it's costing you swipes before anyone reads your bio.",
-    "Your bio reads generic — it doesn't give people anything specific to reply to.",
+    "Ta première photo est ton plus gros point faible — elle te coûte des swipes avant même que quelqu'un lise ta bio.",
+    "Ta bio est générique — elle ne donne rien de précis auquel les gens peuvent répondre.",
   ],
   lockedCount: 5,
   isDemo: true,
   isSimulated: true,
-  biggestProblem: "no matches",
+  biggestProblem: "aucun match",
 };
 
 interface ResultsPageProps {

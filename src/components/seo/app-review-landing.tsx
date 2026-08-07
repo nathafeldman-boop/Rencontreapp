@@ -11,9 +11,9 @@ import { faqJsonLd } from "@/lib/seo/structured-data";
 import type { AppReviewContent } from "@/lib/content/app-reviews";
 
 const STEPS = [
-  { title: "Upload your profile", description: "Photos, bio, and a couple of quick questions." },
-  { title: "AI analyzes it", description: "Scored on photos, bio, attractiveness, and conversation potential." },
-  { title: "Get your score", description: "See exactly what's working and what to fix first." },
+  { title: "Envoie ton profil", description: "Photos, bio, et quelques questions rapides." },
+  { title: "L'IA l'analyse", description: "Notation sur les photos, la bio, l'attractivité et le potentiel de conversation." },
+  { title: "Obtiens ton score", description: "Vois exactement ce qui fonctionne et ce qu'il faut corriger en premier." },
 ];
 
 export function AppReviewLanding({ content }: { content: AppReviewContent }) {
@@ -24,14 +24,14 @@ export function AppReviewLanding({ content }: { content: AppReviewContent }) {
       <section className="px-6 pt-20 pb-16 sm:pt-28">
         <div className="mx-auto flex max-w-xl flex-col items-center text-center">
           <Badge variant="accent" className="mb-6">
-            Free {content.appName} analysis in 60 seconds
+            Analyse {content.appName} gratuite en 60 secondes
           </Badge>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{content.headline}</h1>
           <p className="mt-5 text-balance text-lg text-muted-foreground">{content.intro}</p>
           <div className="mt-8">
             <Button size="lg" asChild>
               <Link href="/auth/login">
-                Analyze My {content.appName} Profile Free
+                Analyser mon profil {content.appName} gratuitement
                 <ArrowRight />
               </Link>
             </Button>
@@ -40,7 +40,7 @@ export function AppReviewLanding({ content }: { content: AppReviewContent }) {
             <span className="font-semibold text-foreground">
               <AnimatedCounter />
             </span>{" "}
-            profiles analyzed and counting
+            profils analysés, et ça continue
           </p>
         </div>
       </section>
@@ -48,7 +48,7 @@ export function AppReviewLanding({ content }: { content: AppReviewContent }) {
       <section className="border-t border-border bg-secondary/30 px-6 py-16">
         <div className="mx-auto max-w-2xl">
           <h2 className="text-center text-2xl font-semibold tracking-tight">
-            Sound like your {content.appName}?
+            Ça te parle sur {content.appName} ?
           </h2>
           <ul className="mt-8 flex flex-col gap-3">
             {content.painPoints.map((point) => (
@@ -63,7 +63,7 @@ export function AppReviewLanding({ content }: { content: AppReviewContent }) {
 
       <section className="px-6 py-16">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-center text-2xl font-semibold tracking-tight">How it works</h2>
+          <h2 className="text-center text-2xl font-semibold tracking-tight">Comment ça marche</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {STEPS.map((step, i) => (
               <div key={step.title} className="rounded-xl border border-border bg-card p-5">
@@ -83,7 +83,7 @@ export function AppReviewLanding({ content }: { content: AppReviewContent }) {
 
       <section className="px-6 py-16">
         <div className="mx-auto max-w-2xl">
-          <h2 className="text-2xl font-semibold tracking-tight">Frequently asked questions</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Questions fréquentes</h2>
           <div className="mt-6 flex flex-col gap-4">
             {content.faq.map((item) => (
               <div key={item.question} className="rounded-xl border border-border bg-card p-5">
@@ -100,12 +100,12 @@ export function AppReviewLanding({ content }: { content: AppReviewContent }) {
 
       <section className="px-6 py-24 text-center">
         <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Find out what&apos;s holding your {content.appName} profile back
+          Découvre ce qui freine ton profil {content.appName}
         </h2>
         <div className="mt-8">
           <Button size="lg" asChild>
             <Link href="/auth/login">
-              Analyze My Profile Free
+              Analyser mon profil gratuitement
               <ArrowRight />
             </Link>
           </Button>

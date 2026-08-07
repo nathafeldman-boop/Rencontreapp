@@ -13,13 +13,13 @@ import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { Gender, MatchMessage, MatchPersona } from "@/types/database.types";
 
 const GENDERS: { value: Gender; label: string }[] = [
-  { value: "female", label: "Woman" },
-  { value: "male", label: "Man" },
-  { value: "non_binary", label: "Non-binary" },
-  { value: "other", label: "Surprise me" },
+  { value: "female", label: "Femme" },
+  { value: "male", label: "Homme" },
+  { value: "non_binary", label: "Non-binaire" },
+  { value: "other", label: "Surprends-moi" },
 ];
 
-const PERSONALITIES = ["Playful", "Shy", "Confident", "Sarcastic", "Sweet"];
+const PERSONALITIES = ["Joueuse", "Timide", "Confiante", "Sarcastique", "Adorable"];
 
 type Stage = "setup" | "chatting" | "scored";
 
@@ -58,7 +58,7 @@ export function MatchSimulatorView() {
       });
 
       if (!res.ok) {
-        setError(res.status === 429 ? "You've used all your AI credits for this month." : "Something went wrong.");
+        setError(res.status === 429 ? "Tu as utilisé tous tes crédits IA pour ce mois-ci." : "Une erreur est survenue.");
         return;
       }
 
@@ -67,7 +67,7 @@ export function MatchSimulatorView() {
       setMessages((prev) => [...prev, { role: "match", content: data.reply }]);
       setStage("chatting");
     } catch {
-      setError("Something went wrong — check your connection and try again.");
+      setError("Une erreur est survenue — vérifie ta connexion et réessaie.");
     } finally {
       setSending(false);
     }
@@ -83,7 +83,7 @@ export function MatchSimulatorView() {
         body: JSON.stringify({ sessionId }),
       });
       if (!res.ok) {
-        setError("Couldn't score this conversation — try again.");
+        setError("Impossible de noter cette conversation — réessaie.");
         return;
       }
       const { data } = await res.json();
@@ -91,7 +91,7 @@ export function MatchSimulatorView() {
       setStage("scored");
       track(AnalyticsEvent.AiCoachUsed, { conversation_score: data.score });
     } catch {
-      setError("Couldn't score this conversation — check your connection and try again.");
+      setError("Impossible de noter cette conversation — vérifie ta connexion et réessaie.");
     } finally {
       setEnding(false);
     }
@@ -109,7 +109,7 @@ export function MatchSimulatorView() {
     return (
       <div className="flex flex-col gap-6">
         <div>
-          <p className="mb-2 text-sm font-medium">Match gender</p>
+          <p className="mb-2 text-sm font-medium">Genre du match</p>
           <div className="grid grid-cols-2 gap-2">
             {GENDERS.map((g) => (
               <ChipButton key={g.value} active={gender === g.value} onClick={() => setGender(g.value)}>
@@ -119,7 +119,7 @@ export function MatchSimulatorView() {
           </div>
         </div>
         <div>
-          <p className="mb-2 text-sm font-medium">Personality</p>
+          <p className="mb-2 text-sm font-medium">Personnalité</p>
           <div className="grid grid-cols-3 gap-2">
             {PERSONALITIES.map((p) => (
               <ChipButton key={p} active={personality === p} onClick={() => setPersonality(p)}>
@@ -131,7 +131,7 @@ export function MatchSimulatorView() {
         <div className="flex gap-2">
           <input
             className="flex h-11 flex-1 rounded-lg border border-input bg-transparent px-4 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            placeholder="Send your opening line..."
+            placeholder="Envoie ta phrase d'accroche..."
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
@@ -149,7 +149,7 @@ export function MatchSimulatorView() {
     return (
       <div className="flex flex-col items-center gap-4 py-8 text-center">
         <Trophy className="size-8 text-primary" />
-        <p className="text-sm text-muted-foreground">Conversation score</p>
+        <p className="text-sm text-muted-foreground">Score de la conversation</p>
         <div className="flex size-24 items-center justify-center rounded-full bg-brand-gradient text-3xl font-semibold text-primary-foreground">
           {result.score}
         </div>
@@ -157,7 +157,7 @@ export function MatchSimulatorView() {
           <Progress value={result.score} />
         </div>
         <p className="max-w-sm text-sm text-muted-foreground">{result.feedback}</p>
-        <Button onClick={reset}>Practice again</Button>
+        <Button onClick={reset}>Recommencer</Button>
       </div>
     );
   }
@@ -186,7 +186,7 @@ export function MatchSimulatorView() {
       <div className="flex gap-2">
         <input
           className="flex h-11 flex-1 rounded-lg border border-input bg-transparent px-4 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          placeholder="Type your reply..."
+          placeholder="Écris ta réponse..."
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
@@ -200,7 +200,7 @@ export function MatchSimulatorView() {
 
       <Button variant="outline" onClick={endSession} disabled={ending || messages.length < 2} className="w-fit">
         {ending ? <Loader2 className="animate-spin" /> : <Trophy className="size-4" />}
-        End & get my score
+        Terminer et voir mon score
       </Button>
     </div>
   );

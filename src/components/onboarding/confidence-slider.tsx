@@ -1,10 +1,10 @@
 "use client";
 
 const LABELS: Record<number, string> = {
-  1: "Not confident at all",
-  4: "Somewhat unsure",
-  7: "Fairly confident",
-  10: "Very confident",
+  1: "Pas confiant du tout",
+  4: "Plutôt incertain",
+  7: "Assez confiant",
+  10: "Très confiant",
 };
 
 export function ConfidenceSlider({
@@ -33,8 +33,8 @@ export function ConfidenceSlider({
         step={1}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        aria-label="Confidence level"
-        aria-valuetext={`${value} out of 10 — ${LABELS[nearestLabel]}`}
+        aria-label="Niveau de confiance"
+        aria-valuetext={`${value} sur 10 — ${LABELS[nearestLabel]}`}
         className="h-2 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-[oklch(0.62_0.22_15)]"
       />
       <div className="mt-1 flex justify-between text-xs text-muted-foreground">

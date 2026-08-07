@@ -18,9 +18,9 @@ const TONE_VARIANT = { funny: "accent", flirty: "default", natural: "secondary",
 const MODES: { value: CoachMode; label: string }[] = [
   { value: "auto", label: "Auto (mix)" },
   { value: "flirt", label: "Flirt" },
-  { value: "funny", label: "Funny" },
-  { value: "natural", label: "Natural" },
-  { value: "confident", label: "Confident" },
+  { value: "funny", label: "Drôle" },
+  { value: "natural", label: "Naturel" },
+  { value: "confident", label: "Confiant" },
 ];
 
 export function CoachView() {
@@ -44,7 +44,7 @@ export function CoachView() {
 
       if (!res.ok) {
         setError(
-          res.status === 429 ? "You've used all your AI credits for this month." : "Couldn't get suggestions — try again."
+          res.status === 429 ? "Tu as utilisé tous tes crédits IA pour ce mois-ci." : "Impossible d'obtenir des suggestions — réessaie."
         );
         return;
       }
@@ -53,7 +53,7 @@ export function CoachView() {
       setSuggestions(data.suggestions);
       track(AnalyticsEvent.ConversationCoachUsed, {});
     } catch {
-      setError("Couldn't get suggestions — check your connection and try again.");
+      setError("Impossible d'obtenir des suggestions — vérifie ta connexion et réessaie.");
     } finally {
       setLoading(false);
     }
@@ -75,14 +75,14 @@ export function CoachView() {
       <div>
         <textarea
           rows={6}
-          placeholder={`Match: Hey!\nYou: Hi! How's it going?\nMatch: Good! What are you up to this weekend?`}
+          placeholder={`Match : Salut !\nToi : Hey, ça va ?\nMatch : Bien ! Tu fais quoi ce week-end ?`}
           className="w-full rounded-lg border border-input bg-transparent px-4 py-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={conversation}
           onChange={(e) => setConversation(e.target.value)}
         />
         <Button onClick={getSuggestions} disabled={loading || conversation.trim().length === 0} className="mt-3">
           {loading ? <Loader2 className="animate-spin" /> : <Sparkles />}
-          Get 3 replies
+          Obtenir 3 réponses
         </Button>
       </div>
 
@@ -101,7 +101,7 @@ export function CoachView() {
                   <p className="text-xs text-muted-foreground">{s.explanation}</p>
                   <Button size="sm" variant="outline" className="w-fit" onClick={() => copy(s.message, i)}>
                     {copiedKey === i ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                    {copiedKey === i ? "Copied" : "Copy"}
+                    {copiedKey === i ? "Copié" : "Copier"}
                   </Button>
                 </CardContent>
               </Card>
