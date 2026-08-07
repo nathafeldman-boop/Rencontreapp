@@ -1,8 +1,17 @@
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
+import { assignLandingVariant } from "@/lib/experiments/assign-variant";
+import { assignCreatorCookie } from "@/lib/referrals/assign-creator-cookie";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
-export function proxy(request: NextRequest) {
-  return updateSession(request);
+export async function proxy(request: NextRequest) {
+  const limited = checkRateLimit(request);
+  if (limited) return limited;
+
+  const response = await updateSession(request);
+  assignLandingVariant(request, response);
+  assignCreatorCookie(request, response);
+  return response;
 }
 
 export const config = {

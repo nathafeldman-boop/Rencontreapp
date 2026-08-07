@@ -20,12 +20,13 @@ export interface ResultsData {
   freeInsights: string[];
   lockedCount: number;
   isDemo: boolean;
+  isSimulated: boolean;
 }
 
 export function ResultsView({ data }: { data: ResultsData }) {
   useEffect(() => {
-    track(AnalyticsEvent.AnalysisCompleted, { overall_score: data.overall });
-  }, [data.overall]);
+    track(AnalyticsEvent.AnalysisCompleted, { overall_score: data.overall, is_simulated: data.isSimulated });
+  }, [data.overall, data.isSimulated]);
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">

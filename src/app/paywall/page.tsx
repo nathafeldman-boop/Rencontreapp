@@ -32,6 +32,7 @@ export default function PaywallPage() {
   async function handleSubscribe() {
     setLoading(true);
     setNotice(null);
+    track(AnalyticsEvent.CheckoutStarted, { plan: PLAN_ID });
 
     const res = await fetch("/api/stripe/checkout", {
       method: "POST",

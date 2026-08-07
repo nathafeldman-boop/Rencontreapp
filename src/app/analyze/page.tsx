@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { Camera, ScanFace, Sparkles, TrendingUp } from "lucide-react";
 
 import { Progress } from "@/components/ui/progress";
+import { track } from "@/lib/analytics/track";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 
 const STEPS = [
   { icon: Camera, label: "Analyzing your photos..." },
@@ -25,6 +27,7 @@ export default function AnalyzePage() {
 
   useEffect(() => {
     let cancelled = false;
+    track(AnalyticsEvent.AnalysisStarted, {});
 
     fetch("/api/analyze", { method: "POST" })
       .then(async (res) => {

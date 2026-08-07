@@ -32,7 +32,9 @@ export default function LoginPage() {
       setError(error.message);
       setStatus("idle");
     } else {
-      track(AnalyticsEvent.SignupCompleted, { method: "google" });
+      // The session isn't established until the OAuth redirect lands back
+      // on /auth/callback — `signup_completed` fires from there (server-side).
+      track(AnalyticsEvent.SignupStarted, { method: "google" });
     }
   }
 
@@ -49,7 +51,9 @@ export default function LoginPage() {
       setError(error.message);
       setStatus("idle");
     } else {
-      track(AnalyticsEvent.SignupCompleted, { method: "email" });
+      // Same as Google — completion tracks from /auth/callback once the
+      // magic link is actually clicked and the session exists.
+      track(AnalyticsEvent.SignupStarted, { method: "email" });
       setStatus("sent");
     }
   }

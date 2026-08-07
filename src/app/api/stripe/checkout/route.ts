@@ -1,9 +1,12 @@
 import { NextRequest } from "next/server";
+import { cookies } from "next/headers";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
 import { getStripeClient } from "@/lib/stripe/client";
 import { getPlan } from "@/lib/stripe/plans";
+import { resolvePromoDiscount } from "@/lib/stripe/resolve-promo-discount";
+import { CREATOR_COOKIE } from "@/lib/referrals/cookies";
 import { clientEnv } from "@/lib/env";
 import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
 
@@ -36,6 +39,25 @@ export async function POST(request: NextRequest) {
 
   const stripe = getStripeClient();
 
+  // Auto-apply a creator's promo code when the visitor arrived via
+  // /creator/<slug> (see lib/referrals/assign-creator-cookie.ts). Falls
+  // back to letting anyone type a code manually at checkout either way.
+  const creatorSlug = (await cookies()).get(CREATOR_COOKIE)?.value;
+  let discount = null as Awaited<ReturnType<typeof resolvePromoDiscount>>;
+
+  if (creatorSlug) {
+    const { data: creator } = await supabase
+      .from("creators")
+      .select("promo_code")
+      .eq("slug", creatorSlug)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (creator?.promo_code) {
+      discount = await resolvePromoDiscount(creator.promo_code).catch(() => null);
+    }
+  }
+
   // No `stripe_customer_id` is looked up or written here — `subscriptions`
   // writes are service-role-only (see 0001_init.sql RLS). Stripe creates
   // the customer from `customer_email`, and the webhook persists
@@ -49,6 +71,7 @@ export async function POST(request: NextRequest) {
     subscription_data: { metadata: { user_id: user.id, plan: plan.id } },
     success_url: `${clientEnv.NEXT_PUBLIC_SITE_URL}/dashboard?checkout=success`,
     cancel_url: `${clientEnv.NEXT_PUBLIC_SITE_URL}/paywall?checkout=cancelled`,
+    ...(discount ? { discounts: [discount] } : { allow_promotion_codes: true }),
   });
 
   if (!session.url) {

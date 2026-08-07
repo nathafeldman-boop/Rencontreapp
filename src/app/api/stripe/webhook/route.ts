@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
           await syncSubscriptionFromStripe(subscription, userId);
 
           const priceId = subscription.items.data[0]?.price.id;
-          trackServer(userId, AnalyticsEvent.SubscriptionPurchased, {
+          trackServer(userId, AnalyticsEvent.SubscriptionCreated, {
             plan: planIdFromPriceId(priceId) as "premium_monthly" | "premium_annual",
           });
         }
@@ -51,6 +51,13 @@ export async function POST(request: NextRequest) {
         const userId = subscription.metadata?.user_id;
         if (userId) {
           await syncSubscriptionFromStripe(subscription, userId);
+
+          if (subscription.status === "canceled") {
+            const priceId = subscription.items.data[0]?.price.id;
+            trackServer(userId, AnalyticsEvent.SubscriptionCanceled, {
+              plan: planIdFromPriceId(priceId) as "premium_monthly" | "premium_annual",
+            });
+          }
         }
         break;
       }

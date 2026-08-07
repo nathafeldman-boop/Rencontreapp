@@ -7,6 +7,8 @@ import { Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { track } from "@/lib/analytics/track";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { ConversationSuggestion } from "@/types/database.types";
 
 const TONE_VARIANT = { funny: "accent", flirty: "default", natural: "secondary" } as const;
@@ -39,6 +41,7 @@ export function CoachView() {
     const { data } = await res.json();
     setSuggestions(data.suggestions);
     setLoading(false);
+    track(AnalyticsEvent.ConversationCoachUsed, {});
   }
 
   async function copy(message: string, i: number) {

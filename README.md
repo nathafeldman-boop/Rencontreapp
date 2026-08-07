@@ -8,13 +8,17 @@ convertit du trafic TikTok en abonnés premium.
 Ce document décrit la **fondation technique** du projet : elle est pensée pour
 scaler d'un MVP à quelques milliers d'utilisateurs sans réécriture.
 
-**État actuel (fin de l'étape 3)** : le tunnel complet fonctionne de bout
-en bout — TikTok → landing → compte → onboarding → upload → analyse →
-résultat gratuit → paywall → **abonnement Stripe réel** → dashboard
-premium avec 5 outils IA (Photo Optimizer, Bio Generator, Conversation
-Coach, Match Simulator, Dating Plan). Le scoring et les outils IA appellent
-Mistral pour de vrai, avec repli automatique sur une logique déterministe
-en cas d'échec (clé absente, timeout, réponse invalide) — voir §10.
+**État actuel (fin de l'étape 4 — préparation au lancement)** : le produit
+est fonctionnellement complet — TikTok → landing (3 variantes testables) →
+compte → onboarding → upload → analyse → résultat gratuit → paywall →
+**abonnement Stripe réel** → dashboard premium avec 5 outils IA (Photo
+Optimizer, Bio Generator, Conversation Coach, Match Simulator, Dating
+Plan). Le scoring et les outils IA appellent Mistral pour de vrai, avec
+repli automatique sur une logique déterministe en cas d'échec — voir §9.
+Cette étape ajoute ce qu'il faut pour recevoir du trafic réel : tracking
+complet du funnel, A/B testing de la landing, SEO (5 pages + blog),
+programme de parrainage, pages créateurs, rate limiting, et une suite de
+tests E2E — voir §12 à §19.
 
 ---
 
@@ -56,9 +60,14 @@ matchai/
 │   │   ├── analyze/page.tsx            # animation de chargement (10-15s)
 │   │   ├── results/page.tsx            # résultat gratuit (teaser + paywall)
 │   │   ├── paywall/page.tsx            # conversion abonnement
+│   │   ├── referrals/                  # PREMIUM-adjacent — auth only, no subscription gate
+│   │   │   ├── layout.tsx              # (on purpose: a free user needs this to earn access)
+│   │   │   └── page.tsx                # lien de parrainage, progression, récompenses
+│   │   ├── r/[code]/route.ts           # GET — pose le cookie mai_ref, redirige vers "/"
+│   │   ├── creator/[slug]/page.tsx     # landing personnalisée influenceur + code promo
 │   │   │
-│   │   ├── dashboard/                  # PREMIUM — gated by an active subscription (layout.tsx)
-│   │   │   ├── layout.tsx              # shell app + subscription check, redirects to /paywall
+│   │   ├── dashboard/                  # PREMIUM — gated by subscription OR referral bonus
+│   │   │   ├── layout.tsx              # shell app + accès check, redirects to /paywall
 │   │   │   ├── page.tsx                # Dating Score, sub-scores, history chart, badges
 │   │   │   ├── photos/page.tsx         # Photo Optimizer
 │   │   │   ├── bio/page.tsx            # Bio Generator
@@ -69,12 +78,26 @@ matchai/
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx                # compte + billing (Stripe Portal)
 │   │   │
+│   │   ├── tinder-profile-review/      # SEO — landing par app (template partagé)
+│   │   ├── hinge-profile-review/       # SEO
+│   │   ├── bumble-profile-review/      # SEO
+│   │   ├── ai-dating-coach/page.tsx    # SEO — page produit générale
+│   │   ├── tinder-bio-generator/page.tsx # SEO — page feature Bio Generator
+│   │   ├── blog/
+│   │   │   ├── page.tsx                # index des articles
+│   │   │   └── [slug]/page.tsx         # article (généré statiquement, 4 articles)
+│   │   ├── sitemap.ts                  # GET /sitemap.xml
+│   │   ├── robots.ts                   # GET /robots.txt
+│   │   │
 │   │   └── api/
 │   │       ├── onboarding/route.ts     # POST — enregistre profil + réponses
 │   │       ├── profile/route.ts        # POST crée un profil, PATCH met à jour la bio
 │   │       ├── analyze/route.ts        # POST — analyzeProfile() (Mistral + fallback), écrit `analyses`
 │   │       ├── stats/route.ts          # GET — compteur public pour le social proof landing
 │   │       ├── photos/optimize/route.ts# POST — réordonne les photos ("Build my best profile")
+│   │       ├── referrals/
+│   │       │   ├── code/route.ts       # GET — code de parrainage (créé au premier appel)
+│   │       │   └── stats/route.ts      # GET — invites, récompenses, prochain palier
 │   │       ├── ai/
 │   │       │   ├── bio-generator/route.ts        # POST — 5 bios (style choisi)
 │   │       │   ├── conversation-coach/route.ts   # POST — 3 réponses suggérées
@@ -82,7 +105,7 @@ matchai/
 │   │       │   ├── match-simulator/end/route.ts     # POST — score final + feedback
 │   │       │   └── dating-plan/route.ts          # POST génère le plan, PATCH coche un jour
 │   │       ├── stripe/
-│   │       │   ├── checkout/route.ts   # POST — crée une Checkout Session Stripe
+│   │       │   ├── checkout/route.ts   # POST — Checkout Session (+ code promo créateur auto-appliqué)
 │   │       │   ├── webhook/route.ts    # POST — signature vérifiée, sync `subscriptions`
 │   │       │   └── portal/route.ts     # POST — ouvre le Billing Portal Stripe
 │   │       └── analytics/track/route.ts# POST — capture PostHog côté serveur
@@ -91,9 +114,11 @@ matchai/
 │   │   ├── ui/                         # primitives shadcn (button, card, input...)
 │   │   ├── marketing/                  # sections landing : hero, problem, solution,
 │   │   │                               # before-after, testimonials, final-cta, counter
+│   │   ├── seo/                        # json-ld.tsx, app-review-landing.tsx (template partagé)
 │   │   ├── onboarding/                 # chip-button, confidence-slider, photo-dropzone
 │   │   ├── dashboard/                  # app-shell, sub-score-card, score-history-chart,
-│   │   │                               # photos/, bio/, coach/, simulator/, plan/ (par outil)
+│   │   │                               # view-tracker, referrals/, photos/, bio/, coach/,
+│   │   │                               # simulator/, plan/ (par outil)
 │   │   ├── settings/                   # billing-card.tsx (Stripe Portal)
 │   │   ├── results/                    # results-view.tsx
 │   │   └── shared/                     # google-icon.tsx, etc.
@@ -106,10 +131,16 @@ matchai/
 │   │   │   ├── proxy.ts                # rafraîchit la session, protège les routes
 │   │   │   └── signed-photo-urls.ts    # URLs signées Storage pour l'affichage + la vision Mistral
 │   │   ├── subscriptions/get-active-subscription.ts # lecture RLS-safe du plan actif
+│   │   ├── referrals/                  # code, attribution, récompenses, accès bonus (§15)
+│   │   ├── experiments/                # A/B copy landing + assignation cookie (§13)
+│   │   ├── security/rate-limit.ts      # rate limiting mémoire, appelé depuis proxy.ts (§16)
+│   │   ├── seo/                        # site.ts (metadata builder), structured-data.ts
+│   │   ├── content/                    # app-reviews.ts, blog-posts.ts (copy statique SEO)
 │   │   ├── stripe/
 │   │   │   ├── client.ts               # client Stripe serveur (singleton)
 │   │   │   ├── plans.ts                # config des plans vendables (extensible : annuel, plus...)
-│   │   │   └── sync-subscription.ts    # écrit `subscriptions` depuis un objet Stripe
+│   │   │   ├── sync-subscription.ts    # écrit `subscriptions` depuis un objet Stripe
+│   │   │   └── resolve-promo-discount.ts # code promo créateur -> Stripe Promotion Code
 │   │   ├── ai/
 │   │   │   ├── mistral.ts              # wrapper fetch + JSON helper, supporte le multimodal (vision)
 │   │   │   ├── simulate-analysis.ts    # repli déterministe pour l'analyse de profil
@@ -121,6 +152,7 @@ matchai/
 │   │   │   └── credits.ts              # quota mensuel de crédits IA par utilisateur
 │   │   ├── analytics/
 │   │   │   ├── events.ts               # noms d'événements typés (source de vérité)
+│   │   │   ├── funnels.ts              # groupements par étape (acquisition/activation/...)
 │   │   │   ├── posthog-provider.tsx    # init client + tracking des pageviews
 │   │   │   ├── track.ts                # track() côté client
 │   │   │   └── server.ts               # trackServer() côté serveur
@@ -131,15 +163,19 @@ matchai/
 │   │
 │   ├── types/database.types.ts         # types Supabase (à régénérer une fois le projet créé)
 │   ├── hooks/                          # (réservé)
-│   └── proxy.ts                        # export `proxy()` — middleware Next 16
+│   └── proxy.ts                        # export `proxy()` — rate limit, session, A/B, attribution
 │
 ├── supabase/
 │   └── migrations/
 │       ├── 0001_init.sql               # schéma complet + RLS + policies storage
 │       ├── 0002_analysis_extras.sql    # attractiveness_score, free_insights, is_simulated
-│       └── 0003_premium_features.sql   # photo_analyses, bio_generations, coach sessions,
-│                                        # match simulator sessions, dating_plans, ai_usage_events
+│       ├── 0003_premium_features.sql   # photo_analyses, bio_generations, coach sessions,
+│       │                                # match simulator sessions, dating_plans, ai_usage_events
+│       ├── 0004_referrals.sql          # referrals, invites, rewards, creators (+ RLS, seed data)
+│       └── 0005_storage_limits.sql     # limites taille/type sur le bucket profile-photos
 │
+├── tests/e2e/                          # Playwright — pages publiques + gating (§17)
+├── playwright.config.ts
 ├── components.json                     # config shadcn/ui
 └── .env.example
 ```
@@ -233,70 +269,17 @@ Supabase Postgres (RLS) / Stripe / Mistral
 
 ---
 
-## 6. Analytics — funnel TikTok → abonné
+## 6. Analytics — infrastructure PostHog
 
-Événements définis dans `lib/analytics/events.ts` (déjà câblés dans les
-écrans concernés) :
-
-| Événement | Où il se déclenche |
-|---|---|
-| `landing_page_viewed` | `app/page.tsx` au montage |
-| `cta_clicked` | clic sur "Analyze My Profile Free" (hero ou footer landing) |
-| `signup_completed` | après `signInWithOAuth` / `signInWithOtp` réussi |
-| `onboarding_completed` | après le POST `/api/onboarding` réussi |
-| `photos_uploaded` | après l'upload Storage réussi |
-| `analysis_completed` | montage de `/results` |
-| `paywall_viewed` | montage de `/paywall` |
-| `subscription_purchased` | **côté serveur**, depuis le webhook Stripe une fois le paiement confirmé (pas côté client — ne jamais faire confiance à un retour client pour un événement de revenu) |
-
-PostHog est initialisé côté client (`posthog-provider.tsx`, pageviews
-automatiques) et côté serveur (`analytics/server.ts`, pour les événements
-sans contexte navigateur comme les webhooks).
+PostHog est initialisé côté client (`lib/analytics/posthog-provider.tsx`,
+pageviews automatiques) et côté serveur (`lib/analytics/server.ts`, pour
+les événements sans contexte navigateur comme les webhooks Stripe). La
+liste complète des événements et leur sémantique est en §12 "Analytics &
+tracking".
 
 ---
 
-## 7. Le tunnel de conversion (étape 2)
-
-Le funnel complet est fonctionnel de bout en bout :
-
-```
-TikTok → "/" (landing) → /auth/login → /onboarding (7 étapes) →
-/analyze (simulation 10-15s) → /results (score + teaser) → /paywall
-```
-
-**Onboarding (`app/onboarding/page.tsx`)** — 7 étapes avec barre de
-progression : (1) âge/genre/localisation, (2) app de dating principale,
-(3) objectif, (4) matchs hebdo actuels, (5) plus gros problème,
-(6) niveau de confiance (slider 1-10), (7) upload photos (drag & drop,
-3-6 photos, validation type/poids) + bio. Les étapes 1-6 sont sauvegardées
-dans `users` + `onboarding_answers` juste avant l'étape 7 (`POST
-/api/onboarding`), pour ne rien perdre en cas d'abandon à l'upload. L'étape
-7 crée le `profile` (`POST /api/profile`) après l'upload Storage.
-
-**Moteur de simulation (`lib/ai/simulate-analysis.ts`)** — remplace
-Mistral pour cette étape. Déterministe (seedé sur l'id du profil, donc
-stable) et légèrement piloté par le profil réel (longueur de bio, nombre
-de photos) pour ne pas être du bruit pur. Retourne exactement la forme
-`AnalysisResult` que le futur appel Mistral devra produire — brancher la
-vraie IA revient à réécrire `simulateAnalysis()` dans
-`api/analyze/route.ts`, sans toucher `/analyze` ni `/results`.
-
-**Résultat gratuit (`/results`)** — Server Component qui charge la ligne
-`analyses` réelle via `?id=<analysis_id>` (RLS garantit que l'utilisateur
-ne peut lire que la sienne) ; sans `id` valide, retombe sur des données de
-démonstration (`?demo=1` ou navigation directe). Affiche le score global,
-les 4 sous-scores, 1-2 `free_insights`, et une liste de recommandations
-floutées (`recommendations.length`, contenu réel jamais envoyé au client
-avant paiement).
-
-**Social proof** — `GET /api/stats` expose un compteur agrégé
-(`count(*) from analyses` + baseline pré-lancement) via le client
-`service_role`, sans jamais exposer de données individuelles ; consommé
-par `components/marketing/animated-counter.tsx` sur la landing.
-
----
-
-## 8. Ce qui reste volontairement simplifié
+## 7. Ce qui reste volontairement simplifié
 
 - **Les témoignages de la landing** (`components/marketing/testimonials.tsx`)
   sont des exemples de copy à remplacer par de vrais avis vérifiés avant le
@@ -312,7 +295,7 @@ par `components/marketing/animated-counter.tsx` sur la landing.
 
 ---
 
-## 9. Le tunnel de conversion (étape 2)
+## 8. Le tunnel de conversion (étape 2)
 
 Le funnel gratuit (avant paiement) est fonctionnel de bout en bout :
 
@@ -345,7 +328,7 @@ par `components/marketing/animated-counter.tsx` sur la landing.
 
 ---
 
-## 10. Le dashboard premium (étape 3)
+## 9. Le dashboard premium (étape 3)
 
 ### Accès
 
@@ -419,7 +402,7 @@ la volée depuis `analyses` et `dating_plans`).
 
 ---
 
-## 11. Stripe — abonnement complet
+## 10. Stripe — abonnement complet
 
 - **`lib/stripe/plans.ts`** — source de vérité des plans vendables. Ajouter
   l'annuel ou un futur "premium+" est une entrée de config + un Price
@@ -464,7 +447,7 @@ Vérifier ensuite que `subscriptions.status = 'active'` en base et que
 
 ---
 
-## 12. Variables d'environnement (étape 3)
+## 11. Variables d'environnement (étape 3)
 
 En plus de celles de l'étape 1 (`NEXT_PUBLIC_SUPABASE_*`,
 `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`, PostHog) :
@@ -478,32 +461,281 @@ En plus de celles de l'étape 1 (`NEXT_PUBLIC_SUPABASE_*`,
 | `STRIPE_PRICE_ID_ANNUAL` | Non | Price ID du plan annuel — laisser vide tant qu'il n'est pas vendu |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Oui | Clé publique Stripe (déjà prévue, pas encore utilisée côté client — le checkout redirige entièrement côté serveur) |
 
+Étape 4 (analytics, SEO, parrainage, sécurité) n'ajoute **aucune** nouvelle
+variable d'environnement requise — tout est construit sur ce qui existe
+déjà (Supabase, Stripe, Mistral, PostHog, `NEXT_PUBLIC_SITE_URL`).
+
 ---
 
-## 13. Prochaines étapes (ordre recommandé)
+## 12. Analytics & tracking (étape 4)
 
-1. **Provisionner Supabase** : créer le projet, appliquer les migrations
-   dans l'ordre (`0001` → `0002` → `0003`), activer le provider Google
-   dans Auth > Providers.
-2. **Renseigner `.env.local`** à partir de `.env.example`, y compris les
-   nouvelles clés Mistral/Stripe listées en §12.
-3. **Régénérer les types Supabase** :
-   `npx supabase gen types typescript --project-id <ref> > src/types/database.types.ts`.
-4. **Créer le produit Stripe** (7,99€/mois) et brancher le webhook en
-   production (Dashboard Stripe > Developers > Webhooks).
-5. **Tester le pipeline Mistral avec une vraie clé** — vérifier que
-   `is_simulated: false` apparaît sur une analyse réelle, ajuster les
-   prompts dans `lib/ai/*` si les résultats manquent de spécificité.
-6. **Remplacer les témoignages placeholder** par de vrais avis utilisateurs.
-7. **Limites & abus** : le quota de crédits existe déjà (§10) ; ajouter un
-   rate-limit par IP sur les routes publiques (`/api/stats`,
-   `/api/onboarding`) avant l'ouverture au trafic payant.
-8. **PostHog** : créer le projet, renseigner les clés, construire les
-   dashboards de funnel à partir des événements déjà envoyés, ajouter des
-   événements sur l'usage des 5 outils premium (rétention).
-9. **Tests + CI** avant d'ouvrir l'accès à de vrais utilisateurs.
-10. **Déploiement Vercel** : connecter le repo, configurer les variables
-    d'environnement en Production/Preview, configurer le domaine.
+Le funnel complet est instrumenté dans `lib/analytics/events.ts` (source de
+vérité des noms d'événements) et `lib/analytics/funnels.ts` (regroupements
+prêts à coller dans PostHog Insights).
+
+| Étape | Événements |
+|---|---|
+| Acquisition | `landing_view`, `click_start_analysis`, `signup_started`, `signup_completed` |
+| Activation | `onboarding_started`, `onboarding_completed`, `profile_upload_started`, `profile_upload_completed`, `analysis_started`, `analysis_completed` |
+| Conversion | `paywall_viewed`, `checkout_started`, `subscription_created` |
+| Rétention | `dashboard_viewed`, `analysis_repeated`, `ai_coach_used`, `bio_generated`, `conversation_coach_used`, `photo_optimizer_used`, `dating_plan_generated` |
+| Growth | `referral_link_copied`, `referral_signup`, `referral_reward_granted` |
+| Churn | `subscription_canceled` (webhook, `customer.subscription.updated/deleted`) |
+
+Points d'attention sur la sémantique :
+
+- **`signup_started` vs `signup_completed`** — le clic sur Google/email ne
+  prouve pas qu'une session existe (OAuth redirige, le magic link attend un
+  clic dans l'email). `signup_completed` fire donc **côté serveur**, dans
+  `auth/callback/route.ts`, seulement après `exchangeCodeForSession`
+  réussi, avec une heuristique (`created_at` ≈ `last_sign_in_at` à 5s près)
+  pour ne pas re-compter une reconnexion comme un nouveau signup.
+- **`subscription_created` / `subscription_canceled`** — toujours côté
+  serveur depuis le webhook Stripe, jamais depuis le clic client : on ne
+  fait jamais confiance à un retour client pour un événement de revenu.
+
+Les 3 taux de conversion demandés se lisent directement dans
+`KEY_CONVERSION_RATES` (`lib/analytics/funnels.ts`) :
+
+```
+Landing -> signup    : landing_view -> signup_completed
+Signup -> analyse     : signup_completed -> analysis_completed
+Analyse -> paiement    : analysis_completed -> subscription_created
+```
+
+Le **churn** n'est pas un ratio d'événements PostHog — la source de vérité
+est `count(subscriptions.status = 'canceled') / count(subscriptions ever 'active')`
+en base ; `subscription_canceled` sert à segmenter le *pourquoi* (jours
+depuis signup, outils utilisés avant l'annulation), pas à calculer le taux.
+Voir le commentaire `CHURN_EVENT` dans `funnels.ts`.
+
+---
+
+## 13. A/B testing de la landing
+
+`lib/experiments/landing-copy.ts` centralise titre / sous-titre / CTA pour
+3 variantes (`v1` "Get More Matches With AI", `v2` "Find Out Why You Get No
+Matches", `v3` "Your Dating Profile Is Holding You Back") — changer un
+texte ou en ajouter une 4e ne touche aucun composant.
+
+**Comment ça marche sans feature flags PostHog** : `src/proxy.ts` assigne
+une variante aléatoire au premier passage (cookie `mai_variant`, 90 jours)
+via `lib/experiments/assign-variant.ts`. La landing reste **statiquement
+générée** (`○` dans le build, critique pour un chargement rapide depuis
+TikTok) : `Hero` et `FinalCta` rendent d'abord la variante par défaut
+(identique au HTML statique, donc pas de mismatch d'hydratation), puis
+lisent le cookie côté client après montage et basculent sur la vraie
+variante (`lib/experiments/use-landing-variant.ts`) — léger flash pour les
+variantes non-défaut, contrepartie acceptée pour garder la page cacheable.
+La variante est attachée en propriété à `landing_view` et
+`click_start_analysis`, donc segmentable dans PostHog sans configuration
+supplémentaire.
+
+Témoignages (`components/marketing/testimonials.tsx`) et le reste de la
+copy landing restent de simples tableaux en tête de fichier — déjà
+trivialement modifiables, pas besoin d'architecture dédiée.
+
+---
+
+## 14. SEO
+
+- **Metadata** — `lib/seo/site.ts` (`buildMetadata()`) donne OpenGraph +
+  Twitter Card + canonical cohérents à chaque page en un appel ; le layout
+  racine pose `metadataBase`, un titre par défaut + template, et le JSON-LD
+  Organization/SoftwareApplication (`components/seo/json-ld.tsx`).
+- **`app/sitemap.ts`** / **`app/robots.ts`** — générés depuis les mêmes
+  fichiers de contenu que les pages (`lib/content/app-reviews.ts`,
+  `lib/content/blog-posts.ts`), donc jamais désynchronisés. `robots.ts`
+  bloque `/dashboard`, `/settings`, `/onboarding`, `/analyze`, `/results`,
+  `/api/`.
+- **5 pages programmatiques** (`/tinder-profile-review`,
+  `/hinge-profile-review`, `/bumble-profile-review` via le template
+  partagé `components/seo/app-review-landing.tsx` ; `/ai-dating-coach` et
+  `/tinder-bio-generator` en pages dédiées) — chacune avec sa propre
+  metadata, un FAQ avec JSON-LD `FAQPage`, et un CTA vers `/auth/login`.
+- **Blog** (`/blog` + `/blog/[slug]`) — 4 articles réels dans
+  `lib/content/blog-posts.ts` (pas de lorem ipsum), générés statiquement
+  (`generateStaticParams`), avec JSON-LD `Article`.
+
+Toutes ces pages sont des Server Components sans `cookies()`/`searchParams`
+dynamiques → prerendered statiquement (`○`/`●` dans `next build`).
+
+---
+
+## 15. Programme de parrainage & créateurs
+
+### Parrainage utilisateur
+
+- **Schéma** (`0004_referrals.sql`) : `referrals` (code par utilisateur),
+  `referral_invites` (qui a été attribué à qui, `referred_user_id` unique
+  → un compte n'est jamais compté deux fois), `referral_rewards` (ledger
+  de récompenses avec `expires_at`).
+- **Lien personnel** : `matchai.com/r/<code>` (`app/r/[code]/route.ts`) —
+  pose le cookie `mai_ref` et redirige vers `/`, sans requête base (le code
+  n'est validé qu'à l'inscription, pour que le lien reste rapide même
+  scrapé/cliqué en boucle).
+- **Attribution** : `lib/referrals/attribute-signup.ts`, appelé depuis
+  `auth/callback` uniquement pour un signup *authentiquement nouveau*.
+  Utilise le client `service_role` — c'est un flux serveur de confiance,
+  pas une écriture pilotée par le client.
+- **Récompenses** : 1 filleul → +7 jours, 5 filleuls → +1 mois (constantes
+  dans `lib/referrals/rewards.ts`, idempotent via une contrainte unique
+  `(user_id, reason)`). Elles **ne touchent jamais Stripe** :
+  `lib/referrals/access.ts` vérifie juste qu'une récompense non expirée
+  existe, et `dashboard/layout.tsx` accepte abonnement actif **ou**
+  bonus de parrainage.
+- **`/referrals`** vit délibérément *hors* du layout premium (`app/referrals/`,
+  pas `app/dashboard/referrals/`) — un utilisateur gratuit doit pouvoir
+  récupérer son lien et commencer à gagner des jours avant d'avoir gagné
+  quoi que ce soit.
+
+### Créateurs / influenceurs
+
+- **`creators`** (même migration) : slug, nom, headline personnalisable,
+  code promo — lecture publique (RLS `active = true`, aucune auth requise).
+- **`/creator/<slug>`** — landing personnalisée (headline du créateur,
+  code promo affiché), attribution par cookie `mai_creator` posée dans
+  `src/proxy.ts` (`lib/referrals/assign-creator-cookie.ts`, "first touch
+  wins" — n'écrase pas un cookie de parrainage déjà présent).
+- **Code promo → vraie réduction Stripe** : `api/stripe/checkout/route.ts`
+  lit le cookie `mai_creator`, résout `creators.promo_code` en Stripe
+  Promotion Code (`lib/stripe/resolve-promo-discount.ts`,
+  `stripe.promotionCodes.list`) et l'applique automatiquement à la
+  Checkout Session ; sinon `allow_promotion_codes: true` laisse n'importe
+  qui saisir un code manuellement. **Le code lui-même ne fait rien sans
+  qu'un Coupon + Promotion Code du même nom existent dans le Dashboard
+  Stripe** — c'est un réglage opérationnel, pas du code (voir checklist §18).
+
+---
+
+## 16. Sécurité & performance (étape 4)
+
+**Rate limiting** — `lib/security/rate-limit.ts`, appliqué dans
+`src/proxy.ts` avant que la requête n'atteigne une Route Handler. Fenêtre
+fixe en mémoire, par IP + préfixe de route :
+
+| Route | Limite |
+|---|---|
+| `/api/stripe/checkout` | 5 / min |
+| `/api/onboarding` | 10 / min |
+| `/api/profile` | 15 / min |
+| `/api/analyze` | 5 / min |
+| `/api/ai/*` | 20 / min |
+| `/api/stats` | 30 / min |
+| `/api/*` (reste) | 30 / min |
+
+C'est réel et suffisant pour freiner l'abus au lancement, mais **en
+mémoire** : ça réinitialise par instance et ne coordonne pas entre régions.
+Avant de scaler au-delà d'une instance, migrer vers Upstash Redis ou un
+limiteur de plateforme (Vercel Firewall / Cloudflare) — le point d'appel
+dans `proxy.ts` ne change pas.
+
+**Autres points vérifiés** :
+- Chaque route mutante vérifie `auth.getUser()` avant toute écriture ;
+  RLS reste la deuxième ligne de défense (voir §4, §9, §15).
+- Le bucket `profile-photos` a maintenant une limite de taille (10MB) et
+  une liste de types MIME autorisés au niveau du bucket
+  (`0005_storage_limits.sql`) — pas seulement une vérification côté client
+  contournable.
+- Les crédits IA (§9) sont déjà une forme de rate limiting spécifique au
+  coût Mistral, indépendante du rate limiting réseau ci-dessus.
+
+**Performance** — la landing, les 5 pages SEO et le blog restent
+statiquement générés (voir §13-14) malgré l'A/B testing et le tracking ;
+`next.config.ts` active `optimizePackageImports` pour `lucide-react` ; le
+layout racine pose des `<link rel="preconnect">` vers Supabase et PostHog ;
+les appels Supabase publics non critiques (`/api/stats`, `/creator/[slug]`)
+ont un timeout explicite (`abortSignal`) pour ne jamais faire attendre un
+visiteur indéfiniment si la base est lente.
+
+---
+
+## 17. Tests
+
+`npm run test:e2e` (Playwright, voir `tests/e2e/README.md` pour le détail) :
+
+- Chaque page publique (landing, 5 pages SEO, blog + articles,
+  `sitemap.xml`, `robots.txt`) répond 200 avec son H1 et son CTA.
+- Chaque route protégée (`/onboarding` → `/dashboard/*`) redirige un
+  visiteur non connecté vers `/auth/login`.
+- `/r/<code>` redirige correctement.
+
+Ce qui **n'est pas** couvert automatiquement — nécessite un projet
+Supabase + Stripe test seedé, hors de portée d'un environnement sans ces
+identifiants :
+
+- Le funnel complet signup → onboarding → upload → analyse → résultat.
+- Paywall → Stripe Checkout → webhook → déblocage dashboard.
+- Les 5 outils IA premium avec un vrai appel Mistral.
+- L'attribution de parrainage bout en bout (cookie → signup → récompense).
+
+### Checklist QA manuelle (avant chaque release)
+
+**Parcours gratuit** : Landing (bonne variante visible) → Signup (Google
+*et* email) → Onboarding (7 étapes, retour en arrière) → Upload (drag &
+drop, validation taille/type) → Analyse (10-15s, pas de blocage si Mistral
+indisponible) → Résultat (score + insights + contenu flouté) → Paywall.
+
+**Parcours premium** : Checkout Stripe (carte test) → retour `/dashboard`
+(vérifier que le léger délai webhook n'affiche pas le paywall par erreur)
+→ chacun des 5 outils produit un résultat exploitable → Settings > Manage
+billing ouvre bien le Portal Stripe → annulation reflétée dans `subscriptions`.
+
+**Parrainage** : copier le lien, ouvrir en navigation privée, s'inscrire →
+vérifier `referral_invites` + badge dans `/referrals` → répéter jusqu'à 5
+pour valider le palier +1 mois.
+
+---
+
+## 18. Checklist de lancement
+
+- [ ] **Domaine** : DNS pointé vers Vercel, `NEXT_PUBLIC_SITE_URL` mis à
+      jour partout (Vercel + `.env` locaux), certificat SSL actif.
+- [ ] **Stripe production** : basculer les clés test → live
+      (`STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`), recréer
+      le produit + prix 7,99€/mois en mode live, reconfigurer le webhook
+      sur l'URL de production, créer les Coupons/Promotion Codes pour
+      chaque créateur listé dans `creators` (voir §15).
+- [ ] **Variables d'environnement** : toutes celles de §11 renseignées en
+      Production *et* Preview sur Vercel — un secret manquant fait planter
+      `serverEnv` au premier accès, pas au build (voir `lib/env.ts`).
+- [ ] **Supabase** : projet en plan payant si le trafic attendu dépasse le
+      tier gratuit, migrations `0001` → `0005` appliquées dans l'ordre,
+      provider Google OAuth configuré avec l'URL de callback de prod,
+      `supabase gen types` régénéré une dernière fois.
+- [ ] **Emails** : template Supabase Auth (magic link) personnalisé à la
+      marque plutôt que le défaut générique.
+- [ ] **Analytics** : projet PostHog en prod, clé renseignée, dashboards
+      construits à partir de `lib/analytics/funnels.ts` (§12) avant le
+      premier euro de trafic payant — pas après.
+- [ ] **Monitoring** : activer les alertes Vercel (erreurs/latence) et les
+      logs Supabase ; brancher un endpoint d'erreur (Sentry ou équivalent)
+      — non inclus dans ce build, à ajouter avant un vrai volume TikTok.
+- [ ] **Rate limiting** : si le trafic dépasse une seule instance Vercel,
+      migrer `lib/security/rate-limit.ts` vers Upstash avant le lancement
+      payant (voir §16) — sinon la protection ne coordonne pas entre régions.
+- [ ] **QA finale** : dérouler la checklist manuelle du §17 sur l'URL de
+      production avec de vraies clés test Stripe avant d'ouvrir le trafic.
+
+---
+
+## 19. Métriques à surveiller — 30 premiers jours
+
+| Catégorie | Métrique | Où la lire |
+|---|---|---|
+| Acquisition | Visiteurs landing par variante (`v1`/`v2`/`v3`) | PostHog, `landing_view` par `variant` |
+| Acquisition | Landing → signup | `KEY_CONVERSION_RATES[0]` |
+| Activation | Signup → analyse complétée | `KEY_CONVERSION_RATES[1]` |
+| Activation | Taux d'abandon par étape d'onboarding | Funnel `onboarding_started` → `onboarding_completed` → `profile_upload_completed` |
+| Conversion | Analyse → paiement | `KEY_CONVERSION_RATES[2]` |
+| Conversion | Paywall vu → checkout démarré → abonnement créé | 3 événements consécutifs, taux de friction au paiement |
+| Revenu | MRR, nombre d'abonnés actifs | `subscriptions.status = 'active'` en base |
+| Rétention | % d'abonnés utilisant ≥1 outil IA dans les 7 jours | `RETENTION_EVENTS` par utilisateur, fenêtre 7j |
+| Rétention | Churn (annulations / abonnés actifs) | Calcul SQL, voir §12 — pas un événement PostHog |
+| Growth | Invitations envoyées vs. converties, coût d'acquisition par créateur | `referral_invites`, `referral_rewards`, code promo par créateur |
+| Coût | Crédits IA consommés par fonctionnalité | `ai_usage_events` groupé par `feature` — signal avant-coureur d'un coût Mistral qui dérape |
+| Qualité | Ratio `is_simulated: true` sur les analyses/outils | Si élevé après le lancement, Mistral échoue plus que prévu — investiguer avant que les utilisateurs le remarquent |
+| SEO | Impressions/clics par page (`/tinder-profile-review`, etc.), classement sur les mots-clés ciblés | Google Search Console, à connecter après indexation |
 
 ---
 

@@ -6,7 +6,7 @@ import type { AnalyticsEventName, AnalyticsEventProps } from "@/lib/analytics/ev
 
 /**
  * Type-safe client-side event capture. Usage:
- *   track(AnalyticsEvent.CtaClicked, { cta_location: "hero" })
+ *   track(AnalyticsEvent.ClickStartAnalysis, { cta_location: "hero" })
  */
 export function track<E extends AnalyticsEventName>(
   event: E,

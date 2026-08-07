@@ -3,6 +3,8 @@ import { analyzeProfile } from "@/lib/ai/analyze-profile";
 import { getActiveSubscription } from "@/lib/subscriptions/get-active-subscription";
 import { checkCredits, consumeCredits } from "@/lib/ai/credits";
 import { signPhotoUrls } from "@/lib/supabase/signed-photo-urls";
+import { trackServer } from "@/lib/analytics/server";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 import { apiError, apiSuccess } from "@/lib/api/response";
 
 /**
@@ -113,6 +115,7 @@ export async function POST() {
 
   if (subscription) {
     await consumeCredits(supabase, user.id, "profile_analysis");
+    trackServer(user.id, AnalyticsEvent.AnalysisRepeated, { overall_score: result.overall_score });
   }
 
   return apiSuccess({ analysis_id: analysis.id, overall_score: result.overall_score }, 201);

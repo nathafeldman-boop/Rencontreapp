@@ -38,6 +38,8 @@ export interface MatchMessage {
   content: string;
 }
 
+export type ReferralSource = "referral" | "creator";
+
 export interface PlanDay {
   day: number;
   title: string;
@@ -289,6 +291,71 @@ export interface Database {
           feature: AiFeature;
         };
         Update: Partial<Database["public"]["Tables"]["ai_usage_events"]["Row"]>;
+        Relationships: [];
+      };
+      referrals: {
+        Row: {
+          id: string;
+          user_id: string;
+          code: string;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["referrals"]["Row"], "id">> & {
+          user_id: string;
+          code: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["referrals"]["Row"]>;
+        Relationships: [];
+      };
+      creators: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          headline: string | null;
+          promo_code: string | null;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["creators"]["Row"], "id">> & {
+          slug: string;
+          name: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["creators"]["Row"]>;
+        Relationships: [];
+      };
+      referral_invites: {
+        Row: {
+          id: string;
+          referrer_user_id: string | null;
+          creator_id: string | null;
+          referred_user_id: string;
+          source: ReferralSource;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["referral_invites"]["Row"], "id">> & {
+          referred_user_id: string;
+          source: ReferralSource;
+        };
+        Update: Partial<Database["public"]["Tables"]["referral_invites"]["Row"]>;
+        Relationships: [];
+      };
+      referral_rewards: {
+        Row: {
+          id: string;
+          user_id: string;
+          reward_days: number;
+          reason: string;
+          granted_at: string;
+          expires_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["referral_rewards"]["Row"], "id">> & {
+          user_id: string;
+          reward_days: number;
+          reason: string;
+          expires_at: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["referral_rewards"]["Row"]>;
         Relationships: [];
       };
     };

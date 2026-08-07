@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { AnimatedCounter } from "@/components/marketing/animated-counter";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { useLandingVariant } from "@/lib/experiments/use-landing-variant";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -17,9 +18,11 @@ const fadeUp = {
 };
 
 export function Hero() {
+  const { variant, copy } = useLandingVariant();
+
   useEffect(() => {
-    track(AnalyticsEvent.LandingPageViewed, { source: document.referrer || undefined });
-  }, []);
+    track(AnalyticsEvent.LandingView, { source: document.referrer || undefined, variant });
+  }, [variant]);
 
   return (
     <section className="relative overflow-hidden px-6 pt-20 pb-16 sm:pt-28">
@@ -33,7 +36,7 @@ export function Hero() {
       <div className="mx-auto flex max-w-xl flex-col items-center text-center">
         <motion.div initial="hidden" animate="show" variants={fadeUp} transition={{ duration: 0.5 }}>
           <Badge variant="accent" className="mb-6">
-            Free AI analysis in 60 seconds
+            {copy.badge}
           </Badge>
         </motion.div>
 
@@ -44,7 +47,9 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.05 }}
           className="text-4xl font-semibold tracking-tight sm:text-5xl"
         >
-          Get More <span className="text-brand-gradient">Matches</span> With AI
+          {copy.headlineBefore}
+          <span className="text-brand-gradient">{copy.headlineHighlight}</span>
+          {copy.headlineAfter}
         </motion.h1>
 
         <motion.p
@@ -54,8 +59,7 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="mt-5 text-balance text-lg text-muted-foreground"
         >
-          Upload your dating profile and discover exactly what&apos;s preventing you from
-          getting more matches — on Tinder, Hinge, or Bumble.
+          {copy.subheadline}
         </motion.p>
 
         <motion.div
@@ -68,10 +72,10 @@ export function Hero() {
           <Button
             size="lg"
             asChild
-            onClick={() => track(AnalyticsEvent.CtaClicked, { cta_location: "hero" })}
+            onClick={() => track(AnalyticsEvent.ClickStartAnalysis, { cta_location: "hero", variant })}
           >
             <Link href="/auth/login">
-              Analyze My Profile Free
+              {copy.ctaLabel}
               <ArrowRight />
             </Link>
           </Button>

@@ -3,11 +3,17 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/dashboard/app-shell";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveSubscription } from "@/lib/subscriptions/get-active-subscription";
+import { hasReferralBonusAccess } from "@/lib/referrals/access";
 
 /**
- * Gates the entire /dashboard subtree behind an active subscription.
+ * Gates the entire /dashboard subtree behind an active subscription OR an
+ * unexpired referral reward (see lib/referrals/access.ts — inviting friends
+ * grants temporary premium access without ever touching Stripe).
  * `src/proxy.ts` already requires *authentication* here — this adds the
- * *payment* requirement, which is what makes the dashboard "premium".
+ * *payment-or-earned-access* requirement, which is what makes the dashboard
+ * "premium". Note `/referrals` itself lives outside this layout (see
+ * app/referrals/page.tsx) precisely so a free user can get their invite
+ * link before they've earned anything.
  */
 export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   const supabase = await createClient();
@@ -21,7 +27,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
     subscription = await getActiveSubscription(supabase);
   }
 
-  if (!subscription) {
+  if (!subscription && !(await hasReferralBonusAccess(supabase))) {
     redirect("/paywall");
   }
 

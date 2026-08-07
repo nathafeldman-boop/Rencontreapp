@@ -7,6 +7,8 @@ import { Check, Copy, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChipButton } from "@/components/onboarding/chip-button";
+import { track } from "@/lib/analytics/track";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { BioStyle } from "@/types/database.types";
 
 const STYLES: { value: BioStyle; label: string }[] = [
@@ -49,6 +51,7 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
     const { data } = await res.json();
     setBios(data.bios);
     setLoading(false);
+    track(AnalyticsEvent.BioGenerated, { style });
   }
 
   async function copy(bio: string, index: number) {

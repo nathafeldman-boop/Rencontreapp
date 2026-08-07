@@ -9,6 +9,8 @@ import { Check, Loader2, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { track } from "@/lib/analytics/track";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 
 interface OptimizerPhoto {
   path: string;
@@ -49,6 +51,7 @@ export function PhotoOptimizerView({
     setPhotos((prev) => [...prev].sort((a, b) => ROLE_ORDER[a.suggestedRole] - ROLE_ORDER[b.suggestedRole] || b.score - a.score));
     setBuilding(false);
     setBuilt(true);
+    track(AnalyticsEvent.PhotoOptimizerUsed, { photo_count: photos.length });
   }
 
   if (!hasAnalysis || photos.length === 0) {

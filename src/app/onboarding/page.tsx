@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -62,6 +62,18 @@ export default function OnboardingPage() {
     bio: "",
     photos: [],
   });
+
+  useEffect(() => {
+    track(AnalyticsEvent.OnboardingStarted, {});
+  }, []);
+
+  const uploadStepTracked = useRef(false);
+  useEffect(() => {
+    if (step === 7 && !uploadStepTracked.current) {
+      uploadStepTracked.current = true;
+      track(AnalyticsEvent.ProfileUploadStarted, {});
+    }
+  }, [step]);
 
   function canAdvance() {
     if (step === 1) return form.age !== "" && form.gender !== "" && form.location.trim() !== "";
@@ -130,7 +142,7 @@ export default function OnboardingPage() {
         if (uploadError) throw new Error(`Photo upload failed: ${uploadError.message}`);
         photoPaths.push(path);
       }
-      track(AnalyticsEvent.PhotosUploaded, { photo_count: photoPaths.length });
+      track(AnalyticsEvent.ProfileUploadCompleted, { photo_count: photoPaths.length });
 
       const profileRes = await fetch("/api/profile", {
         method: "POST",

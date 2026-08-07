@@ -2,7 +2,15 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { clientEnv } from "@/lib/env";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/settings", "/onboarding", "/analyze", "/results", "/paywall"];
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/settings",
+  "/onboarding",
+  "/analyze",
+  "/results",
+  "/paywall",
+  "/referrals",
+];
 
 /**
  * Refreshes the Supabase auth session on every request and redirects

@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   Camera,
+  Gift,
   MessageCircle,
   Sparkles,
   Swords,
@@ -16,6 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SubScoreCard } from "@/components/dashboard/sub-score-card";
 import { ScoreHistoryChart } from "@/components/dashboard/score-history-chart";
+import { ViewTracker } from "@/components/dashboard/view-tracker";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { Recommendation } from "@/types/database.types";
 
 const TOOLS = [
@@ -24,6 +27,7 @@ const TOOLS = [
   { href: "/dashboard/coach", icon: MessageCircle, label: "Conversation Coach" },
   { href: "/dashboard/simulator", icon: Swords, label: "Match Simulator" },
   { href: "/dashboard/plan", icon: CalendarCheck, label: "My Improvement Plan" },
+  { href: "/referrals", icon: Gift, label: "Invite Friends" },
 ];
 
 function findRecommendation(recommendations: Recommendation[], category: Recommendation["category"]) {
@@ -49,6 +53,7 @@ export default async function DashboardPage() {
   if (!analyses || analyses.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
+        <ViewTracker event={AnalyticsEvent.DashboardViewed} properties={{ has_active_plan: true }} />
         <h1 className="text-xl font-semibold">No analysis yet</h1>
         <p className="max-w-sm text-sm text-muted-foreground">
           Complete your profile upload to get your first Dating Score.
@@ -78,6 +83,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <ViewTracker event={AnalyticsEvent.DashboardViewed} properties={{ has_active_plan: true }} />
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Your dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">Your coach&apos;s read on your profile, updated live.</p>

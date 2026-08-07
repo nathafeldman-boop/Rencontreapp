@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ChipButton } from "@/components/onboarding/chip-button";
+import { track } from "@/lib/analytics/track";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { Gender, MatchMessage, MatchPersona } from "@/types/database.types";
 
 const GENDERS: { value: Gender; label: string }[] = [
@@ -83,6 +85,7 @@ export function MatchSimulatorView() {
     const { data } = await res.json();
     setResult({ score: data.score, feedback: data.feedback });
     setStage("scored");
+    track(AnalyticsEvent.AiCoachUsed, { conversation_score: data.score });
   }
 
   function reset() {

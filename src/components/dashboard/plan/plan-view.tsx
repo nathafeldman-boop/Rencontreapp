@@ -7,6 +7,8 @@ import { Check, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { track } from "@/lib/analytics/track";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { PlanDay } from "@/types/database.types";
 
 export function PlanView({ initialDays }: { initialDays: PlanDay[] | null }) {
@@ -30,6 +32,7 @@ export function PlanView({ initialDays }: { initialDays: PlanDay[] | null }) {
     const { data } = await res.json();
     setDays(data.days);
     setLoading(false);
+    track(AnalyticsEvent.DatingPlanGenerated, {});
   }
 
   async function toggleDay(day: PlanDay) {

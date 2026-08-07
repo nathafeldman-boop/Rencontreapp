@@ -13,6 +13,7 @@ const DEMO_RESULTS: ResultsData = {
   ],
   lockedCount: 5,
   isDemo: true,
+  isSimulated: true,
 };
 
 interface ResultsPageProps {
@@ -26,7 +27,9 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
     const supabase = await createClient();
     const { data: analysis } = await supabase
       .from("analyses")
-      .select("overall_score, photo_score, bio_score, attractiveness_score, conversation_score, free_insights, recommendations")
+      .select(
+        "overall_score, photo_score, bio_score, attractiveness_score, conversation_score, free_insights, recommendations, is_simulated"
+      )
       .eq("id", id)
       .maybeSingle();
 
@@ -40,6 +43,7 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
         freeInsights: analysis.free_insights,
         lockedCount: Array.isArray(analysis.recommendations) ? analysis.recommendations.length : 5,
         isDemo: false,
+        isSimulated: analysis.is_simulated,
       };
       return <ResultsView data={data} />;
     }

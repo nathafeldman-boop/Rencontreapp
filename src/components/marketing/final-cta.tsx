@@ -6,8 +6,11 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { useLandingVariant } from "@/lib/experiments/use-landing-variant";
 
 export function FinalCta() {
+  const { variant, copy } = useLandingVariant();
+
   return (
     <section className="px-6 py-24 text-center">
       <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -20,10 +23,10 @@ export function FinalCta() {
         <Button
           size="lg"
           asChild
-          onClick={() => track(AnalyticsEvent.CtaClicked, { cta_location: "footer" })}
+          onClick={() => track(AnalyticsEvent.ClickStartAnalysis, { cta_location: "footer", variant })}
         >
           <Link href="/auth/login">
-            Analyze My Profile Free
+            {copy.ctaLabel}
             <ArrowRight />
           </Link>
         </Button>
