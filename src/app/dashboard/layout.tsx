@@ -14,21 +14,30 @@ import { hasReferralBonusAccess } from "@/lib/referrals/access";
  * "premium". Note `/referrals` itself lives outside this layout (see
  * app/referrals/page.tsx) precisely so a free user can get their invite
  * link before they've earned anything.
+ *
+ * Temporarily off (alongside AUTH_GATE_ENABLED in lib/supabase/proxy.ts) so
+ * the owner can review the dashboard pre-launch without a real subscription.
+ * Flip back to `true` before going live.
  */
+const PREMIUM_GATE_ENABLED = false;
+
 export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   const supabase = await createClient();
-  let subscription = await getActiveSubscription(supabase);
 
-  if (!subscription) {
-    // The Stripe webhook that activates a brand-new subscription can lag a
-    // second or two behind the checkout redirect landing here — one short
-    // retry avoids bouncing a just-paid user straight back to the paywall.
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    subscription = await getActiveSubscription(supabase);
-  }
+  if (PREMIUM_GATE_ENABLED) {
+    let subscription = await getActiveSubscription(supabase);
 
-  if (!subscription && !(await hasReferralBonusAccess(supabase))) {
-    redirect("/paywall");
+    if (!subscription) {
+      // The Stripe webhook that activates a brand-new subscription can lag a
+      // second or two behind the checkout redirect landing here — one short
+      // retry avoids bouncing a just-paid user straight back to the paywall.
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      subscription = await getActiveSubscription(supabase);
+    }
+
+    if (!subscription && !(await hasReferralBonusAccess(supabase))) {
+      redirect("/paywall");
+    }
   }
 
   return <AppShell>{children}</AppShell>;
