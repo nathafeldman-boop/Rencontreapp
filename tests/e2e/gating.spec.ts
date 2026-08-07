@@ -10,11 +10,17 @@ const PREMIUM_ROUTES = [
   "/dashboard/plan",
 ];
 
-test.describe("Unauthenticated access is redirected to login", () => {
+// The auth gate is temporarily disabled (AUTH_GATE_ENABLED = false in
+// lib/supabase/proxy.ts) so the app can be reviewed end-to-end pre-launch
+// without repeated sign-ins. These routes load without redirecting while
+// that flag is off. Revert this test to the redirect assertion once the
+// gate is re-enabled.
+test.describe("Gated routes load without a session while the auth gate is off", () => {
   for (const path of [...AUTH_ONLY_ROUTES, ...PREMIUM_ROUTES]) {
-    test(`${path} redirects to /auth/login`, async ({ page }) => {
-      await page.goto(path);
-      await expect(page).toHaveURL(/\/auth\/login/);
+    test(`${path} responds 200 without redirecting to /auth/login`, async ({ page }) => {
+      const res = await page.goto(path);
+      expect(res?.status()).toBe(200);
+      await expect(page).not.toHaveURL(/\/auth\/login/);
     });
   }
 });

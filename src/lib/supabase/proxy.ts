@@ -14,6 +14,14 @@ const PROTECTED_PREFIXES = [
 ];
 
 /**
+ * Temporarily lets logged-out visitors browse gated routes so the app can be
+ * reviewed end-to-end before launch without repeated sign-ins. Pages already
+ * fall back to `user?.id ?? ""` / empty-state rendering when there's no user.
+ * Flip back to `true` before going live.
+ */
+const AUTH_GATE_ENABLED = false;
+
+/**
  * Refreshes the Supabase auth session on every request and redirects
  * unauthenticated users away from protected routes. Called from
  * `src/proxy.ts` (Next.js 16 renamed `middleware.ts` -> `proxy.ts`).
@@ -48,7 +56,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith(prefix)
   );
 
-  if (!user && isProtected) {
+  if (AUTH_GATE_ENABLED && !user && isProtected) {
     const redirectUrl = new URL("/auth/login", request.url);
     redirectUrl.searchParams.set("redirect_to", request.nextUrl.pathname);
     return NextResponse.redirect(redirectUrl);

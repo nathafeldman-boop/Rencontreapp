@@ -11,7 +11,14 @@ export default async function ReferralsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return null; // proxy.ts already guarantees auth; satisfies TS
+  if (!user) {
+    return (
+      <div className="flex flex-col gap-2 py-16 text-center">
+        <p className="font-medium">Connecte-toi pour voir ton lien de parrainage.</p>
+        <p className="text-sm text-muted-foreground">Cette page a besoin d&apos;un compte pour générer ton code.</p>
+      </div>
+    );
+  }
 
   const [code, { count: inviteCount }, { data: rewards }] = await Promise.all([
     getOrCreateReferralCode(supabase, user.id),
