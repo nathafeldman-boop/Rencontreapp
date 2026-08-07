@@ -12,6 +12,7 @@ if (typeof window !== "undefined" && clientEnv.NEXT_PUBLIC_POSTHOG_KEY) {
     api_host: clientEnv.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com",
     capture_pageview: false, // captured manually below, so query params are included
     person_profiles: "identified_only",
+    capture_exceptions: true, // client-side crash reporting — see README "Observability"
   });
 }
 

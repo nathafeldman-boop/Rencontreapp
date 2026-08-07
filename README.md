@@ -700,22 +700,61 @@ pour valider le palier +1 mois.
       Production *et* Preview sur Vercel — un secret manquant fait planter
       `serverEnv` au premier accès, pas au build (voir `lib/env.ts`).
 - [ ] **Supabase** : projet en plan payant si le trafic attendu dépasse le
-      tier gratuit, migrations `0001` → `0005` appliquées dans l'ordre,
+      tier gratuit, migrations `0001` → `0006` appliquées dans l'ordre,
       provider Google OAuth configuré avec l'URL de callback de prod,
       `supabase gen types` régénéré une dernière fois.
 - [ ] **Emails** : template Supabase Auth (magic link) personnalisé à la
       marque plutôt que le défaut générique.
 - [ ] **Analytics** : projet PostHog en prod, clé renseignée, dashboards
       construits à partir de `lib/analytics/funnels.ts` (§12) avant le
-      premier euro de trafic payant — pas après.
+      premier euro de trafic payant — pas après. `capture_exceptions` est
+      déjà activé (§23) pour du crash reporting basique dès le lancement.
 - [ ] **Monitoring** : activer les alertes Vercel (erreurs/latence) et les
-      logs Supabase ; brancher un endpoint d'erreur (Sentry ou équivalent)
-      — non inclus dans ce build, à ajouter avant un vrai volume TikTok.
+      logs Supabase ; brancher Sentry via `src/instrumentation.ts` (§23)
+      avant un vrai volume TikTok — le point d'accroche existe déjà,
+      il ne manque qu'un DSN.
 - [ ] **Rate limiting** : si le trafic dépasse une seule instance Vercel,
       migrer `lib/security/rate-limit.ts` vers Upstash avant le lancement
       payant (voir §16) — sinon la protection ne coordonne pas entre régions.
 - [ ] **QA finale** : dérouler la checklist manuelle du §17 sur l'URL de
       production avec de vraies clés test Stripe avant d'ouvrir le trafic.
+
+### Après le premier utilisateur
+
+- [ ] Vérifier dans Stripe que le premier paiement réel est bien arrivé
+      *et* que le webhook a bien créé/synchronisé la ligne `subscriptions`
+      (pas seulement que Stripe a encaissé — voir §10).
+- [ ] Vérifier dans PostHog que le funnel complet (`landing_view` →
+      `subscription_created`) remonte des événements cohérents avec ce
+      qui s'est réellement passé.
+- [ ] Relire à la main la première vraie analyse IA générée (pas une
+      simulation) pour confirmer que le prompt produit un résultat
+      exploitable sur un vrai profil, pas seulement sur les cas de test.
+
+### À 100 utilisateurs
+
+- [ ] Revoir `ai_usage_events` par fonctionnalité (§9) — confirmer que le
+      coût Mistral réel par utilisateur actif correspond à l'hypothèse de
+      pricing (7,99€/mois), pas seulement en théorie.
+- [ ] Vérifier le taux `is_simulated: true` (§19) — un taux élevé à ce
+      stade est un signal à corriger avant que le volume ne le masque.
+- [ ] Relire les premiers retours du widget de feedback (`feedback` table,
+      §20) — priorités produit réelles vs. supposées.
+- [ ] Toujours sur une seule instance Vercel : le rate limiting en mémoire
+      tient encore, mais surveiller les logs pour des 429 inattendus.
+
+### À 1000 utilisateurs
+
+- [ ] Migrer le rate limiting vers Upstash Redis (§16) — l'hypothèse
+      "une seule instance" ne tient généralement plus à ce volume.
+- [ ] Passer Supabase sur un plan avec plus de connexions/compute si les
+      temps de requête se dégradent (`get_advisors` / logs Supabase).
+- [ ] Vérifier les index (§25, dette technique) si des requêtes du
+      dashboard ou du weekly report deviennent visiblement lentes.
+- [ ] Envisager Sentry (pas juste PostHog exceptions) si le volume
+      d'erreurs rend le triage manuel via les logs impraticable.
+- [ ] Revoir le coût Mistral agrégé — à ce volume, un cache ou des limites
+      de crédits plus strictes peuvent devenir nécessaires (voir §25).
 
 ---
 
@@ -853,6 +892,341 @@ fait déjà bien.
 | Conversion | Vues `/premium` → checkout démarré | `trigger: "premium_page"` sur `paywall_viewed` → `checkout_started` |
 | Satisfaction | Ratio `helpful: true` vs `false` sur `feedback_submitted`, par `context` | Table `feedback`, groupé par `context` et `category` |
 | Satisfaction | Volume de retours par catégorie (bug/feature/general) | Table `feedback`, alerte si les bugs dominent après une release |
+
+---
+
+## 21. Installation & déploiement
+
+### Installation locale
+
+```bash
+git clone <repo-url> && cd matchai
+npm install
+cp .env.example .env.local   # renseigner les clés, voir §22
+npm run dev
+```
+
+Ouvrir [http://localhost:3000](http://localhost:3000). Prérequis : Node.js 20+,
+un projet Supabase (gratuit suffit pour développer), une clé Mistral, et un
+compte Stripe en mode test — tout le reste (landing, blog, pages SEO) tourne
+sans ces clés grâce aux replis simulés (§7).
+
+Base de données locale : appliquer les migrations `supabase/migrations/0001`
+à `0006` dans l'ordre, soit via le SQL Editor de Supabase, soit via la CLI
+Supabase (`supabase db push` depuis un projet lié).
+
+### Déploiement en production (Vercel)
+
+1. **Supabase** : créer le projet, appliquer les 6 migrations dans l'ordre,
+   activer le provider Google OAuth (Auth > Providers) avec l'URL de
+   callback `https://<domaine>/auth/callback`, régénérer les types
+   (`npx supabase gen types typescript --project-id <ref> > src/types/database.types.ts`).
+2. **Stripe** : mode live, créer le produit "MatchAI Premium" + prix
+   7,99€/mois, configurer le endpoint webhook sur
+   `https://<domaine>/api/stripe/webhook` (événements
+   `checkout.session.completed`, `customer.subscription.updated`,
+   `customer.subscription.deleted`), copier le secret de signature.
+3. **Vercel** : connecter le repo, renseigner toutes les variables de §22
+   en Production *et* Preview, déployer.
+4. **DNS** : pointer le domaine vers Vercel, mettre à jour
+   `NEXT_PUBLIC_SITE_URL` partout (Vercel + les URLs de retour Stripe se
+   construisent dessus — un mauvais domaine casse silencieusement les
+   redirections de checkout).
+5. **QA finale** sur l'URL de production avant d'ouvrir le trafic — voir
+   §27.
+
+Aucune étape de build spéciale : `next build` (déclenché automatiquement
+par Vercel) suffit, il n'y a ni base de données à migrer au build ni
+étape de génération séparée.
+
+---
+
+## 22. Variables d'environnement — référence complète
+
+Source de vérité : `src/lib/env.ts` (validé par Zod au démarrage — une
+variable serveur manquante fait échouer `serverEnv` au premier accès, une
+variable client manquante fait échouer le build). `.env.example` à la
+racine reflète exactement cette liste.
+
+| Variable | Où | Requis | Description |
+|---|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Client | Oui | URL du projet Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client | Oui | Clé publique (anon), RLS-scoped |
+| `SUPABASE_SERVICE_ROLE_KEY` | Serveur | Oui | Contourne RLS — jamais exposée au client, utilisée uniquement pour les écritures serveur (webhook Stripe, etc.) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Client | Oui | Clé publique Stripe (prévue pour un usage client futur, checkout redirige côté serveur aujourd'hui) |
+| `STRIPE_SECRET_KEY` | Serveur | Oui | Clé secrète Stripe |
+| `STRIPE_WEBHOOK_SECRET` | Serveur | Oui | Secret de signature du endpoint webhook |
+| `STRIPE_PRICE_ID_MONTHLY` | Serveur | Oui | Price ID du plan premium mensuel |
+| `STRIPE_PRICE_ID_ANNUAL` | Serveur | Non | Price ID annuel — vide tant qu'il n'est pas vendu |
+| `MISTRAL_API_KEY` | Serveur | Oui* | *Sans elle, tout `lib/ai/*` tourne en mode simulation déterministe (§7) — utile en dev, jamais souhaitable en production |
+| `NEXT_PUBLIC_POSTHOG_KEY` | Client | Non | Sans elle, `posthog-js` ne s'initialise pas (§6) — pas d'erreur, juste pas d'analytics |
+| `NEXT_PUBLIC_POSTHOG_HOST` | Client | Non | Défaut `https://eu.i.posthog.com` si absent |
+| `POSTHOG_API_KEY` | Serveur | Non | Utilisée par `trackServer` (événements côté serveur, ex. webhook Stripe) |
+| `NEXT_PUBLIC_SITE_URL` | Client | Non | Défaut `http://localhost:3000` — **doit** être le domaine de prod en prod (URLs de retour Stripe, canonical SEO, liens de partage) |
+
+---
+
+## 23. Observabilité — logs, monitoring, crash reporting
+
+Le produit expose déjà trois points d'accroche prêts à recevoir un vrai
+provider, sans qu'aucun autre fichier n'ait besoin de changer :
+
+**Crash reporting côté client — déjà actif.** `capture_exceptions: true`
+est activé dans `lib/analytics/posthog-provider.tsx` : toute exception JS
+non interceptée ou promesse rejetée non gérée remonte déjà dans PostHog
+(onglet "Error tracking") dès que `NEXT_PUBLIC_POSTHOG_KEY` est
+renseignée — aucune configuration supplémentaire nécessaire.
+
+**Erreurs serveur — point d'accroche prêt, Sentry non branché.**
+`src/instrumentation.ts` exporte `onRequestError`, appelé par Next.js pour
+toute erreur non rattrapée dans un Server Component, une Route Handler ou
+une Server Action. `src/app/error.tsx` (limite de segment) et
+`src/app/global-error.tsx` (limite racine, remplace tout le layout si
+*lui-même* plante) couvrent le rendu ; tous les trois passent par
+`lib/observability/report-error.ts`, qui aujourd'hui logge simplement dans
+la console. Pour brancher Sentry :
+
+```bash
+npm install @sentry/nextjs
+```
+
+```ts
+// src/lib/observability/report-error.ts
+import * as Sentry from "@sentry/nextjs";
+
+export function reportError(error: unknown, context?: Record<string, unknown>) {
+  Sentry.captureException(error, { extra: context });
+}
+```
+
+```ts
+// src/instrumentation.ts — dans register()
+import * as Sentry from "@sentry/nextjs";
+Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 0.1 });
+```
+
+Aucun autre fichier de l'app n'a besoin de changer — les 3 points d'entrée
+(`error.tsx`, `global-error.tsx`, `onRequestError`) appellent déjà
+`reportError` de façon uniforme.
+
+**Logs & infra.** Les logs Supabase (Postgres + Auth) sont consultables
+directement dans le dashboard Supabase. Les logs de fonctions/requêtes
+Vercel sont visibles dans le dashboard Vercel — activer les alertes
+Vercel (erreurs, latence P95) au lancement (§18).
+
+**Analytics produit.** PostHog (§6, §12) couvre déjà le funnel complet.
+Pour Vercel Analytics (Core Web Vitals réels, pas juste Lighthouse) :
+`npm install @vercel/analytics` puis `<Analytics />` dans
+`src/app/layout.tsx` — aucune clé requise sur Vercel, activation en un
+import.
+
+---
+
+## 24. Maintenance & checklist développeur
+
+**Avant chaque PR / commit significatif :**
+
+- [ ] `npm run lint` — zéro erreur ESLint.
+- [ ] `npm run build` — build de production propre (attrape les erreurs
+      TypeScript que `next dev` laisse parfois passer).
+- [ ] `npm run test:e2e` — suite Playwright verte.
+- [ ] Toute nouvelle table Supabase a RLS activé **et** des policies
+      explicites — vérifier avec la requête du §25 avant de merger.
+- [ ] Toute nouvelle route API mutante (POST/PATCH/DELETE) vérifie
+      `auth.getUser()` en première ligne et valide son body avec Zod.
+- [ ] Tout nouvel appel `fetch()` côté client dans un composant avec un
+      état `loading` est enveloppé dans `try/catch/finally` — un rejet
+      non intercepté laisse le bouton bloqué en chargement indéfiniment
+      (bug réel corrigé étape 6, voir §25).
+- [ ] Toute nouvelle icône seule dans un bouton a un `aria-label`.
+
+**Cycle de vie d'une migration Supabase :** un fichier numéroté de plus
+dans `supabase/migrations/` (`000N_description.sql`), jamais de
+modification d'un fichier déjà appliqué en production — toujours
+additif, RLS activé dans le même fichier que la création de table (voir
+les migrations existantes comme gabarit).
+
+**Régénérer les types après toute migration :**
+```bash
+npx supabase gen types typescript --project-id <ref> > src/types/database.types.ts
+```
+
+**Où regarder en premier en cas d'incident :**
+1. PostHog > Error tracking (crashs client, actifs par défaut).
+2. Logs Vercel (erreurs serveur, Route Handlers).
+3. Logs Supabase (requêtes, Auth).
+4. `ai_usage_events` si le coût Mistral est le sujet — table dédiée,
+   groupée par `feature`.
+
+---
+
+## 25. Dette technique — priorisée
+
+### Critique (à traiter avant un vrai volume de trafic payant)
+
+| Point | Pourquoi | Effort |
+|---|---|---|
+| Rate limiting en mémoire (`lib/security/rate-limit.ts`) | Ne coordonne pas entre plusieurs instances Vercel — au-delà d'une instance, la protection devient partielle. Migration Upstash Redis documentée en §16/§18. | Moyen |
+| Pas de vrai crash reporting serveur (Sentry) | `onRequestError` existe déjà (§23) mais n'a pas de DSN branché — les erreurs serveur ne remontent qu'aux logs Vercel, faciles à manquer à volume. | Faible (branchement direct) |
+| Aucun index composite vérifié sous charge réelle | Les requêtes actuelles (`analyses` par `user_id, created_at`, etc.) ont des index simples posés en migration, mais n'ont jamais été profilées sous un vrai volume — à revalider avec `EXPLAIN ANALYZE` une fois qu'il y a des données de prod. | Faible à vérifier, potentiellement moyen à corriger |
+
+### Moyen (à planifier, pas urgent)
+
+| Point | Pourquoi | Effort |
+|---|---|---|
+| Deux routes API mortes (`/api/referrals/code`, `/api/referrals/stats`) | Aucun appelant côté client — `/referrals` lit directement Supabase côté serveur. Ni bug ni risque, juste du code non utilisé à assumer ou supprimer. | Faible |
+| Pas de cache sur les appels Mistral | Chaque génération (bio, coach, plan) est un appel complet, même pour un input quasi identique. Le retry (§3) aide la fiabilité, pas le coût. Un cache aurait un taux de hit très faible vu que chaque prompt inclut le contexte utilisateur — probablement pas rentable avant un volume bien plus élevé. | Élevé pour un gain incertain |
+| Témoignages (`components/marketing/testimonials.tsx`) sont des exemples de lancement | Explicitement documenté dans le code — à remplacer par de vrais avis dès qu'il y en a. | Faible |
+| Pas de tests de rendu visuel automatisés | Playwright vérifie la présence/redirection, pas le rendu pixel — une régression CSS peut passer inaperçue. | Moyen (Playwright screenshot testing ou Chromatic) |
+
+### Futur (améliorations, pas des manques)
+
+- Notifications push réelles (aujourd'hui : bannière in-app `ComeBackBanner`, voir §20).
+- Emails transactionnels (Weekly Report par email plutôt que consulté en se connectant).
+- CSRF token explicite en plus du `SameSite=Lax` déjà appliqué par
+  `@supabase/ssr` — défense en profondeur, pas un trou de sécurité connu
+  aujourd'hui (`SameSite=Lax` bloque déjà le vecteur d'attaque pratique
+  sur des routes API JSON).
+- Tests de charge réels avant un lancement TikTok/paid ads à fort volume.
+
+---
+
+## 26. Notes finales — étape 6 (audit technique)
+
+### Ce qui a été vérifié et confirmé sain
+
+- **RLS** : les 16 tables Supabase ont toutes RLS activé avec des
+  policies explicites (vérifié par recoupement automatique entre
+  `create table` et `enable row level security` sur toutes les
+  migrations).
+- **Auth sur les routes API** : toutes les routes mutantes vérifient
+  `auth.getUser()` ; les 2 seules routes sans vérification d'auth
+  (`/api/stats`, `/api/share/score-card`) sont délibérément publiques et
+  ne renvoient/n'acceptent aucune donnée privée.
+- **Validation des inputs** : toutes les routes qui acceptent un body
+  JSON le valident avec Zod ; les routes qui n'en valident pas
+  n'acceptent tout simplement aucun body utilisateur.
+- **Stripe** : signature de webhook vérifiée cryptographiquement, prix
+  résolus côté serveur (jamais transmis par le client), pas d'écriture
+  cliente possible sur `subscriptions` (RLS lecture seule, écriture
+  service-role uniquement).
+- **XSS** : un seul usage de `dangerouslySetInnerHTML` (injection
+  JSON-LD), documenté et alimenté uniquement par du contenu statique
+  développeur, jamais par de l'input utilisateur.
+- **SQL injection** : aucune requête SQL construite par concaténation de
+  chaînes — tout passe par le client Supabase (requêtes paramétrées).
+
+### Ce qui a été corrigé pendant cet audit
+
+- **Bug critique — limiteur de débit inopérant sur les routes GET.** Le
+  rate limiter ignorait *toutes* les requêtes GET, laissant `/api/stats`
+  et surtout `/api/share/score-card` (génération d'image coûteuse en CPU
+  via `next/og`) sans aucune protection contre l'abus. Corrigé.
+- **Gap critique — aucune limite d'erreur Next.js.** Ni `error.tsx`, ni
+  `global-error.tsx`, ni `not-found.tsx` n'existaient : une erreur de
+  rendu non interceptée montrait un écran d'erreur générique au lieu
+  d'une page à la marque avec un bouton "réessayer". Ajoutés, avec un
+  point d'accroche Sentry-ready (§23).
+- **Bug systémique — boutons bloqués en chargement sur échec réseau.**
+  Plusieurs actions IA (bio, coach, simulateur, plan, photos, checkout)
+  n'enveloppaient pas leur `fetch()` dans un `try/catch` : un simple
+  accroc réseau laissait le bouton en spinner indéfiniment. Corrigé sur
+  7 flux (voir étape précédente).
+- **Gap SEO — aucune image de partage par défaut.** Le site avait un
+  `twitter:card: summary_large_image` sans jamais fournir d'`images` —
+  chaque lien partagé (landing, blog, pages SEO) affichait un aperçu
+  texte seul. Ajout de `opengraph-image.tsx` / `twitter-image.tsx` à la
+  racine (image générée à la volée, cohérente avec l'identité de marque).
+- **Performance — sections hors-écran de la landing et du paywall
+  chargées en JS immédiat.** Les sections sous la ligne de flottaison
+  (`Testimonials`, `BeforeAfterSection`, `FAQ`, etc.) sont maintenant
+  importées via `next/dynamic` (SSR conservé pour le SEO, seul le
+  chargement du JS client est différé).
+- **Fiabilité Mistral** : `callMistral` retente une fois automatiquement
+  sur timeout/erreur réseau/5xx (jamais sur un 4xx, qu'un retry ne peut
+  pas corriger) avant de laisser le repli simulé prendre le relais.
+
+---
+
+## 27. Checklist qualité — tous les parcours
+
+Reprend et complète la checklist manuelle du §17, à dérouler en entier
+avant tout lancement de trafic payant :
+
+- [ ] **Utilisateur gratuit** : landing → signup → onboarding complet →
+      upload photos → analyse → résultat avec contenu flouté → clic
+      paywall.
+- [ ] **Utilisateur premium** : paywall → Stripe Checkout (carte test) →
+      retour dashboard sans faux-paywall → chacun des 5 outils IA produit
+      un résultat → badges/niveau affichés correctement.
+- [ ] **Paiement** : webhook reçu, `subscriptions` synchronisée, accès
+      dashboard immédiat (avec le délai de grâce de 1,5s déjà en place).
+- [ ] **Annulation d'abonnement** : Settings > Manage billing → Portail
+      Stripe → annulation → `subscriptions.status` reflète le changement
+      → accès dashboard révoqué à la bonne date.
+- [ ] **Retour dashboard** : reconnexion après quelques jours → weekly
+      report cohérent → bannière de relance si absence ≥ 5 jours.
+- [ ] **Analyse IA** : avec Mistral actif *et* avec `MISTRAL_API_KEY`
+      retirée temporairement (vérifie le repli simulé, `isSimulated:
+      true` correctement propagé jusqu'à l'UI).
+- [ ] **Conversation IA** : les 5 modes du coach, le simulateur de match
+      de bout en bout (setup → échange → score).
+- [ ] **Erreurs** : couper le réseau pendant une génération IA → le
+      bouton doit revenir à son état normal avec un message d'erreur, pas
+      rester bloqué en chargement. Visiter une URL inexistante → page 404
+      à la marque. Forcer une exception (composant de test) → `error.tsx`
+      à la marque avec bouton "réessayer".
+- [ ] **Mobile** : Safari iOS et Chrome Android — clavier ne masque pas
+      le bouton d'action sur l'onboarding, le drag & drop de photos
+      retombe proprement sur "cliquer pour parcourir" au toucher.
+
+---
+
+## 28. Notes finales — scores
+
+| Critère | Score /100 | Commentaire |
+|---|---|---|
+| Architecture | 88 | Séparation claire client/serveur/admin, RLS comme couche d'autorisation primaire, patterns cohérents et documentés dans le code lui-même. |
+| UI | 85 | Design system cohérent (tokens OKLCH, composants réutilisables), animations soignées, quelques micro-détails visuels non vérifiables sans navigateur ouvert en continu. |
+| UX | 84 | Funnel travaillé, activation/rétention/conversion adressées explicitement, gestion d'erreur maintenant robuste sur les parcours IA. |
+| Performance | 80 | Fonts et images déjà optimisées, imports dynamiques sur le contenu hors-écran, retry Mistral — pas encore mesuré sous charge réelle (Lighthouse/Web Vitals en prod à faire). |
+| Sécurité | 85 | RLS complet, Zod partout où pertinent, Stripe correctement vérifié, rate limiting maintenant complet (GET inclus) — reste en mémoire, pas distribué. |
+| Scalabilité | 72 | Le principal frein est le rate limiting en mémoire (une seule instance) — le reste (Supabase, Stripe, Vercel) scale nativement sans changement de code. |
+| Maintenabilité | 86 | Code dédupliqué (hooks partagés), conventions cohérentes, migrations additives, README qui documente le "pourquoi" pas juste le "quoi". |
+| **Probabilité de lancement aujourd'hui** | **83** | Prêt pour un lancement à trafic modéré-fort avec supervision active ; le principal blocage réel avant un lancement à très fort volume (campagne payante massive) est la migration du rate limiting vers Redis. |
+
+### Ce qu'il manque pour un niveau "startup Series A"
+
+1. **Observabilité distribuée réelle** : Sentry effectivement branché (pas
+   juste le point d'accroche), dashboards de latence/erreurs par route,
+   alerting automatique (pas juste consultable) — aujourd'hui la détection
+   d'incident dépend d'un humain qui regarde.
+2. **Scalabilité horizontale prouvée** : rate limiting distribué (Redis),
+   tests de charge réels, un plan Supabase dimensionné et vérifié sous
+   trafic, pas seulement en théorie.
+3. **Tests automatisés de bout en bout avec vraies clés de test** : la
+   suite actuelle ne couvre que ce qui ne nécessite pas de vrais comptes
+   Supabase/Stripe/Mistral — une Series A attend une CI qui exécute le
+   funnel complet (signup → paiement → outil IA) contre un environnement
+   de staging réel à chaque déploiement.
+4. **Tests de charge et SLA formalisés** : aucune donnée aujourd'hui sur
+   le comportement du système à 10x ou 100x le trafic actuel.
+5. **Processus d'incident formalisé** : runbooks, rotation d'astreinte,
+   post-mortems — la maintenance actuelle (§24) est un bon point de
+   départ individuel, pas encore un processus d'équipe.
+6. **Vrais témoignages et preuve sociale** : les témoignages actuels sont
+   des exemples de lancement, explicitement documentés comme tels — une
+   Series A suppose une base d'utilisateurs réels à citer.
+7. **Audit de sécurité externe** : cet audit est interne et basé sur la
+   lecture du code — un pentest ou un audit tiers devient attendu à ce
+   stade, en particulier sur le traitement des photos utilisateur et les
+   flux de paiement.
+
+Rien de cette liste n'est bloquant pour un lancement — ce sont les
+étapes naturelles entre "prêt à accueillir des milliers d'utilisateurs"
+(où le produit en est aujourd'hui) et "prêt à lever une Series A" (où
+l'attente porte autant sur la preuve opérationnelle à l'échelle que sur
+le produit lui-même).
 
 ---
 

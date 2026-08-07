@@ -2,17 +2,21 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { Check, Loader2, Lock, RotateCcw, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BeforeAfterSection } from "@/components/marketing/before-after";
-import { Testimonials } from "@/components/marketing/testimonials";
-import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { useStripeRedirect } from "@/hooks/use-stripe-redirect";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+
+// Below-the-fold social proof/FAQ — deferred so the above-the-fold offer
+// and its checkout button aren't waiting on this JS to download.
+const BeforeAfterSection = dynamic(() => import("@/components/marketing/before-after").then((m) => m.BeforeAfterSection));
+const Testimonials = dynamic(() => import("@/components/marketing/testimonials").then((m) => m.Testimonials));
+const FaqAccordion = dynamic(() => import("@/components/marketing/faq-accordion").then((m) => m.FaqAccordion));
 
 const TRUST_BADGES = [
   { icon: ShieldCheck, label: "Secure payment via Stripe" },

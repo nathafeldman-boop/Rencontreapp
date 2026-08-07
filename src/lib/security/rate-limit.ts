@@ -49,12 +49,14 @@ function clientIp(request: NextRequest): string {
 
 /**
  * Returns a 429 response if this request should be blocked, or `null` to
- * let it through. Only rate-limits mutating API calls (POST/PATCH/DELETE)
- * — GET requests to pages and read-only endpoints pass through untouched.
+ * let it through. Scoped to `/api/*` only — page navigations never hit
+ * this. GET routes are included: `/api/stats` and `/api/share/score-card`
+ * are public and unauthenticated, and the latter does real CPU work
+ * (`next/og` image generation) per request, so both need protection just
+ * as much as the mutating routes do.
  */
 export function checkRateLimit(request: NextRequest): NextResponse | null {
   if (!request.nextUrl.pathname.startsWith("/api/")) return null;
-  if (request.method === "GET" || request.method === "HEAD") return null;
 
   const rule = ROUTE_LIMITS.find((r) => request.nextUrl.pathname.startsWith(r.prefix));
   if (!rule) return null;
