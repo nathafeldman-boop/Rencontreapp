@@ -25,12 +25,16 @@ async function submitFeedback(body: {
   helpful?: boolean;
   message?: string;
 }) {
-  await fetch("/api/feedback", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  track(AnalyticsEvent.FeedbackSubmitted, { category: body.category, helpful: body.helpful });
+  try {
+    await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    track(AnalyticsEvent.FeedbackSubmitted, { category: body.category, helpful: body.helpful });
+  } catch {
+    // Best-effort — a dropped feedback submission isn't worth surfacing an error for.
+  }
 }
 
 /**
@@ -53,14 +57,17 @@ export function FeedbackWidget({ context, prompt = "Did MatchAI help you?" }: { 
 
   async function handleFormSubmit() {
     setSubmitting(true);
-    await submitFeedback({
-      category,
-      context,
-      helpful: helpful ?? undefined,
-      message: message.trim() || undefined,
-    });
-    setSubmitting(false);
-    setStage("done");
+    try {
+      await submitFeedback({
+        category,
+        context,
+        helpful: helpful ?? undefined,
+        message: message.trim() || undefined,
+      });
+      setStage("done");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -134,7 +141,7 @@ export function FeedbackWidget({ context, prompt = "Did MatchAI help you?" }: { 
               <button
                 type="button"
                 onClick={() => setStage("form")}
-                className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+                className="flex items-center gap-1.5 rounded-md text-xs text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <MessageSquarePlus className="size-3.5" />
                 Got a bug or idea?

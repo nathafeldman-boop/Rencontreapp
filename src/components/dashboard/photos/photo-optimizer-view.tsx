@@ -9,6 +9,7 @@ import { Check, Loader2, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 
@@ -41,27 +42,34 @@ export function PhotoOptimizerView({
     setBuilding(true);
     setError(null);
 
-    const res = await fetch("/api/photos/optimize", { method: "POST" });
-    if (!res.ok) {
-      setBuilding(false);
-      setError("Couldn't reorder your photos — try again.");
-      return;
-    }
+    try {
+      const res = await fetch("/api/photos/optimize", { method: "POST" });
+      if (!res.ok) {
+        setError("Couldn't reorder your photos — try again.");
+        return;
+      }
 
-    setPhotos((prev) => [...prev].sort((a, b) => ROLE_ORDER[a.suggestedRole] - ROLE_ORDER[b.suggestedRole] || b.score - a.score));
-    setBuilding(false);
-    setBuilt(true);
-    track(AnalyticsEvent.PhotoOptimizerUsed, { photo_count: photos.length });
+      setPhotos((prev) => [...prev].sort((a, b) => ROLE_ORDER[a.suggestedRole] - ROLE_ORDER[b.suggestedRole] || b.score - a.score));
+      setBuilt(true);
+      track(AnalyticsEvent.PhotoOptimizerUsed, { photo_count: photos.length });
+    } catch {
+      setError("Couldn't reorder your photos — check your connection and try again.");
+    } finally {
+      setBuilding(false);
+    }
   }
 
   if (!hasAnalysis || photos.length === 0) {
     return (
-      <Card className="flex flex-col items-center gap-3 p-8 text-center">
-        <p className="text-sm text-muted-foreground">No photo analysis yet.</p>
-        <Button asChild>
-          <Link href="/dashboard">Back to dashboard</Link>
-        </Button>
-      </Card>
+      <EmptyState
+        title="No photo analysis yet"
+        description="Run your profile analysis first to get per-photo scores and ordering advice."
+        action={
+          <Button asChild>
+            <Link href="/dashboard">Back to dashboard</Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -98,7 +106,16 @@ export function PhotoOptimizerView({
           >
             <Card className="overflow-hidden">
               <div className="relative aspect-[4/3] bg-muted">
-                {photo.url && <Image src={photo.url} alt="" fill sizes="300px" className="object-cover" unoptimized />}
+                {photo.url && (
+                  <Image
+                    src={photo.url}
+                    alt={`Your profile photo, scored ${photo.score}/100`}
+                    fill
+                    sizes="300px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                )}
                 <Badge
                   className="absolute left-2 top-2"
                   variant={photo.suggestedRole === "remove" ? "secondary" : "default"}

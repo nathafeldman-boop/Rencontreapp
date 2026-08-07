@@ -15,6 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SubScoreCard } from "@/components/dashboard/sub-score-card";
 import { ScoreHistoryChart } from "@/components/dashboard/score-history-chart";
 import { ViewTracker } from "@/components/dashboard/view-tracker";
@@ -23,8 +24,11 @@ import { WeeklyReportCard } from "@/components/dashboard/weekly-report-card";
 import { ComeBackBanner } from "@/components/dashboard/come-back-banner";
 import { computeBadges, getLevel, nextLevel } from "@/lib/gamification/badges";
 import { getWeeklyReport } from "@/lib/reports/weekly-report";
+import { getDisplayFirstName } from "@/lib/utils/display-name";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { Recommendation } from "@/types/database.types";
+
+const OBJECTIVE_QUESTION = "What's your main objective?";
 
 const TOOLS = [
   { href: "/dashboard/photos", icon: Camera, label: "Photo Optimizer" },
@@ -53,7 +57,7 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false })
     .limit(10);
 
-  const [{ data: plan }, { count: bioGenerationCount }, { count: simulatorSessionCount }, weeklyReport] =
+  const [{ data: plan }, { count: bioGenerationCount }, { count: simulatorSessionCount }, weeklyReport, { data: objectiveAnswer }] =
     await Promise.all([
       supabase.from("dating_plans").select("days").eq("user_id", user?.id ?? "").maybeSingle(),
       supabase.from("bio_generations").select("*", { count: "exact", head: true }).eq("user_id", user?.id ?? ""),
@@ -63,19 +67,30 @@ export default async function DashboardPage() {
         .eq("user_id", user?.id ?? "")
         .not("ended_at", "is", null),
       getWeeklyReport(supabase, user?.id ?? ""),
+      supabase
+        .from("onboarding_answers")
+        .select("answer")
+        .eq("user_id", user?.id ?? "")
+        .eq("question", OBJECTIVE_QUESTION)
+        .maybeSingle(),
     ]);
+
+  const firstName = getDisplayFirstName(user);
 
   if (!analyses || analyses.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-4 py-16 text-center">
+      <div className="py-8">
         <ViewTracker event={AnalyticsEvent.DashboardViewed} properties={{ has_active_plan: true }} />
-        <h1 className="text-xl font-semibold">No analysis yet</h1>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          Complete your profile upload to get your first Dating Score.
-        </p>
-        <Button asChild>
-          <Link href="/onboarding">Start my analysis</Link>
-        </Button>
+        <EmptyState
+          icon={Sparkles}
+          title="No analysis yet"
+          description="Complete your profile upload to get your first Dating Score."
+          action={
+            <Button asChild>
+              <Link href="/onboarding">Start my analysis</Link>
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -108,8 +123,14 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-8">
       <ViewTracker event={AnalyticsEvent.DashboardViewed} properties={{ has_active_plan: true }} />
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Your dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Your coach&apos;s read on your profile, updated live.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {firstName ? `Hey ${firstName} 👋` : "Your dashboard"}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {objectiveAnswer?.answer
+            ? `Your coach's read on your profile — working toward "${objectiveAnswer.answer}".`
+            : "Your coach's read on your profile, updated live."}
+        </p>
       </div>
 
       {weeklyReport && <ComeBackBanner daysSinceLastAnalysis={weeklyReport.daysSinceLastAnalysis} />}

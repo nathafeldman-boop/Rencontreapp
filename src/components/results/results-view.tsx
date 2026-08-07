@@ -29,6 +29,14 @@ export interface ResultsData {
 
 const SUB_SCORE_LABELS = { photo: "Photos", bio: "Bio", attractiveness: "Attractiveness", conversation: "Conversation" };
 
+const LOCKED_TEASERS = [
+  "Your #1 photo swap — exactly which one to lead with, and why it matters most",
+  "3 full bio rewrites tailored to your goal, ready to paste in",
+  "5 ready-to-send openers picked for your weakest conversations",
+  "The one detail sabotaging your first impression right now",
+  "A 7-day action plan ordered by biggest impact first",
+];
+
 export function ResultsView({ data }: { data: ResultsData }) {
   useEffect(() => {
     track(AnalyticsEvent.AnalysisCompleted, { overall_score: data.overall, is_simulated: data.isSimulated });
@@ -116,18 +124,33 @@ export function ResultsView({ data }: { data: ResultsData }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.4, duration: 0.4 }}
       >
-        <div className="relative mt-4 overflow-hidden rounded-xl border border-border">
-          <ul className="flex flex-col divide-y divide-border blur-sm select-none">
-            {Array.from({ length: data.lockedCount }).map((_, i) => (
-              <li key={i} className="p-4 text-sm">
-                Recommendation #{i + 1} — full detail, new bio draft, and ready-to-send openers
-              </li>
-            ))}
-          </ul>
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/70">
-            <Lock className="size-5 text-muted-foreground" />
-            <p className="text-sm font-medium">{data.lockedCount} personalized recommendations</p>
-          </div>
+        <p className="mt-8 text-sm font-medium">
+          What Premium unlocks — this is what&apos;s actually holding you back.
+        </p>
+
+        <div className="mt-3 flex flex-col gap-3">
+          {data.lockedCount > 0 && (
+            <div className="rounded-xl border border-primary/30 bg-accent/50 p-4">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-primary">Sneak peek</span>
+              <p className="mt-1 text-sm text-accent-foreground">{LOCKED_TEASERS[0]}</p>
+            </div>
+          )}
+
+          {data.lockedCount > 1 && (
+            <div className="relative overflow-hidden rounded-xl border border-border">
+              <ul aria-hidden="true" className="flex flex-col divide-y divide-border blur-sm select-none">
+                {Array.from({ length: data.lockedCount - 1 }).map((_, i) => (
+                  <li key={i} className="p-4 text-sm">
+                    {LOCKED_TEASERS[(i + 1) % LOCKED_TEASERS.length]}
+                  </li>
+                ))}
+              </ul>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/70">
+                <Lock className="size-5 text-muted-foreground" />
+                <p className="text-sm font-medium">{data.lockedCount - 1} more personalized recommendations</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <Button size="lg" className="mt-8 w-full" asChild>

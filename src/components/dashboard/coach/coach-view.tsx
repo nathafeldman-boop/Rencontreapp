@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChipButton } from "@/components/onboarding/chip-button";
+import { useClipboardCopy } from "@/hooks/use-clipboard-copy";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { CoachMode, ConversationSuggestion } from "@/types/database.types";
@@ -28,36 +29,34 @@ export function CoachView() {
   const [suggestions, setSuggestions] = useState<ConversationSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const { copiedKey, copy } = useClipboardCopy();
 
   async function getSuggestions() {
     setLoading(true);
     setError(null);
 
-    const res = await fetch("/api/ai/conversation-coach", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversation, mode }),
-    });
+    try {
+      const res = await fetch("/api/ai/conversation-coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversation, mode }),
+      });
 
-    if (!res.ok) {
+      if (!res.ok) {
+        setError(
+          res.status === 429 ? "You've used all your AI credits for this month." : "Couldn't get suggestions — try again."
+        );
+        return;
+      }
+
+      const { data } = await res.json();
+      setSuggestions(data.suggestions);
+      track(AnalyticsEvent.ConversationCoachUsed, {});
+    } catch {
+      setError("Couldn't get suggestions — check your connection and try again.");
+    } finally {
       setLoading(false);
-      setError(
-        res.status === 429 ? "You've used all your AI credits for this month." : "Couldn't get suggestions — try again."
-      );
-      return;
     }
-
-    const { data } = await res.json();
-    setSuggestions(data.suggestions);
-    setLoading(false);
-    track(AnalyticsEvent.ConversationCoachUsed, {});
-  }
-
-  async function copy(message: string, i: number) {
-    await navigator.clipboard.writeText(message);
-    setCopiedIndex(i);
-    setTimeout(() => setCopiedIndex(null), 1500);
   }
 
   return (
@@ -101,8 +100,8 @@ export function CoachView() {
                   <p className="text-sm font-medium">{s.message}</p>
                   <p className="text-xs text-muted-foreground">{s.explanation}</p>
                   <Button size="sm" variant="outline" className="w-fit" onClick={() => copy(s.message, i)}>
-                    {copiedIndex === i ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                    {copiedIndex === i ? "Copied" : "Copy"}
+                    {copiedKey === i ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                    {copiedKey === i ? "Copied" : "Copy"}
                   </Button>
                 </CardContent>
               </Card>

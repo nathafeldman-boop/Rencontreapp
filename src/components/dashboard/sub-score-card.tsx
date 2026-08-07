@@ -23,7 +23,7 @@ export function SubScoreCard({
   improveHref: string;
 }) {
   return (
-    <Card>
+    <Card className="transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-md">
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-base font-medium">
           {label}

@@ -1,21 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { Check, Copy, TrendingDown, TrendingUp } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useClipboardCopy } from "@/hooks/use-clipboard-copy";
 import type { WeeklyReport } from "@/lib/reports/weekly-report";
 
 export function WeeklyReportCard({ report }: { report: WeeklyReport }) {
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-
-  async function copyOpener(text: string, index: number) {
-    await navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 1500);
-  }
+  const { copiedKey, copy } = useClipboardCopy();
 
   return (
     <Card>
@@ -59,11 +53,11 @@ export function WeeklyReportCard({ report }: { report: WeeklyReport }) {
                 <p className="text-sm">{opener}</p>
                 <button
                   type="button"
-                  onClick={() => copyOpener(opener, i)}
-                  className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => copy(opener, i)}
+                  className="shrink-0 rounded-md text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   aria-label="Copy opener"
                 >
-                  {copiedIndex === i ? <Check className="size-4" /> : <Copy className="size-4" />}
+                  {copiedKey === i ? <Check className="size-4" /> : <Copy className="size-4" />}
                 </button>
               </div>
             ))}

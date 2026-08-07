@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChipButton } from "@/components/onboarding/chip-button";
 import { FeedbackWidget } from "@/components/feedback/feedback-widget";
+import { useClipboardCopy } from "@/hooks/use-clipboard-copy";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { BioStyle } from "@/types/database.types";
@@ -25,40 +26,38 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
   const [bios, setBios] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [savedIndex, setSavedIndex] = useState<number | null>(null);
+  const { copiedKey, copy } = useClipboardCopy();
 
   async function generate() {
     setLoading(true);
     setError(null);
     setSavedIndex(null);
 
-    const res = await fetch("/api/ai/bio-generator", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ style }),
-    });
+    try {
+      const res = await fetch("/api/ai/bio-generator", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ style }),
+      });
 
-    if (!res.ok) {
+      if (!res.ok) {
+        setError(
+          res.status === 429
+            ? "You've used all your AI credits for this month."
+            : "Couldn't generate bios — try again."
+        );
+        return;
+      }
+
+      const { data } = await res.json();
+      setBios(data.bios);
+      track(AnalyticsEvent.BioGenerated, { style });
+    } catch {
+      setError("Couldn't generate bios — check your connection and try again.");
+    } finally {
       setLoading(false);
-      setError(
-        res.status === 429
-          ? "You've used all your AI credits for this month."
-          : "Couldn't generate bios — try again."
-      );
-      return;
     }
-
-    const { data } = await res.json();
-    setBios(data.bios);
-    setLoading(false);
-    track(AnalyticsEvent.BioGenerated, { style });
-  }
-
-  async function copy(bio: string, index: number) {
-    await navigator.clipboard.writeText(bio);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 1500);
   }
 
   async function applyBio(bio: string, index: number) {
@@ -113,8 +112,8 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
                   <p className="text-sm">{bio}</p>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => copy(bio, i)}>
-                      {copiedIndex === i ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                      {copiedIndex === i ? "Copied" : "Copy"}
+                      {copiedKey === i ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                      {copiedKey === i ? "Copied" : "Copy"}
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => applyBio(bio, i)} disabled={savedIndex === i}>
                       {savedIndex === i ? <Check className="size-3.5" /> : null}

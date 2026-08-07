@@ -51,7 +51,12 @@ export function PhotoDropzone({ photos, onChange }: PhotoDropzoneProps) {
         role="button"
         tabIndex={0}
         onClick={() => inputRef.current?.click()}
-        onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
@@ -110,7 +115,7 @@ function PhotoPreview({ file, onRemove }: { file: File; onRemove: () => void }) 
       <button
         type="button"
         onClick={onRemove}
-        className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground opacity-0 shadow transition-opacity group-hover:opacity-100"
+        className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground opacity-100 shadow outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-ring sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
         aria-label={`Remove ${file.name}`}
       >
         <X className="size-3" />

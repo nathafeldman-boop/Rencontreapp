@@ -7,6 +7,7 @@ import { Check, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { EmptyState } from "@/components/ui/empty-state";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { PlanDay } from "@/types/database.types";
@@ -20,19 +21,23 @@ export function PlanView({ initialDays }: { initialDays: PlanDay[] | null }) {
     setLoading(true);
     setError(null);
 
-    const res = await fetch("/api/ai/dating-plan", { method: "POST" });
-    if (!res.ok) {
-      setLoading(false);
-      setError(
-        res.status === 429 ? "You've used all your AI credits for this month." : "Couldn't build your plan — try again."
-      );
-      return;
-    }
+    try {
+      const res = await fetch("/api/ai/dating-plan", { method: "POST" });
+      if (!res.ok) {
+        setError(
+          res.status === 429 ? "You've used all your AI credits for this month." : "Couldn't build your plan — try again."
+        );
+        return;
+      }
 
-    const { data } = await res.json();
-    setDays(data.days);
-    setLoading(false);
-    track(AnalyticsEvent.DatingPlanGenerated, {});
+      const { data } = await res.json();
+      setDays(data.days);
+      track(AnalyticsEvent.DatingPlanGenerated, {});
+    } catch {
+      setError("Couldn't build your plan — check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function toggleDay(day: PlanDay) {
@@ -46,14 +51,19 @@ export function PlanView({ initialDays }: { initialDays: PlanDay[] | null }) {
 
   if (!days) {
     return (
-      <Card className="flex flex-col items-center gap-3 p-8 text-center">
-        <p className="text-sm text-muted-foreground">You don&apos;t have a plan yet.</p>
-        <Button onClick={generate} disabled={loading}>
-          {loading ? <Loader2 className="animate-spin" /> : <Sparkles />}
-          Build my plan
-        </Button>
-        {error && <p className="text-sm text-destructive">{error}</p>}
-      </Card>
+      <EmptyState
+        title="You don't have a plan yet"
+        description="Get a personalized day-by-day plan built from your latest analysis."
+        action={
+          <div className="flex flex-col items-center gap-2">
+            <Button onClick={generate} disabled={loading}>
+              {loading ? <Loader2 className="animate-spin" /> : <Sparkles />}
+              Build my plan
+            </Button>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </div>
+        }
+      />
     );
   }
 

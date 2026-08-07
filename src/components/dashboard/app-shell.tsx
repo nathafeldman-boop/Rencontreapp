@@ -36,20 +36,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={pathname === item.href ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors",
+                  "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   pathname === item.href
                     ? "bg-secondary text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <item.icon className="size-4" />
-                {item.label}
+                <span className="sr-only sm:not-sr-only">{item.label}</span>
               </Link>
             ))}
             <button
               onClick={handleSignOut}
-              className="ml-1 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-destructive"
+              aria-label="Sign out"
+              className="ml-1 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground outline-none transition-colors hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <LogOut className="size-4" />
             </button>

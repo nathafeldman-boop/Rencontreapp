@@ -1,5 +1,7 @@
 "use client";
 
+import { motion } from "framer-motion";
+
 interface ScorePoint {
   date: string;
   score: number;
@@ -40,10 +42,36 @@ export function ScoreHistoryChart({ points }: { points: ScorePoint[] }) {
             <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <path d={areaPath} fill="url(#score-history-fill)" stroke="none" />
-        <path d={linePath} fill="none" stroke="var(--primary)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+        <motion.path
+          d={areaPath}
+          fill="url(#score-history-fill)"
+          stroke="none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        />
+        <motion.path
+          d={linePath}
+          fill="none"
+          stroke="var(--primary)"
+          strokeWidth={2}
+          vectorEffect="non-scaling-stroke"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        />
         {coords.map((c, i) => (
-          <circle key={i} cx={c.x} cy={c.y} r={1.6} fill="var(--primary)" vectorEffect="non-scaling-stroke" />
+          <motion.circle
+            key={i}
+            cx={c.x}
+            cy={c.y}
+            r={1.6}
+            fill="var(--primary)"
+            vectorEffect="non-scaling-stroke"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.8 + i * 0.05 }}
+          />
         ))}
       </svg>
     </div>

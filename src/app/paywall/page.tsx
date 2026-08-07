@@ -1,15 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Lock, RotateCcw, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BeforeAfterSection } from "@/components/marketing/before-after";
+import { Testimonials } from "@/components/marketing/testimonials";
+import { FaqAccordion } from "@/components/marketing/faq-accordion";
+import { useStripeRedirect } from "@/hooks/use-stripe-redirect";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+
+const TRUST_BADGES = [
+  { icon: ShieldCheck, label: "Secure payment via Stripe" },
+  { icon: RotateCcw, label: "Cancel anytime, one click" },
+  { icon: Lock, label: "Your data stays private" },
+];
 
 const PLAN_ID = "premium_monthly";
 const PRICE = "7.99€";
@@ -23,34 +32,20 @@ const BENEFITS = [
 ];
 
 export default function PaywallPage() {
-  const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const { loading, error, redirect } = useStripeRedirect();
 
   useEffect(() => {
     track(AnalyticsEvent.PaywallViewed, { trigger: "results" });
   }, []);
 
   async function handleSubscribe() {
-    setLoading(true);
-    setNotice(null);
     track(AnalyticsEvent.CheckoutStarted, { plan: PLAN_ID });
-
-    const res = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan: PLAN_ID }),
+    // `subscription_purchased` fires server-side from the Stripe webhook
+    // once payment is actually confirmed — see src/app/api/stripe/webhook.
+    await redirect("/api/stripe/checkout", {
+      body: { plan: PLAN_ID },
+      errorMessage: "Checkout is launching very soon — come back in a few days!",
     });
-
-    if (res.ok) {
-      // `subscription_purchased` fires server-side from the Stripe webhook
-      // once payment is actually confirmed — see src/app/api/stripe/webhook.
-      const { data } = await res.json();
-      window.location.assign(data.url);
-      return;
-    }
-
-    setLoading(false);
-    setNotice("Checkout is launching very soon — come back in a few days!");
   }
 
   return (
@@ -91,18 +86,29 @@ export default function PaywallPage() {
             Unlock My Full Analysis
           </Button>
 
-          {notice && <p className="mt-3 text-center text-xs text-muted-foreground">{notice}</p>}
+          {error && <p className="mt-3 text-center text-xs text-muted-foreground">{error}</p>}
         </motion.div>
 
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          Cancel anytime. No commitment.
-        </p>
-        <Link href="/premium" className="mt-2 text-center text-xs text-primary underline underline-offset-2">
+        <div className="mt-5 flex flex-col items-center gap-2">
+          {TRUST_BADGES.map((badge) => (
+            <span key={badge.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <badge.icon className="size-3.5" />
+              {badge.label}
+            </span>
+          ))}
+        </div>
+
+        <Link
+          href="/premium"
+          className="mt-4 text-center text-xs text-primary underline underline-offset-2"
+        >
           See the full free vs premium comparison
         </Link>
       </div>
 
       <BeforeAfterSection />
+      <Testimonials />
+      <FaqAccordion />
     </main>
   );
 }

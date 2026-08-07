@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Check, Copy, Gift } from "lucide-react";
 
@@ -9,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useClipboardCopy } from "@/hooks/use-clipboard-copy";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 
@@ -43,13 +43,12 @@ export function ReferralsView({
   activeBonusUntil: string | null;
   nextThreshold: NextThreshold | null;
 }) {
-  const [copied, setCopied] = useState(false);
+  const { copiedKey, copy } = useClipboardCopy();
+  const copied = copiedKey === "referral-link";
 
   async function copyLink() {
-    await navigator.clipboard.writeText(referralUrl);
-    setCopied(true);
+    await copy(referralUrl, "referral-link");
     track(AnalyticsEvent.ReferralLinkCopied, {});
-    setTimeout(() => setCopied(false), 1500);
   }
 
   const progress = nextThreshold ? Math.min(100, (inviteCount / nextThreshold.atInviteCount) * 100) : 100;

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useStripeRedirect } from "@/hooks/use-stripe-redirect";
 import type { SubscriptionPlan, SubscriptionStatus } from "@/types/database.types";
 
 interface BillingCardProps {
@@ -23,21 +23,11 @@ const PLAN_LABEL: Record<SubscriptionPlan, string> = {
 };
 
 export function BillingCard({ plan, status, currentPeriodEnd, hasBillingAccount }: BillingCardProps) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { loading, error, redirect } = useStripeRedirect();
   const isActive = status === "active" || status === "trialing";
 
   async function openPortal() {
-    setLoading(true);
-    setError(null);
-    const res = await fetch("/api/stripe/portal", { method: "POST" });
-    if (res.ok) {
-      const { data } = await res.json();
-      window.location.assign(data.url);
-      return;
-    }
-    setLoading(false);
-    setError("Couldn't open billing — try again in a moment.");
+    await redirect("/api/stripe/portal", { errorMessage: "Couldn't open billing — try again in a moment." });
   }
 
   return (

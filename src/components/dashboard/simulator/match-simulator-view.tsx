@@ -49,43 +49,52 @@ export function MatchSimulatorView() {
     setMessages((prev) => [...prev, optimistic]);
     setDraft("");
 
-    const persona: MatchPersona = { gender, personality };
-    const res = await fetch("/api/ai/match-simulator/message", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId, persona: sessionId ? undefined : persona, message: optimistic.content }),
-    });
+    try {
+      const persona: MatchPersona = { gender, personality };
+      const res = await fetch("/api/ai/match-simulator/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, persona: sessionId ? undefined : persona, message: optimistic.content }),
+      });
 
-    if (!res.ok) {
+      if (!res.ok) {
+        setError(res.status === 429 ? "You've used all your AI credits for this month." : "Something went wrong.");
+        return;
+      }
+
+      const { data } = await res.json();
+      setSessionId(data.sessionId);
+      setMessages((prev) => [...prev, { role: "match", content: data.reply }]);
+      setStage("chatting");
+    } catch {
+      setError("Something went wrong — check your connection and try again.");
+    } finally {
       setSending(false);
-      setError(res.status === 429 ? "You've used all your AI credits for this month." : "Something went wrong.");
-      return;
     }
-
-    const { data } = await res.json();
-    setSessionId(data.sessionId);
-    setMessages((prev) => [...prev, { role: "match", content: data.reply }]);
-    setStage("chatting");
-    setSending(false);
   }
 
   async function endSession() {
     if (!sessionId) return;
     setEnding(true);
-    const res = await fetch("/api/ai/match-simulator/end", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    });
-    setEnding(false);
-    if (!res.ok) {
-      setError("Couldn't score this conversation — try again.");
-      return;
+    try {
+      const res = await fetch("/api/ai/match-simulator/end", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+      if (!res.ok) {
+        setError("Couldn't score this conversation — try again.");
+        return;
+      }
+      const { data } = await res.json();
+      setResult({ score: data.score, feedback: data.feedback });
+      setStage("scored");
+      track(AnalyticsEvent.AiCoachUsed, { conversation_score: data.score });
+    } catch {
+      setError("Couldn't score this conversation — check your connection and try again.");
+    } finally {
+      setEnding(false);
     }
-    const { data } = await res.json();
-    setResult({ score: data.score, feedback: data.feedback });
-    setStage("scored");
-    track(AnalyticsEvent.AiCoachUsed, { conversation_score: data.score });
   }
 
   function reset() {
