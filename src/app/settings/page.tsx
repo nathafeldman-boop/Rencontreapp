@@ -17,13 +17,13 @@ export default async function SettingsPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Paramètres</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Ton compte et ton abonnement.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Your account and subscription.</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Compte</CardTitle>
+          <CardTitle className="text-base">Account</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">{user?.email}</p>
@@ -32,13 +32,13 @@ export default async function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Abonnement</CardTitle>
+          <CardTitle className="text-base">Subscription</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             {subscription?.plan === "free" || !subscription
-              ? "Aucun abonnement actif"
-              : `Plan ${subscription.plan}`}
+              ? "No active subscription"
+              : `Plan: ${subscription.plan}`}
           </p>
           <Badge variant={subscription?.status === "active" ? "default" : "secondary"}>
             {subscription?.status ?? "free"}

@@ -62,9 +62,9 @@ export default function LoginPage() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-sm"
       >
-        <h1 className="text-xl font-semibold tracking-tight">Crée ton compte</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Create your account</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Gratuit. Ton analyse démarre juste après.
+          Free. Your analysis starts right after.
         </p>
 
         <Button
@@ -74,18 +74,18 @@ export default function LoginPage() {
           disabled={status === "loading"}
         >
           {status === "loading" ? <Loader2 className="animate-spin" /> : <GoogleIcon className="size-4" />}
-          Continuer avec Google
+          Continue with Google
         </Button>
 
         <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
           <div className="h-px flex-1 bg-border" />
-          ou
+          or
           <div className="h-px flex-1 bg-border" />
         </div>
 
         {status === "sent" ? (
           <p className="rounded-lg bg-secondary p-4 text-sm text-secondary-foreground">
-            Lien envoyé — vérifie ta boîte mail pour continuer.
+            Link sent — check your inbox to continue.
           </p>
         ) : (
           <form onSubmit={handleEmailSignIn} className="flex flex-col gap-3">
@@ -94,13 +94,13 @@ export default function LoginPage() {
               id="email"
               type="email"
               required
-              placeholder="toi@exemple.com"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             <Button type="submit" variant="secondary" disabled={status === "loading"}>
               {status === "loading" ? <Loader2 className="animate-spin" /> : <Mail />}
-              Recevoir un lien de connexion
+              Send me a sign-in link
             </Button>
           </form>
         )}

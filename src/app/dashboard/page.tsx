@@ -13,15 +13,15 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Ton dashboard</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Your dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Vue d&apos;ensemble de ton profil et de ta progression.
+          An overview of your profile and your progress.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Dernier score global</CardTitle>
+          <CardTitle className="text-base">Latest overall score</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-6">
           <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-2xl font-semibold text-primary-foreground">
@@ -36,9 +36,9 @@ export default function DashboardPage() {
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <QuickAction href="/onboarding" icon={Camera} label="Refaire une analyse" />
-        <QuickAction href="/results" icon={Sparkles} label="Voir mes recommandations" />
-        <QuickAction href="/settings" icon={MessageCircle} label="Gérer mon abonnement" />
+        <QuickAction href="/onboarding" icon={Camera} label="Run a new analysis" />
+        <QuickAction href="/results" icon={Sparkles} label="View my recommendations" />
+        <QuickAction href="/settings" icon={MessageCircle} label="Manage my subscription" />
       </div>
     </div>
   );

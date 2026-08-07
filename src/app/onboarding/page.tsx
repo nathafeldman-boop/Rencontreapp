@@ -3,83 +3,114 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Loader2, Upload, X } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { ChipButton } from "@/components/onboarding/chip-button";
+import { ConfidenceSlider } from "@/components/onboarding/confidence-slider";
+import { PhotoDropzone, MIN_PHOTOS } from "@/components/onboarding/photo-dropzone";
 import { createClient } from "@/lib/supabase/client";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
-import type { DatingApp, DatingGoal, Gender } from "@/types/database.types";
+import {
+  OBJECTIVE_OPTIONS,
+  WEEKLY_MATCHES_OPTIONS,
+  BIGGEST_PROBLEM_OPTIONS,
+} from "@/lib/validations/onboarding";
+import type { DatingApp, Gender } from "@/types/database.types";
 
 const DATING_APPS: { value: DatingApp; label: string }[] = [
   { value: "tinder", label: "Tinder" },
-  { value: "bumble", label: "Bumble" },
   { value: "hinge", label: "Hinge" },
-  { value: "other", label: "Autre" },
+  { value: "bumble", label: "Bumble" },
+  { value: "other", label: "Other" },
 ];
 
-const DATING_GOALS: { value: DatingGoal; label: string }[] = [
-  { value: "serious_relationship", label: "Relation sérieuse" },
-  { value: "casual_dating", label: "Dating casual" },
-  { value: "friends", label: "Rencontrer du monde" },
-  { value: "not_sure", label: "Je ne sais pas encore" },
-];
-
-const STEP_COUNT = 4;
+const STEP_COUNT = 7;
 
 interface FormState {
   age: string;
   gender: Gender | "";
-  country: string;
-  dating_apps_used: DatingApp[];
-  dating_goal: DatingGoal | "";
-  match_count: string;
-  main_difficulty: string;
+  location: string;
+  dating_app: DatingApp | "";
+  objective: string;
+  weekly_matches: string;
+  biggest_problem: string;
+  confidence: number;
   bio: string;
-  primary_app: DatingApp;
   photos: File[];
 }
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [submitting, setSubmitting] = useState(false);
+  const [submittingAnswers, setSubmittingAnswers] = useState(false);
+  const [submittingProfile, setSubmittingProfile] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>({
     age: "",
     gender: "",
-    country: "",
-    dating_apps_used: [],
-    dating_goal: "",
-    match_count: "",
-    main_difficulty: "",
+    location: "",
+    dating_app: "",
+    objective: "",
+    weekly_matches: "",
+    biggest_problem: "",
+    confidence: 5,
     bio: "",
-    primary_app: "tinder",
     photos: [],
   });
 
-  function toggleApp(app: DatingApp) {
-    setForm((f) => ({
-      ...f,
-      dating_apps_used: f.dating_apps_used.includes(app)
-        ? f.dating_apps_used.filter((a) => a !== app)
-        : [...f.dating_apps_used, app],
-    }));
-  }
-
   function canAdvance() {
-    if (step === 1) return form.age !== "" && form.gender !== "" && form.country.trim() !== "";
-    if (step === 2) return form.dating_apps_used.length > 0 && form.dating_goal !== "";
-    if (step === 3) return form.match_count.trim() !== "" && form.main_difficulty.trim() !== "";
-    if (step === 4) return form.bio.trim().length > 0 && form.photos.length > 0;
+    if (step === 1) return form.age !== "" && form.gender !== "" && form.location.trim() !== "";
+    if (step === 2) return form.dating_app !== "";
+    if (step === 3) return form.objective !== "";
+    if (step === 4) return form.weekly_matches !== "";
+    if (step === 5) return form.biggest_problem !== "";
+    if (step === 6) return true; // slider always has a value
+    if (step === 7) return form.bio.trim().length > 0 && form.photos.length >= MIN_PHOTOS;
     return false;
   }
 
-  async function handleSubmit() {
-    setSubmitting(true);
+  async function handleNext() {
+    setError(null);
+
+    // Steps 1-6 collect the answers; persist them right before the upload
+    // step so a drop-off after this point still leaves usable data.
+    if (step === 6) {
+      setSubmittingAnswers(true);
+      try {
+        const res = await fetch("/api/onboarding", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            age: Number(form.age),
+            gender: form.gender,
+            location: form.location,
+            dating_app: form.dating_app,
+            objective: form.objective,
+            weekly_matches: form.weekly_matches,
+            biggest_problem: form.biggest_problem,
+            confidence: form.confidence,
+          }),
+        });
+        if (!res.ok) throw new Error("Couldn't save your answers — try again.");
+        track(AnalyticsEvent.OnboardingCompleted, { steps_completed: 6 });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Something went wrong.");
+        setSubmittingAnswers(false);
+        return;
+      }
+      setSubmittingAnswers(false);
+    }
+
+    setStep((s) => s + 1);
+  }
+
+  async function handleLaunchAnalysis() {
+    setSubmittingProfile(true);
     setError(null);
 
     try {
@@ -88,26 +119,7 @@ export default function OnboardingPage() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) throw new Error("Session expirée, reconnecte-toi.");
-
-      const onboardingRes = await fetch("/api/onboarding", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          age: Number(form.age),
-          gender: form.gender,
-          country: form.country,
-          dating_apps_used: form.dating_apps_used,
-          dating_goal: form.dating_goal,
-          answers: [
-            { question: "Combien de matchs obtiens-tu par semaine ?", answer: form.match_count },
-            { question: "Quelle est ta principale difficulté ?", answer: form.main_difficulty },
-          ],
-        }),
-      });
-
-      if (!onboardingRes.ok) throw new Error("Impossible d'enregistrer tes réponses.");
-      track(AnalyticsEvent.OnboardingCompleted, { steps_completed: STEP_COUNT });
+      if (!user) throw new Error("Your session expired — sign in again.");
 
       const photoPaths: string[] = [];
       for (const photo of form.photos) {
@@ -115,7 +127,7 @@ export default function OnboardingPage() {
         const { error: uploadError } = await supabase.storage
           .from("profile-photos")
           .upload(path, photo, { upsert: false });
-        if (uploadError) throw new Error(`Échec de l'upload : ${uploadError.message}`);
+        if (uploadError) throw new Error(`Photo upload failed: ${uploadError.message}`);
         photoPaths.push(path);
       }
       track(AnalyticsEvent.PhotosUploaded, { photo_count: photoPaths.length });
@@ -125,25 +137,29 @@ export default function OnboardingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           bio: form.bio,
-          dating_app: form.primary_app,
+          dating_app: form.dating_app,
           photo_paths: photoPaths,
         }),
       });
 
-      if (!profileRes.ok) throw new Error("Impossible d'enregistrer ton profil.");
+      if (!profileRes.ok) throw new Error("Couldn't save your profile — try again.");
 
       router.push("/analyze");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
-      setSubmitting(false);
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setSubmittingProfile(false);
     }
   }
+
+  const isBusy = submittingAnswers || submittingProfile;
 
   return (
     <main className="flex flex-1 flex-col items-center px-6 py-12">
       <div className="w-full max-w-md">
         <Progress value={(step / STEP_COUNT) * 100} />
-        <p className="mt-2 text-xs text-muted-foreground">Étape {step} / {STEP_COUNT}</p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Step {step} / {STEP_COUNT}
+        </p>
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -156,9 +172,9 @@ export default function OnboardingPage() {
           >
             {step === 1 && (
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl font-semibold">Parle-nous de toi</h1>
+                <h1 className="text-xl font-semibold">Let&apos;s personalize your analysis</h1>
                 <div>
-                  <Label htmlFor="age">Âge</Label>
+                  <Label htmlFor="age">Age</Label>
                   <Input
                     id="age"
                     type="number"
@@ -170,27 +186,23 @@ export default function OnboardingPage() {
                   />
                 </div>
                 <div>
-                  <Label>Sexe</Label>
+                  <Label>Gender</Label>
                   <div className="mt-1.5 grid grid-cols-2 gap-2">
                     {(["male", "female", "non_binary", "other"] as Gender[]).map((g) => (
-                      <ChipButton
-                        key={g}
-                        active={form.gender === g}
-                        onClick={() => setForm((f) => ({ ...f, gender: g }))}
-                      >
-                        {{ male: "Homme", female: "Femme", non_binary: "Non-binaire", other: "Autre" }[g]}
+                      <ChipButton key={g} active={form.gender === g} onClick={() => setForm((f) => ({ ...f, gender: g }))}>
+                        {{ male: "Man", female: "Woman", non_binary: "Non-binary", other: "Other" }[g]}
                       </ChipButton>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="country">Pays</Label>
+                  <Label htmlFor="location">Location</Label>
                   <Input
-                    id="country"
+                    id="location"
                     className="mt-1.5"
-                    placeholder="France"
-                    value={form.country}
-                    onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))}
+                    placeholder="City, country"
+                    value={form.location}
+                    onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
                   />
                 </div>
               </div>
@@ -198,83 +210,91 @@ export default function OnboardingPage() {
 
             {step === 2 && (
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl font-semibold">Tes apps & ton objectif</h1>
-                <div>
-                  <Label>Applications utilisées</Label>
-                  <div className="mt-1.5 grid grid-cols-2 gap-2">
-                    {DATING_APPS.map((app) => (
-                      <ChipButton
-                        key={app.value}
-                        active={form.dating_apps_used.includes(app.value)}
-                        onClick={() => toggleApp(app.value)}
-                      >
-                        {app.label}
-                      </ChipButton>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <Label>Objectif</Label>
-                  <div className="mt-1.5 grid grid-cols-1 gap-2">
-                    {DATING_GOALS.map((goal) => (
-                      <ChipButton
-                        key={goal.value}
-                        active={form.dating_goal === goal.value}
-                        onClick={() => setForm((f) => ({ ...f, dating_goal: goal.value }))}
-                      >
-                        {goal.label}
-                      </ChipButton>
-                    ))}
-                  </div>
+                <h1 className="text-xl font-semibold">Which dating app do you use most?</h1>
+                <div className="grid grid-cols-2 gap-2">
+                  {DATING_APPS.map((app) => (
+                    <ChipButton
+                      key={app.value}
+                      active={form.dating_app === app.value}
+                      onClick={() => setForm((f) => ({ ...f, dating_app: app.value }))}
+                    >
+                      {app.label}
+                    </ChipButton>
+                  ))}
                 </div>
               </div>
             )}
 
             {step === 3 && (
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl font-semibold">Où en es-tu aujourd&apos;hui ?</h1>
-                <div>
-                  <Label htmlFor="match_count">Matchs obtenus par semaine, environ</Label>
-                  <Input
-                    id="match_count"
-                    className="mt-1.5"
-                    placeholder="Ex : 2-3"
-                    value={form.match_count}
-                    onChange={(e) => setForm((f) => ({ ...f, match_count: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="main_difficulty">Ta principale difficulté</Label>
-                  <Input
-                    id="main_difficulty"
-                    className="mt-1.5"
-                    placeholder="Ex : peu de matchs, conversations qui meurent..."
-                    value={form.main_difficulty}
-                    onChange={(e) => setForm((f) => ({ ...f, main_difficulty: e.target.value }))}
-                  />
+                <h1 className="text-xl font-semibold">What&apos;s your main objective?</h1>
+                <div className="grid grid-cols-1 gap-2">
+                  {OBJECTIVE_OPTIONS.map((option) => (
+                    <ChipButton
+                      key={option.value}
+                      active={form.objective === option.value}
+                      onClick={() => setForm((f) => ({ ...f, objective: option.value }))}
+                    >
+                      {option.label}
+                    </ChipButton>
+                  ))}
                 </div>
               </div>
             )}
 
             {step === 4 && (
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl font-semibold">Ton profil actuel</h1>
-                <div>
-                  <Label>App principale à analyser</Label>
-                  <div className="mt-1.5 grid grid-cols-2 gap-2">
-                    {DATING_APPS.map((app) => (
-                      <ChipButton
-                        key={app.value}
-                        active={form.primary_app === app.value}
-                        onClick={() => setForm((f) => ({ ...f, primary_app: app.value }))}
-                      >
-                        {app.label}
-                      </ChipButton>
-                    ))}
-                  </div>
+                <h1 className="text-xl font-semibold">How many matches do you get weekly?</h1>
+                <div className="grid grid-cols-4 gap-2">
+                  {WEEKLY_MATCHES_OPTIONS.map((option) => (
+                    <ChipButton
+                      key={option.value}
+                      active={form.weekly_matches === option.value}
+                      onClick={() => setForm((f) => ({ ...f, weekly_matches: option.value }))}
+                    >
+                      {option.label}
+                    </ChipButton>
+                  ))}
                 </div>
+              </div>
+            )}
+
+            {step === 5 && (
+              <div className="flex flex-col gap-4">
+                <h1 className="text-xl font-semibold">What&apos;s your biggest problem right now?</h1>
+                <div className="grid grid-cols-1 gap-2">
+                  {BIGGEST_PROBLEM_OPTIONS.map((option) => (
+                    <ChipButton
+                      key={option.value}
+                      active={form.biggest_problem === option.value}
+                      onClick={() => setForm((f) => ({ ...f, biggest_problem: option.value }))}
+                    >
+                      {option.label}
+                    </ChipButton>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {step === 6 && (
+              <div className="flex flex-col gap-6">
+                <h1 className="text-xl font-semibold">How confident are you with your profile?</h1>
+                <ConfidenceSlider
+                  value={form.confidence}
+                  onChange={(confidence) => setForm((f) => ({ ...f, confidence }))}
+                />
+              </div>
+            )}
+
+            {step === 7 && (
+              <div className="flex flex-col gap-4">
+                <h1 className="text-xl font-semibold">Upload your profile</h1>
+                <p className="-mt-2 text-sm text-muted-foreground">
+                  This is what we&apos;ll analyze — the more it looks like your real profile, the
+                  better the results.
+                </p>
                 <div>
-                  <Label htmlFor="bio">Ta bio actuelle</Label>
+                  <Label htmlFor="bio">Your current bio</Label>
                   <textarea
                     id="bio"
                     rows={4}
@@ -284,43 +304,13 @@ export default function OnboardingPage() {
                   />
                 </div>
                 <div>
-                  <Label>Photos (2 à 6)</Label>
-                  <label className="mt-1.5 flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground hover:bg-secondary/50">
-                    <Upload className="size-5" />
-                    Ajouter des photos
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          photos: [...f.photos, ...Array.from(e.target.files ?? [])].slice(0, 6),
-                        }))
-                      }
+                  <Label>Photos</Label>
+                  <div className="mt-1.5">
+                    <PhotoDropzone
+                      photos={form.photos}
+                      onChange={(photos) => setForm((f) => ({ ...f, photos }))}
                     />
-                  </label>
-                  {form.photos.length > 0 && (
-                    <ul className="mt-3 flex flex-wrap gap-2">
-                      {form.photos.map((photo, i) => (
-                        <li
-                          key={`${photo.name}-${i}`}
-                          className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs"
-                        >
-                          {photo.name}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setForm((f) => ({ ...f, photos: f.photos.filter((_, idx) => idx !== i) }))
-                            }
-                          >
-                            <X className="size-3" />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  </div>
                 </div>
               </div>
             )}
@@ -330,46 +320,23 @@ export default function OnboardingPage() {
         {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
 
         <div className="mt-8 flex justify-between">
-          <Button variant="ghost" disabled={step === 1 || submitting} onClick={() => setStep((s) => s - 1)}>
-            Retour
+          <Button variant="ghost" disabled={step === 1 || isBusy} onClick={() => setStep((s) => s - 1)}>
+            Back
           </Button>
           {step < STEP_COUNT ? (
-            <Button disabled={!canAdvance()} onClick={() => setStep((s) => s + 1)}>
-              Continuer
+            <Button disabled={!canAdvance() || isBusy} onClick={handleNext}>
+              {submittingAnswers ? <Loader2 className="animate-spin" /> : null}
+              Continue
               <ArrowRight />
             </Button>
           ) : (
-            <Button disabled={!canAdvance() || submitting} onClick={handleSubmit}>
-              {submitting ? <Loader2 className="animate-spin" /> : null}
-              Lancer l&apos;analyse
+            <Button disabled={!canAdvance() || isBusy} onClick={handleLaunchAnalysis}>
+              {submittingProfile ? <Loader2 className="animate-spin" /> : null}
+              Launch my analysis
             </Button>
           )}
         </div>
       </div>
     </main>
-  );
-}
-
-function ChipButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-lg border px-4 py-2.5 text-left text-sm transition-colors ${
-        active
-          ? "border-primary bg-accent text-accent-foreground"
-          : "border-border hover:bg-secondary"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

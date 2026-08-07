@@ -15,15 +15,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MatchAI — Obtiens plus de matchs grâce à l'IA",
+  title: "MatchAI — Get More Matches With AI",
   description:
-    "Analyse ton profil Tinder, Hinge ou Bumble avec l'IA et obtiens des recommandations concrètes pour multiplier tes matchs.",
+    "Upload your Tinder, Hinge, or Bumble profile and get an AI-powered analysis with concrete recommendations to get more matches.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="fr"
+      lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >

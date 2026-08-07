@@ -97,7 +97,10 @@ export interface Database {
           photo_score: number | null;
           bio_score: number | null;
           conversation_score: number | null;
+          attractiveness_score: number | null;
           recommendations: Recommendation[];
+          free_insights: string[];
+          is_simulated: boolean;
           created_at: string;
         };
         Insert: Partial<Omit<Database["public"]["Tables"]["analyses"]["Row"], "id">> & {

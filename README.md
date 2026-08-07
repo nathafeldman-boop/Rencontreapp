@@ -6,8 +6,13 @@ Web app mobile-first qui analyse les profils Tinder / Hinge / Bumble via l'IA et
 convertit du trafic TikTok en abonnés premium.
 
 Ce document décrit la **fondation technique** du projet : elle est pensée pour
-scaler d'un MVP à quelques milliers d'utilisateurs sans réécriture. Aucune
-fonctionnalité IA n'est implémentée à ce stade — voir "Prochaines étapes".
+scaler d'un MVP à quelques milliers d'utilisateurs sans réécriture.
+
+**État actuel (fin de l'étape 2)** : le tunnel complet TikTok → landing →
+compte → onboarding → upload → analyse → résultat gratuit → paywall
+fonctionne de bout en bout. Le scoring vient d'un **moteur de simulation
+déterministe** (pas encore d'appel à Mistral) et Stripe Checkout est
+préparé mais pas encore branché — voir "Ce qui est volontairement un stub".
 
 ---
 
@@ -45,8 +50,8 @@ matchai/
 │   │   │   ├── login/page.tsx          # Google OAuth + email magic link
 │   │   │   └── callback/route.ts       # échange code -> session
 │   │   │
-│   │   ├── onboarding/page.tsx         # questions + upload photos + bio
-│   │   ├── analyze/page.tsx            # écran de chargement de l'analyse
+│   │   ├── onboarding/page.tsx         # 7 étapes : profil + upload photos/bio
+│   │   ├── analyze/page.tsx            # animation de chargement (10-15s)
 │   │   ├── results/page.tsx            # résultat gratuit (teaser + paywall)
 │   │   ├── paywall/page.tsx            # conversion abonnement
 │   │   │
@@ -60,7 +65,8 @@ matchai/
 │   │   └── api/
 │   │       ├── onboarding/route.ts     # POST — enregistre profil + réponses
 │   │       ├── profile/route.ts        # POST — crée un profil (bio, photos, app)
-│   │       ├── analyze/route.ts        # POST — [STUB] pipeline IA
+│   │       ├── analyze/route.ts        # POST — score via simulateAnalysis(), écrit dans `analyses`
+│   │       ├── stats/route.ts          # GET — compteur public pour le social proof landing
 │   │       ├── stripe/
 │   │       │   ├── checkout/route.ts   # POST — [STUB] Stripe Checkout Session
 │   │       │   └── webhook/route.ts    # POST — vérifie la signature Stripe, TODO handlers
@@ -68,8 +74,9 @@ matchai/
 │   │
 │   ├── components/
 │   │   ├── ui/                         # primitives shadcn (button, card, input...)
-│   │   ├── marketing/                  # sections landing (réservé, vide pour l'instant)
-│   │   ├── onboarding/                 # (réservé)
+│   │   ├── marketing/                  # sections landing : hero, problem, solution,
+│   │   │                               # before-after, testimonials, final-cta, counter
+│   │   ├── onboarding/                 # chip-button, confidence-slider, photo-dropzone
 │   │   ├── dashboard/                  # app-shell.tsx (nav + layout dashboard/settings)
 │   │   ├── results/                    # results-view.tsx
 │   │   └── shared/                     # google-icon.tsx, etc.
@@ -78,10 +85,12 @@ matchai/
 │   │   ├── supabase/
 │   │   │   ├── client.ts               # client navigateur
 │   │   │   ├── server.ts               # client Server Components / Route Handlers
-│   │   │   ├── admin.ts                # client service_role (webhooks uniquement)
+│   │   │   ├── admin.ts                # client service_role (webhooks, stats agrégées)
 │   │   │   └── proxy.ts                # rafraîchit la session, protège les routes
 │   │   ├── stripe/client.ts            # client Stripe serveur (singleton)
-│   │   ├── ai/mistral.ts               # wrapper fetch vers l'API Mistral
+│   │   ├── ai/
+│   │   │   ├── mistral.ts              # wrapper fetch vers l'API Mistral (pas encore appelé)
+│   │   │   └── simulate-analysis.ts    # moteur de scoring MVP — même contrat que Mistral
 │   │   ├── analytics/
 │   │   │   ├── events.ts               # noms d'événements typés (source de vérité)
 │   │   │   ├── posthog-provider.tsx    # init client + tracking des pageviews
@@ -97,7 +106,9 @@ matchai/
 │   └── proxy.ts                        # export `proxy()` — middleware Next 16
 │
 ├── supabase/
-│   └── migrations/0001_init.sql        # schéma complet + RLS + policies storage
+│   └── migrations/
+│       ├── 0001_init.sql               # schéma complet + RLS + policies storage
+│       └── 0002_analysis_extras.sql    # attractiveness_score, free_insights, is_simulated
 │
 ├── components.json                     # config shadcn/ui
 └── .env.example
@@ -144,8 +155,11 @@ contraintes, policies RLS, bucket Storage). Résumé :
 - **`public.onboarding_answers`** — paires question/réponse libres,
   découplées du schéma des questions elles-mêmes (permet d'ajouter des
   questions sans migration).
-- **`public.analyses`** — un score global + 3 sous-scores + un
-  `recommendations` JSONB (tableau d'objets `{ category, title, detail }`).
+- **`public.analyses`** — un score global + 4 sous-scores (photo, bio,
+  attractiveness, conversation) + un `recommendations` JSONB (tableau
+  d'objets `{ category, title, detail }`, contenu payant) + `free_insights`
+  (texte libre, teaser gratuit) + `is_simulated` (`true` tant que le score
+  vient du moteur de simulation MVP et non de Mistral — voir §7).
 - **`public.subscriptions`** — miroir de l'état Stripe. **Écriture réservée
   au service role** (webhook) : un utilisateur ne peut que lire sa propre
   ligne, jamais la modifier lui-même — évite qu'un client falsifie son statut
@@ -197,7 +211,7 @@ Supabase Postgres (RLS) / Stripe / Mistral
 | Événement | Où il se déclenche |
 |---|---|
 | `landing_page_viewed` | `app/page.tsx` au montage |
-| `cta_clicked` | clic sur "Analyser mon profil gratuitement" |
+| `cta_clicked` | clic sur "Analyze My Profile Free" (hero ou footer landing) |
 | `signup_completed` | après `signInWithOAuth` / `signInWithOtp` réussi |
 | `onboarding_completed` | après le POST `/api/onboarding` réussi |
 | `photos_uploaded` | après l'upload Storage réussi |
@@ -211,40 +225,81 @@ sans contexte navigateur comme les webhooks).
 
 ---
 
-## 7. Ce qui est volontairement un stub
+## 7. Le tunnel de conversion (étape 2)
 
-Pour rester une fondation et non une implémentation prématurée :
+Le funnel complet est fonctionnel de bout en bout :
 
-- **`POST /api/analyze`** — retourne `501`. Le pipeline réel (charger le
-  profil → prompt Mistral → écrire dans `analyses`) est la prochaine étape
-  IA.
-- **`POST /api/stripe/checkout`** — retourne `501`. La création de
-  Checkout Session Stripe arrive avec l'intégration paiement.
-- **`/analyze` et `/results`** — le flow fonctionne de bout en bout dès
-  aujourd'hui avec des données de démonstration clairement annotées
-  (`?demo=1`), pour valider l'UX du funnel avant de brancher l'IA.
+```
+TikTok → "/" (landing) → /auth/login → /onboarding (7 étapes) →
+/analyze (simulation 10-15s) → /results (score + teaser) → /paywall
+```
+
+**Onboarding (`app/onboarding/page.tsx`)** — 7 étapes avec barre de
+progression : (1) âge/genre/localisation, (2) app de dating principale,
+(3) objectif, (4) matchs hebdo actuels, (5) plus gros problème,
+(6) niveau de confiance (slider 1-10), (7) upload photos (drag & drop,
+3-6 photos, validation type/poids) + bio. Les étapes 1-6 sont sauvegardées
+dans `users` + `onboarding_answers` juste avant l'étape 7 (`POST
+/api/onboarding`), pour ne rien perdre en cas d'abandon à l'upload. L'étape
+7 crée le `profile` (`POST /api/profile`) après l'upload Storage.
+
+**Moteur de simulation (`lib/ai/simulate-analysis.ts`)** — remplace
+Mistral pour cette étape. Déterministe (seedé sur l'id du profil, donc
+stable) et légèrement piloté par le profil réel (longueur de bio, nombre
+de photos) pour ne pas être du bruit pur. Retourne exactement la forme
+`AnalysisResult` que le futur appel Mistral devra produire — brancher la
+vraie IA revient à réécrire `simulateAnalysis()` dans
+`api/analyze/route.ts`, sans toucher `/analyze` ni `/results`.
+
+**Résultat gratuit (`/results`)** — Server Component qui charge la ligne
+`analyses` réelle via `?id=<analysis_id>` (RLS garantit que l'utilisateur
+ne peut lire que la sienne) ; sans `id` valide, retombe sur des données de
+démonstration (`?demo=1` ou navigation directe). Affiche le score global,
+les 4 sous-scores, 1-2 `free_insights`, et une liste de recommandations
+floutées (`recommendations.length`, contenu réel jamais envoyé au client
+avant paiement).
+
+**Social proof** — `GET /api/stats` expose un compteur agrégé
+(`count(*) from analyses` + baseline pré-lancement) via le client
+`service_role`, sans jamais exposer de données individuelles ; consommé
+par `components/marketing/animated-counter.tsx` sur la landing.
 
 ---
 
-## 8. Prochaines étapes (ordre recommandé)
+## 8. Ce qui est volontairement un stub
 
-1. **Provisionner Supabase** : créer le projet, appliquer
-   `supabase/migrations/0001_init.sql`, activer le provider Google dans
-   Auth > Providers, créer le bucket `profile-photos` si le SQL ne l'a pas
-   fait (déjà inclus dans la migration).
+Pour rester honnête sur ce qui est réel vs. préparé :
+
+- **`POST /api/stripe/checkout`** — retourne `501`. La création de
+  Checkout Session Stripe arrive avec l'intégration paiement.
+- **Le scoring IA** — vient de `simulateAnalysis()`, pas de Mistral (voir
+  §7). Chaque ligne `analyses` a `is_simulated: true` tant que ça reste le
+  cas, pour pouvoir distinguer les deux sources une fois Mistral branché.
+- **Les témoignages de la landing** (`components/marketing/testimonials.tsx`)
+  sont des exemples de copy à remplacer par de vrais avis vérifiés avant le
+  lancement — voir le commentaire en tête de fichier.
+
+---
+
+## 9. Prochaines étapes (ordre recommandé)
+
+1. **Provisionner Supabase** : créer le projet, appliquer les migrations
+   dans l'ordre (`0001_init.sql` puis `0002_analysis_extras.sql`), activer
+   le provider Google dans Auth > Providers.
 2. **Renseigner `.env.local`** à partir de `.env.example`.
 3. **Régénérer les types Supabase** :
    `npx supabase gen types typescript --project-id <ref> > src/types/database.types.ts`.
-4. **Brancher Stripe** : produits + prix (mensuel/annuel), implémenter
+4. **Brancher Stripe** : produit + prix 7,99€/mois, implémenter
    `api/stripe/checkout` et les handlers du webhook, tester avec
    `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
-5. **Implémenter le pipeline IA** (`api/analyze`) : prompt de scoring
-   Mistral, parsing structuré (`response_format: json_object`), écriture
-   dans `analyses`, remplacement des données de démo dans `/results`.
-6. **PostHog** : créer le projet, renseigner les clés, construire les
+5. **Remplacer `simulateAnalysis()` par Mistral** dans `api/analyze/route.ts` :
+   prompt de scoring, parsing structuré (`response_format: json_object`),
+   passer `is_simulated: false`.
+6. **Remplacer les témoignages placeholder** par de vrais avis utilisateurs.
+7. **PostHog** : créer le projet, renseigner les clés, construire les
    dashboards de funnel à partir des événements déjà envoyés.
-7. **Tests + CI** avant d'ouvrir l'accès à de vrais utilisateurs.
-8. **Déploiement Vercel** : connecter le repo, configurer les variables
+8. **Tests + CI** avant d'ouvrir l'accès à de vrais utilisateurs.
+9. **Déploiement Vercel** : connecter le repo, configurer les variables
    d'environnement en Production/Preview, configurer le domaine.
 
 ---

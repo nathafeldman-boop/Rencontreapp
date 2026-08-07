@@ -1,7 +1,12 @@
 import { NextRequest } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { onboardingSubmissionSchema } from "@/lib/validations/onboarding";
+import {
+  onboardingSubmissionSchema,
+  objectiveLabel,
+  weeklyMatchesLabel,
+  biggestProblemLabel,
+} from "@/lib/validations/onboarding";
 import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
 
 export async function POST(request: NextRequest) {
@@ -21,25 +26,35 @@ export async function POST(request: NextRequest) {
     return apiValidationError(parsed.error);
   }
 
-  const { age, gender, country, dating_apps_used, dating_goal, answers } = parsed.data;
+  const { age, gender, location, dating_app, objective, weekly_matches, biggest_problem, confidence } =
+    parsed.data;
 
   const { error: userError } = await supabase
     .from("users")
-    .update({ age, gender, country, dating_apps_used, dating_goal })
+    .update({ age, gender, country: location, dating_apps_used: [dating_app] })
     .eq("id", user.id);
 
   if (userError) {
     return apiError(userError.message, 500);
   }
 
-  if (answers.length > 0) {
-    const { error: answersError } = await supabase.from("onboarding_answers").insert(
-      answers.map((a) => ({ user_id: user.id, question: a.question, answer: a.answer }))
-    );
+  const { error: answersError } = await supabase.from("onboarding_answers").insert([
+    { user_id: user.id, question: "What's your main objective?", answer: objectiveLabel(objective) },
+    {
+      user_id: user.id,
+      question: "How many matches do you get weekly?",
+      answer: weeklyMatchesLabel(weekly_matches),
+    },
+    {
+      user_id: user.id,
+      question: "What's your biggest problem right now?",
+      answer: biggestProblemLabel(biggest_problem),
+    },
+    { user_id: user.id, question: "How confident are you with your profile?", answer: `${confidence}/10` },
+  ]);
 
-    if (answersError) {
-      return apiError(answersError.message, 500);
-    }
+  if (answersError) {
+    return apiError(answersError.message, 500);
   }
 
   return apiSuccess({ completed: true });
