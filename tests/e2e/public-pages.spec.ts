@@ -10,12 +10,10 @@ test.describe("Free funnel: public pages load", () => {
     await expect(page).toHaveURL(/\/auth\/login/);
   });
 
-  // Signup is temporarily disabled (SIGNUP_ENABLED = false in auth/login/page.tsx)
-  // while server-side Supabase config is confirmed. Update this test to check
-  // for the Google/email form again once signup is re-enabled.
-  test("login page shows the temporary signup-closed notice", async ({ page }) => {
+  test("login page renders both auth methods", async ({ page }) => {
     await page.goto("/auth/login");
-    await expect(page.getByRole("heading", { name: /on revient très vite/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /continuer avec google/i })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: /email/i })).toBeVisible();
   });
 
   for (const path of ["/tinder-profile-review", "/hinge-profile-review", "/bumble-profile-review"]) {

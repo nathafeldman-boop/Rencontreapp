@@ -15,11 +15,9 @@ import { AnalyticsEvent } from "@/lib/analytics/events";
 /**
  * Single choke point for signup — every CTA on the site routes here
  * (landing, SEO pages, blog), so gating it here disables signup
- * everywhere without touching each CTA individually. Flip back to
- * `true` once Supabase (SUPABASE_SERVICE_ROLE_KEY, Google OAuth
- * redirect URL for the prod domain, etc.) is fully confirmed working.
+ * everywhere without touching each CTA individually.
  */
-const SIGNUP_ENABLED = false;
+const SIGNUP_ENABLED = true;
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
