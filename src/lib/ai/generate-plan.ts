@@ -7,6 +7,7 @@ interface GeneratePlanInput {
   scores: { photo: number; bio: number; attractiveness: number; conversation: number };
   recommendations: Recommendation[];
   biggestProblem?: string;
+  objective?: string;
 }
 
 const FALLBACK_DAYS: Omit<PlanDay, "done">[] = [
@@ -55,6 +56,7 @@ async function generateWithMistral(input: GeneratePlanInput): Promise<PlanDay[]>
         content:
           `Scores — photos: ${input.scores.photo}, bio: ${input.scores.bio}, attractiveness: ${input.scores.attractiveness}, conversation: ${input.scores.conversation}. ` +
           `Weakest area: ${weakest[0]}. ` +
+          (input.objective ? `Main objective: ${input.objective}. ` : "") +
           (input.biggestProblem ? `Self-reported biggest problem: ${input.biggestProblem}. ` : "") +
           `Known recommendations: ${input.recommendations.map((r) => r.title).join("; ")}`,
       },

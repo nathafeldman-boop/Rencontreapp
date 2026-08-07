@@ -22,8 +22,10 @@ export type PhotoSuggestedRole = "primary" | "secondary" | "remove";
 export type AiFeature = "profile_analysis" | "bio_generator" | "conversation_coach" | "match_simulator" | "dating_plan";
 export type BioStyle = "funny" | "mysterious" | "confident" | "romantic" | "premium";
 
+export type CoachMode = "auto" | "flirt" | "funny" | "natural" | "confident";
+
 export interface ConversationSuggestion {
-  tone: "funny" | "flirty" | "natural";
+  tone: "funny" | "flirty" | "natural" | "confident";
   message: string;
   explanation: string;
 }
@@ -39,6 +41,7 @@ export interface MatchMessage {
 }
 
 export type ReferralSource = "referral" | "creator";
+export type FeedbackCategory = "bug" | "feature" | "general";
 
 export interface PlanDay {
   day: number;
@@ -356,6 +359,23 @@ export interface Database {
           expires_at: string;
         };
         Update: Partial<Database["public"]["Tables"]["referral_rewards"]["Row"]>;
+        Relationships: [];
+      };
+      feedback: {
+        Row: {
+          id: string;
+          user_id: string;
+          category: FeedbackCategory;
+          context: string | null;
+          helpful: boolean | null;
+          message: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["feedback"]["Row"], "id">> & {
+          user_id: string;
+          category: FeedbackCategory;
+        };
+        Update: Partial<Database["public"]["Tables"]["feedback"]["Row"]>;
         Relationships: [];
       };
     };

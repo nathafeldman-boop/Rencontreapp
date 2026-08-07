@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
 
@@ -96,6 +97,9 @@ export default function PaywallPage() {
         <p className="mt-4 text-center text-xs text-muted-foreground">
           Cancel anytime. No commitment.
         </p>
+        <Link href="/premium" className="mt-2 text-center text-xs text-primary underline underline-offset-2">
+          See the full free vs premium comparison
+        </Link>
       </div>
 
       <BeforeAfterSection />

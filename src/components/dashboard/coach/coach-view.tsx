@@ -7,14 +7,24 @@ import { Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ChipButton } from "@/components/onboarding/chip-button";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
-import type { ConversationSuggestion } from "@/types/database.types";
+import type { CoachMode, ConversationSuggestion } from "@/types/database.types";
 
-const TONE_VARIANT = { funny: "accent", flirty: "default", natural: "secondary" } as const;
+const TONE_VARIANT = { funny: "accent", flirty: "default", natural: "secondary", confident: "default" } as const;
+
+const MODES: { value: CoachMode; label: string }[] = [
+  { value: "auto", label: "Auto (mix)" },
+  { value: "flirt", label: "Flirt" },
+  { value: "funny", label: "Funny" },
+  { value: "natural", label: "Natural" },
+  { value: "confident", label: "Confident" },
+];
 
 export function CoachView() {
   const [conversation, setConversation] = useState("");
+  const [mode, setMode] = useState<CoachMode>("auto");
   const [suggestions, setSuggestions] = useState<ConversationSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +37,7 @@ export function CoachView() {
     const res = await fetch("/api/ai/conversation-coach", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversation }),
+      body: JSON.stringify({ conversation, mode }),
     });
 
     if (!res.ok) {
@@ -52,6 +62,17 @@ export function CoachView() {
 
   return (
     <div className="flex flex-col gap-6">
+      <div>
+        <p className="mb-2 text-sm font-medium">Mode</p>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+          {MODES.map((m) => (
+            <ChipButton key={m.value} active={mode === m.value} onClick={() => setMode(m.value)}>
+              {m.label}
+            </ChipButton>
+          ))}
+        </div>
+      </div>
+
       <div>
         <textarea
           rows={6}

@@ -45,6 +45,14 @@ export const RETENTION_EVENTS: AnalyticsEventName[] = [
   AnalyticsEvent.ConversationCoachUsed,
   AnalyticsEvent.PhotoOptimizerUsed,
   AnalyticsEvent.DatingPlanGenerated,
+  AnalyticsEvent.ScoreShared,
+];
+
+/** Viral loop — shares per active user is the number to watch for organic reach. */
+export const GROWTH_EVENTS: AnalyticsEventName[] = [
+  AnalyticsEvent.ScoreShared,
+  AnalyticsEvent.ReferralLinkCopied,
+  AnalyticsEvent.ReferralSignup,
 ];
 
 /**

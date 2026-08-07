@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { generateDatingPlan } from "@/lib/ai/generate-plan";
 import { checkCredits, consumeCredits } from "@/lib/ai/credits";
+import { getUserContext } from "@/lib/ai/user-context";
 import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
 
 /** Generates (or regenerates) the user's single active 7-day plan from their latest analysis. */
@@ -33,12 +34,7 @@ export async function POST() {
     return apiError("Run a profile analysis first.", 422);
   }
 
-  const { data: answers } = await supabase
-    .from("onboarding_answers")
-    .select("answer")
-    .eq("user_id", user.id)
-    .eq("question", "What's your biggest problem right now?")
-    .maybeSingle();
+  const context = await getUserContext(supabase, user.id);
 
   const { days, isSimulated } = await generateDatingPlan({
     scores: {
@@ -48,7 +44,8 @@ export async function POST() {
       conversation: latest.conversation_score ?? 0,
     },
     recommendations: latest.recommendations ?? [],
-    biggestProblem: answers?.answer,
+    biggestProblem: context.biggestProblem,
+    objective: context.objective,
   });
 
   const { error } = await supabase.from("dating_plans").upsert(

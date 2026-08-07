@@ -14,6 +14,7 @@ const DEMO_RESULTS: ResultsData = {
   lockedCount: 5,
   isDemo: true,
   isSimulated: true,
+  biggestProblem: "no matches",
 };
 
 interface ResultsPageProps {
@@ -25,13 +26,27 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
 
   if (id) {
     const supabase = await createClient();
-    const { data: analysis } = await supabase
-      .from("analyses")
-      .select(
-        "overall_score, photo_score, bio_score, attractiveness_score, conversation_score, free_insights, recommendations, is_simulated"
-      )
-      .eq("id", id)
-      .maybeSingle();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const [{ data: analysis }, { data: problemAnswer }] = await Promise.all([
+      supabase
+        .from("analyses")
+        .select(
+          "overall_score, photo_score, bio_score, attractiveness_score, conversation_score, free_insights, recommendations, is_simulated"
+        )
+        .eq("id", id)
+        .maybeSingle(),
+      user
+        ? supabase
+            .from("onboarding_answers")
+            .select("answer")
+            .eq("user_id", user.id)
+            .eq("question", "What's your biggest problem right now?")
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
 
     if (analysis) {
       const data: ResultsData = {
@@ -44,6 +59,7 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
         lockedCount: Array.isArray(analysis.recommendations) ? analysis.recommendations.length : 5,
         isDemo: false,
         isSimulated: analysis.is_simulated,
+        biggestProblem: problemAnswer?.answer,
       };
       return <ResultsView data={data} />;
     }

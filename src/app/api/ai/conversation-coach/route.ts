@@ -4,9 +4,13 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getConversationSuggestions } from "@/lib/ai/conversation-coach";
 import { checkCredits, consumeCredits } from "@/lib/ai/credits";
+import { getUserContext, summarizeUserContext } from "@/lib/ai/user-context";
 import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
 
-const bodySchema = z.object({ conversation: z.string().min(1).max(4000) });
+const bodySchema = z.object({
+  conversation: z.string().min(1).max(4000),
+  mode: z.enum(["auto", "flirt", "funny", "natural", "confident"]).default("auto"),
+});
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -29,7 +33,12 @@ export async function POST(request: NextRequest) {
     return apiError("You've used all your AI credits for this month.", 429);
   }
 
-  const { suggestions, isSimulated } = await getConversationSuggestions(parsed.data.conversation);
+  const context = await getUserContext(supabase, user.id);
+  const { suggestions, isSimulated } = await getConversationSuggestions(
+    parsed.data.conversation,
+    parsed.data.mode,
+    summarizeUserContext(context)
+  );
 
   await supabase.from("conversation_coach_sessions").insert({
     user_id: user.id,

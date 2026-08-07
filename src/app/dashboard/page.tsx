@@ -18,6 +18,11 @@ import { Button } from "@/components/ui/button";
 import { SubScoreCard } from "@/components/dashboard/sub-score-card";
 import { ScoreHistoryChart } from "@/components/dashboard/score-history-chart";
 import { ViewTracker } from "@/components/dashboard/view-tracker";
+import { ShareScoreCard } from "@/components/dashboard/share-score-card";
+import { WeeklyReportCard } from "@/components/dashboard/weekly-report-card";
+import { ComeBackBanner } from "@/components/dashboard/come-back-banner";
+import { computeBadges, getLevel, nextLevel } from "@/lib/gamification/badges";
+import { getWeeklyReport } from "@/lib/reports/weekly-report";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { Recommendation } from "@/types/database.types";
 
@@ -48,7 +53,17 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false })
     .limit(10);
 
-  const { data: plan } = await supabase.from("dating_plans").select("days").eq("user_id", user?.id ?? "").maybeSingle();
+  const [{ data: plan }, { count: bioGenerationCount }, { count: simulatorSessionCount }, weeklyReport] =
+    await Promise.all([
+      supabase.from("dating_plans").select("days").eq("user_id", user?.id ?? "").maybeSingle(),
+      supabase.from("bio_generations").select("*", { count: "exact", head: true }).eq("user_id", user?.id ?? ""),
+      supabase
+        .from("match_simulator_sessions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user?.id ?? "")
+        .not("ended_at", "is", null),
+      getWeeklyReport(supabase, user?.id ?? ""),
+    ]);
 
   if (!analyses || analyses.length === 0) {
     return (
@@ -75,11 +90,19 @@ export default async function DashboardPage() {
 
   const planProgress = plan?.days ? plan.days.filter((d) => d.done).length : 0;
 
-  const badges = [
-    delta !== null && delta > 0 && { icon: "🔥", label: `Profile upgraded — +${delta} points` },
-    plan && planProgress > 0 && { icon: "✅", label: `${planProgress}/${plan.days.length} plan days done` },
-    latest.overall_score >= 80 && { icon: "⭐", label: "Top-tier profile score" },
-  ].filter(Boolean) as { icon: string; label: string }[];
+  const badges = computeBadges({
+    overallScore: latest.overall_score,
+    photoScore: latest.photo_score ?? 0,
+    conversationScore: latest.conversation_score ?? 0,
+    scoreDelta: delta,
+    planDaysDone: planProgress,
+    planDaysTotal: plan?.days.length ?? 0,
+    bioGenerationCount: bioGenerationCount ?? 0,
+    simulatorSessionCount: simulatorSessionCount ?? 0,
+  });
+
+  const level = getLevel(latest.overall_score);
+  const upNext = nextLevel(latest.overall_score);
 
   return (
     <div className="flex flex-col gap-8">
@@ -89,6 +112,8 @@ export default async function DashboardPage() {
         <p className="mt-1 text-sm text-muted-foreground">Your coach&apos;s read on your profile, updated live.</p>
       </div>
 
+      {weeklyReport && <ComeBackBanner daysSinceLastAnalysis={weeklyReport.daysSinceLastAnalysis} />}
+
       <Card className="overflow-hidden border-primary/30">
         <CardContent className="flex flex-col items-center gap-4 py-8 text-center">
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -97,6 +122,14 @@ export default async function DashboardPage() {
           <div className="flex size-32 items-center justify-center rounded-full bg-brand-gradient text-4xl font-semibold text-primary-foreground shadow-lg shadow-primary/20">
             {latest.overall_score}
           </div>
+          <div className="flex flex-col items-center gap-1.5">
+            <Badge variant="secondary">{level.name}</Badge>
+            {upNext && (
+              <p className="text-xs text-muted-foreground">
+                {upNext.min - latest.overall_score} points to {upNext.name}
+              </p>
+            )}
+          </div>
           {delta !== null && (
             <Badge variant={delta >= 0 ? "default" : "secondary"} className="gap-1">
               {delta >= 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
@@ -104,6 +137,12 @@ export default async function DashboardPage() {
               {delta} points since last analysis
             </Badge>
           )}
+          <ShareScoreCard
+            overallScore={latest.overall_score}
+            photoScore={latest.photo_score ?? undefined}
+            bioScore={latest.bio_score ?? undefined}
+            conversationScore={latest.conversation_score ?? undefined}
+          />
         </CardContent>
       </Card>
 
@@ -111,7 +150,7 @@ export default async function DashboardPage() {
         <div className="flex flex-wrap gap-2">
           {badges.map((badge) => (
             <span
-              key={badge.label}
+              key={badge.key}
               className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium"
             >
               <span>{badge.icon}</span>
@@ -155,6 +194,8 @@ export default async function DashboardPage() {
           <ScoreHistoryChart points={history} />
         </CardContent>
       </Card>
+
+      {weeklyReport && <WeeklyReportCard report={weeklyReport} />}
 
       <div>
         <h2 className="mb-3 text-sm font-medium text-muted-foreground">Your coach, on demand</h2>

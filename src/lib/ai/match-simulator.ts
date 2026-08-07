@@ -51,10 +51,11 @@ async function callMistralForReply(persona: MatchPersona, messages: MatchMessage
 }
 
 export async function scoreConversation(
-  messages: MatchMessage[]
+  messages: MatchMessage[],
+  contextSummary?: string
 ): Promise<{ score: number; feedback: string; isSimulated: boolean }> {
   try {
-    const result = await callMistralForScore(messages);
+    const result = await callMistralForScore(messages, contextSummary);
     return { ...result, isSimulated: false };
   } catch (err) {
     console.error("[scoreConversation] Falling back to heuristic score:", err);
@@ -62,7 +63,10 @@ export async function scoreConversation(
   }
 }
 
-async function callMistralForScore(messages: MatchMessage[]): Promise<{ score: number; feedback: string }> {
+async function callMistralForScore(
+  messages: MatchMessage[],
+  contextSummary?: string
+): Promise<{ score: number; feedback: string }> {
   const schema = z.object({ score: z.number().min(0).max(100), feedback: z.string().min(10).max(400) });
 
   const response = await callMistralJson<unknown>({
@@ -74,12 +78,19 @@ async function callMistralForScore(messages: MatchMessage[]): Promise<{ score: n
         content:
           "You just finished roleplaying as a dating match in a practice conversation. Now switch roles: " +
           "score the human user's conversation skills 0-100 (humor, confidence, engagement, ability to keep " +
-          "the conversation going) and give one short paragraph of specific, constructive feedback. " +
+          "the conversation going) and give one short paragraph of specific, constructive feedback. If the " +
+          "user's known context mentions a specific problem they're working on, connect your feedback to it " +
+          "directly instead of giving generic advice. " +
           'Respond with ONLY JSON: { "score": number, "feedback": string }.',
       },
       {
         role: "user",
-        content: messages.map((m) => `${m.role === "user" ? "User" : "Match"}: ${m.content}`).join("\n"),
+        content: [
+          contextSummary && `What MatchAI already knows about this person:\n${contextSummary}`,
+          messages.map((m) => `${m.role === "user" ? "User" : "Match"}: ${m.content}`).join("\n"),
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
       },
     ],
   });

@@ -7,6 +7,7 @@ import { Check, Copy, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChipButton } from "@/components/onboarding/chip-button";
+import { FeedbackWidget } from "@/components/feedback/feedback-widget";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { BioStyle } from "@/types/database.types";
@@ -128,6 +129,8 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
             <RefreshCw className="size-3.5" />
             Generate 5 more
           </Button>
+
+          <FeedbackWidget context="bio_generator" prompt="Did these bios help you?" />
         </div>
       )}
     </div>

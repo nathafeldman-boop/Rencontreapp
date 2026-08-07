@@ -53,6 +53,8 @@ interface GenerateBiosInput {
   sourceBio: string;
   style: BioStyle;
   datingApp: string;
+  /** From lib/ai/user-context.ts — objective, biggest problem, etc. Optional so this still works standalone. */
+  contextSummary?: string;
 }
 
 export async function generateBios(input: GenerateBiosInput): Promise<{ bios: string[]; isSimulated: boolean }> {
@@ -65,7 +67,7 @@ export async function generateBios(input: GenerateBiosInput): Promise<{ bios: st
   }
 }
 
-async function generateWithMistral({ sourceBio, style, datingApp }: GenerateBiosInput): Promise<string[]> {
+async function generateWithMistral({ sourceBio, style, datingApp, contextSummary }: GenerateBiosInput): Promise<string[]> {
   const schema = z.object({ bios: z.array(z.string().min(10).max(300)).length(5) });
 
   const response = await callMistralJson<unknown>({
@@ -77,13 +79,20 @@ async function generateWithMistral({ sourceBio, style, datingApp }: GenerateBios
         content:
           `You write ${datingApp} dating profile bios. Tone: ${STYLE_PROMPT[style]}. ` +
           "Each bio must be under 300 characters, specific rather than generic, and end with something " +
-          "easy to reply to. Respond with ONLY JSON: { \"bios\": [5 distinct bio strings] }.",
+          "easy to reply to. If the user's context mentions a specific problem (e.g. conversations dying, " +
+          "not enough matches), lean the bio toward fixing that specifically. Respond with ONLY JSON: " +
+          '{ "bios": [5 distinct bio strings] }.',
       },
       {
         role: "user",
-        content: sourceBio
-          ? `Write 5 new bios inspired by this person's current bio (keep any real, specific details): "${sourceBio}"`
-          : "Write 5 bios for someone who hasn't shared much about themselves yet — keep them broadly appealing but not generic.",
+        content: [
+          contextSummary && `What MatchAI already knows about this person:\n${contextSummary}`,
+          sourceBio
+            ? `Write 5 new bios inspired by this person's current bio (keep any real, specific details): "${sourceBio}"`
+            : "Write 5 bios for someone who hasn't shared much about themselves yet — keep them broadly appealing but not generic.",
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
       },
     ],
   });

@@ -41,6 +41,10 @@ export const AnalyticsEvent = {
   ReferralLinkCopied: "referral_link_copied",
   ReferralSignup: "referral_signup",
   ReferralRewardGranted: "referral_reward_granted",
+  ScoreShared: "score_shared",
+
+  // ---- Satisfaction --------------------------------------------------------
+  FeedbackSubmitted: "feedback_submitted",
 } as const;
 
 export type AnalyticsEventName = (typeof AnalyticsEvent)[keyof typeof AnalyticsEvent];
@@ -74,4 +78,7 @@ export interface AnalyticsEventProps {
   [AnalyticsEvent.ReferralLinkCopied]: Record<string, never>;
   [AnalyticsEvent.ReferralSignup]: { referral_code: string };
   [AnalyticsEvent.ReferralRewardGranted]: { reward_days: number; invite_count: number };
+  [AnalyticsEvent.ScoreShared]: { overall_score: number; method: "share_sheet" | "download" };
+
+  [AnalyticsEvent.FeedbackSubmitted]: { category: "bug" | "feature" | "general"; helpful?: boolean };
 }

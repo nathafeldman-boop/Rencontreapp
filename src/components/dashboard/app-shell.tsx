@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Settings, Sparkles } from "lucide-react";
+import { Crown, LayoutDashboard, LogOut, Settings, Sparkles } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/premium", label: "Premium", icon: Crown },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

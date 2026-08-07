@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
 import { scoreConversation } from "@/lib/ai/match-simulator";
+import { getUserContext, summarizeUserContext } from "@/lib/ai/user-context";
 import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
 
 const bodySchema = z.object({ sessionId: z.string().uuid() });
@@ -33,7 +34,8 @@ export async function POST(request: NextRequest) {
     return apiError("Simulator session not found.", 404);
   }
 
-  const { score, feedback, isSimulated } = await scoreConversation(session.messages);
+  const context = await getUserContext(supabase, user.id);
+  const { score, feedback, isSimulated } = await scoreConversation(session.messages, summarizeUserContext(context));
 
   const { error: updateError } = await supabase
     .from("match_simulator_sessions")

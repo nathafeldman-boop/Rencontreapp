@@ -10,6 +10,7 @@ const PROTECTED_PREFIXES = [
   "/results",
   "/paywall",
   "/referrals",
+  "/premium",
 ];
 
 /**

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const AUTH_ONLY_ROUTES = ["/onboarding", "/analyze", "/results", "/paywall", "/settings", "/referrals"];
+const AUTH_ONLY_ROUTES = ["/onboarding", "/analyze", "/results", "/paywall", "/settings", "/referrals", "/premium"];
 const PREMIUM_ROUTES = [
   "/dashboard",
   "/dashboard/photos",

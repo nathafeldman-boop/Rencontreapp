@@ -739,6 +739,123 @@ pour valider le palier +1 mois.
 
 ---
 
+## 20. Étape 5 — Activation, rétention & conversion (post-lancement)
+
+Le produit était déjà techniquement lançable après l'étape 4. Cette étape n'a
+pas reconstruit l'existant — elle ajoute les améliorations à plus fort impact
+sur l'activation, la rétention, la conversion et la satisfaction, en
+réutilisant les composants et l'architecture des étapes précédentes.
+
+### Ce qui a été construit
+
+- **Personnalisation IA** (`lib/ai/user-context.ts`) — objectif, difficulté
+  principale, style et préférences de l'utilisateur injectés dans les
+  prompts du Bio Generator, du Conversation Coach, du Match Simulator
+  (scoring) et du Dating Plan.
+- **Aha moment renforcé sur `/results`** — révélation animée du score
+  (`ScoreReveal`), message d'intro personnalisé selon la difficulté déclarée
+  en onboarding, mise en avant du sous-score "biggest opportunity".
+- **Gamification formelle** (`lib/gamification/badges.ts`) — niveaux
+  (Getting Started → Elite) et badges (Photo Master, Conversation Expert,
+  etc.) calculés à partir de l'historique déjà en base, sans nouvelle table.
+- **Coach IA avec modes** — Flirt / Funny / Natural / Confident sur
+  `/dashboard/coach`, en plus du mode Auto existant.
+- **Feature virale — Share Dating Score** (`/api/share/score-card`) — carte
+  PNG 1200×630 générée à la volée (`next/og`), partagée via l'API Web Share
+  native ou téléchargée, watermark MatchAI.
+- **Page Premium** (`/premium`) — comparatif Free vs Premium détaillé, "ce
+  que vous recevez chaque mois", accessible depuis le paywall et la nav du
+  dashboard.
+- **Feedback client** (table `feedback`, `/api/feedback`, `FeedbackWidget`)
+  — "Did MatchAI help you?" après les résultats et après le Bio Generator,
+  capture bug/feature/general.
+- **Weekly Dating Report + relance in-app** (`lib/reports/weekly-report.ts`)
+  — calculé à la volée à partir des tables `analyses`/`photo_analyses`
+  existantes (aucune nouvelle table ni job planifié) : delta de score sur 7
+  jours, meilleure/pire photo, 3 nouvelles accroches de conversation
+  tournant chaque semaine. `ComeBackBanner` remplace une vraie notification
+  push (absente de l'infra actuelle) par une bannière in-app affichée après
+  5 jours d'inactivité.
+
+### 1. Améliorations prioritaires, classées par impact
+
+| # | Amélioration | Impact attendu | Effort |
+|---|---|---|---|
+| 1 | Aha moment renforcé sur `/results` | Activation — le moment qui décide si l'utilisateur continue ou part | Faible |
+| 2 | Personnalisation IA (contexte utilisateur) | Rétention & satisfaction — chaque outil devient pertinent, pas générique | Moyen |
+| 3 | Weekly Dating Report + relance in-app | Rétention — raison concrète de revenir chaque semaine | Moyen |
+| 4 | Gamification (niveaux + badges) | Rétention & engagement — boucle de progression visible | Faible |
+| 5 | Share Dating Score (viral loop) | Acquisition organique — coût d'acquisition proche de zéro | Moyen |
+| 6 | Coach modes (Flirt/Funny/Natural/Confident) | Satisfaction — l'outil le plus utilisé devient plus précis | Faible |
+| 7 | Page Premium (comparatif) | Conversion — réduit l'hésitation à l'achat en rendant la valeur explicite | Faible |
+| 8 | Feedback client | Satisfaction & priorisation produit — signal direct, peu coûteux | Faible |
+
+### 2. Ce qui doit être développé avant lancement
+
+Tout ce qui précède est déjà livré et compilé (voir §17 pour les tests).
+Rien dans cette liste n'est bloquant en soi puisque le produit était déjà
+lançable après l'étape 4 — mais avant d'ouvrir un vrai trafic payant,
+vérifier spécifiquement :
+
+- Le comparatif `/premium` reflète les prix/plans réels en production
+  (voir §11, clés Stripe live).
+- Les dashboards PostHog (§12, §19) incluent les nouveaux événements
+  `score_shared` et `feedback_submitted`.
+- La migration `0006_feedback.sql` est appliquée avant que `/api/feedback`
+  reçoive du trafic.
+
+### 3. Ce qui peut attendre
+
+- **Notifications push réelles** — la relance actuelle (`ComeBackBanner`)
+  est une bannière in-app, pas une vraie notification. Nécessite un service
+  worker + un provider (OneSignal, Firebase Cloud Messaging) absent de la
+  stack actuelle ; à ajouter une fois la rétention hebdomadaire mesurée et
+  jugée insuffisante.
+- **Emails automatiques** (Weekly Report envoyé par email plutôt que
+  consulté en se connectant) — nécessite un provider transactionnel
+  (Resend, Postmark) non branché.
+- **Social proof enrichi** (témoignages avant/après, vitrine dédiée) — le
+  composant `BeforeAfterSection` existant (étape 2) couvre déjà l'essentiel ;
+  une vitrine dédiée peut attendre un vrai volume de retours clients.
+- **Roadmap produit future** (voir ci-dessous) — analyse automatique de
+  profil Tinder/Hinge, suivi de matchs, prédiction de compatibilité,
+  suggestions en temps réel pendant une vraie conversation, coaching
+  continu personnalisé.
+
+### ⚠️ Risque explicite — ne pas construire le scraping automatique Tinder/Hinge
+
+La roadmap produit envisage "l'analyse automatique de profil Tinder/Hinge"
+comme fonctionnalité future. **Ne pas l'implémenter par scraping ou
+automatisation non officielle** :
+
+- Violation directe des conditions d'utilisation de Tinder et Hinge (Match
+  Group), qui interdisent explicitement le scraping, l'automatisation et
+  l'accès par des clients non officiels.
+- Risque juridique réel (DMCA, CFAA aux US, équivalents en UE) et risque de
+  bannissement en masse des comptes utilisateurs qui connecteraient leur
+  compte Tinder/Hinge à MatchAI dans ce but.
+- Fragilité technique — un scraper non officiel casse à chaque changement
+  d'UI/API côté Tinder/Hinge, créant une dette de maintenance permanente
+  pour une fonctionnalité potentiellement illégale.
+
+La seule voie viable est un partenariat officiel (API partenaire Match
+Group, si et quand elle existe) ou de rester sur le modèle actuel :
+l'utilisateur importe manuellement ses photos et sa bio, ce que MatchAI
+fait déjà bien.
+
+### 4. Métriques à surveiller après lancement (complète §19)
+
+| Catégorie | Métrique | Où la lire |
+|---|---|---|
+| Activation | % d'utilisateurs atteignant `/results` en moins de 60s après l'upload | Delta entre `profile_upload_completed` et `analysis_completed` |
+| Rétention | % d'utilisateurs premium consultant le Weekly Report chaque semaine | Vue dashboard + `dashboard_viewed` répété à J7/J14/J21 |
+| Growth | Score shares par utilisateur actif, taux de clic sur les liens partagés | `GROWTH_EVENTS`, `score_shared` par `method` |
+| Conversion | Vues `/premium` → checkout démarré | `trigger: "premium_page"` sur `paywall_viewed` → `checkout_started` |
+| Satisfaction | Ratio `helpful: true` vs `false` sur `feedback_submitted`, par `context` | Table `feedback`, groupé par `context` et `category` |
+| Satisfaction | Volume de retours par catégorie (bug/feature/general) | Table `feedback`, alerte si les bugs dominent après une release |
+
+---
+
 ## Démarrer en local
 
 ```bash
