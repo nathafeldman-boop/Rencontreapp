@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, ImageIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export function BeforeAfterSection() {
   return (
@@ -26,6 +27,7 @@ export function BeforeAfterSection() {
           variant="before"
           score={41}
           bio="J'aime voyager, j'aime rire, j'aime mon chien"
+          photoSrc="/marketing/before-after-before.png"
         />
 
         <div className="flex items-center justify-center py-2 sm:py-0">
@@ -38,6 +40,7 @@ export function BeforeAfterSection() {
           variant="after"
           score={89}
           bio="En ce moment je m'entraîne pour un semi-marathon et je perds lamentablement contre mon chien à chaque course. Demande-moi quel est le pire sentier que j'ai choisi."
+          photoSrc="/marketing/before-after-after.png"
         />
       </div>
     </section>
@@ -48,10 +51,12 @@ function ProfileCard({
   variant,
   score,
   bio,
+  photoSrc,
 }: {
   variant: "before" | "after";
   score: number;
   bio: string;
+  photoSrc: string;
 }) {
   const isAfter = variant === "after";
 
@@ -65,12 +70,8 @@ function ProfileCard({
         isAfter ? "border-primary/40 bg-card" : "border-border bg-card grayscale"
       }`}
     >
-      <div
-        className={`flex aspect-[4/5] items-center justify-center ${
-          isAfter ? "bg-brand-gradient" : "bg-muted"
-        }`}
-      >
-        <ImageIcon className={`size-10 ${isAfter ? "text-primary-foreground/70" : "text-muted-foreground/50"}`} />
+      <div className="relative aspect-[4/5]">
+        <Image src={photoSrc} alt="" fill sizes="220px" className="object-cover" />
       </div>
       <div className="p-4">
         <div className="flex items-center justify-between">
