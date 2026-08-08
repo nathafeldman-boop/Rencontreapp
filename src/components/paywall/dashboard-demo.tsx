@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { PhoneMockupCarousel } from "@/components/marketing/phone-mockup-carousel";
 
 const AI_MODES = [
-  { emoji: "🥊", title: "Entraînement", detail: "Discute avec un match IA" },
+  { emoji: "🥊", title: "Entraînement", detail: "Discute avec un match simulé" },
   { emoji: "💬", title: "Conversation", detail: "Obtiens 3 réponses adaptées" },
 ];
 
@@ -26,7 +26,7 @@ export function DashboardDemo() {
   return (
     <PhoneMockupCarousel
       title="Voici FlirtCraft une fois abonné"
-      subtitle="Le dashboard, le coach IA et tes conversations — en vrai, pas une maquette."
+      subtitle="Le dashboard, ton coach et tes conversations — en vrai, pas une maquette."
       scenes={[<AiHubScene key="ai" />, <CoachScene key="coach" />, <ConnectScene key="connect" />]}
     />
   );

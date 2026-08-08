@@ -45,7 +45,7 @@ export default async function PhotoOptimizerPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Photo Optimizer</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Notation IA photo par photo, avec un rôle recommandé pour chacune.
+          Notation par ton coach, photo par photo, avec un rôle recommandé pour chacune.
         </p>
       </div>
 

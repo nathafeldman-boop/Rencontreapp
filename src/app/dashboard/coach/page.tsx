@@ -8,7 +8,7 @@ export default function ConversationCoachPage() {
     <div className="flex flex-col gap-6">
       <Link href="/dashboard/ai" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" />
-        FlirtCraft AI
+        Coach
       </Link>
 
       <div>

@@ -97,7 +97,7 @@ export function BioGeneratorView({
       if (!res.ok) {
         setError(
           res.status === 429
-            ? "Tu as utilisé tous tes crédits IA pour ce mois-ci."
+            ? "Tu as utilisé tous tes crédits coaching pour ce mois-ci."
             : "Impossible de générer des bios — réessaie."
         );
         return;

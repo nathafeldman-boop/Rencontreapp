@@ -24,7 +24,7 @@ export default function AiHubPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">FlirtCraft AI</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Coach</h1>
         <p className="mt-1 text-sm text-muted-foreground">Comment veux-tu utiliser FlirtCraft ?</p>
       </div>
 

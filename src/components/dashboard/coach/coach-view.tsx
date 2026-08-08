@@ -114,7 +114,7 @@ export function CoachView() {
 
       if (!res.ok) {
         const message =
-          res.status === 429 ? "Tu as utilisé tous tes crédits IA pour ce mois-ci." : "Impossible d'obtenir des suggestions — réessaie.";
+          res.status === 429 ? "Tu as utilisé tous tes crédits coaching pour ce mois-ci." : "Impossible d'obtenir des suggestions — réessaie.";
         setTurns((prev) => [...prev, { id: newId(), role: "error", message }]);
         return;
       }
@@ -169,7 +169,7 @@ export function CoachView() {
               <div>
                 <p className="font-medium">Colle ta conversation, ou envoie une capture</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  L&apos;IA te propose 3 réponses adaptées au mode choisi ci-dessus.
+                  Ton coach te propose 3 réponses adaptées au mode choisi ci-dessus.
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={readingScreenshot}>
@@ -184,7 +184,7 @@ export function CoachView() {
           {loading && (
             <div className="flex items-center gap-2 self-start rounded-2xl bg-secondary px-4 py-2.5 text-sm text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" />
-              FlirtCraft AI réfléchit…
+              Ton coach réfléchit…
             </div>
           )}
         </div>

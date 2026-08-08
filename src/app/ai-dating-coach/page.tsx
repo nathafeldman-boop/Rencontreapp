@@ -11,7 +11,7 @@ import { buildMetadata } from "@/lib/seo/site";
 
 const FAQ = [
   {
-    question: "Que fait concrètement un coach de rencontre IA ?",
+    question: "Que fait concrètement un coach de rencontre ?",
     answer:
       "Flirtcraft note tes photos, ta bio et ton potentiel de conversation, puis te donne des corrections précises et actionnables — une bio réécrite, un ordre de photos recommandé, et des suggestions de réponses pour de vraies conversations.",
   },
@@ -26,9 +26,9 @@ const FAQ = [
 ];
 
 export const metadata: Metadata = buildMetadata({
-  title: "Coach de rencontre IA — Coaching personnalisé profil & conversation",
+  title: "Coach de rencontre — Coaching personnalisé profil & conversation",
   description:
-    "Flirtcraft est un coach de rencontre IA disponible 24h/24 : analyse de profil, optimisation photo, génération de bio, coaching de conversation, et un simulateur d'entraînement en direct.",
+    "Flirtcraft est un coach de rencontre disponible 24h/24 : analyse de profil, optimisation photo, génération de bio, coaching de conversation, et un simulateur d'entraînement en direct.",
   path: "/ai-dating-coach",
   keywords: ["coach de rencontre ia", "application coach de rencontre", "assistant de rencontre ia", "coach de rencontre en ligne"],
 });
@@ -37,7 +37,7 @@ const FEATURES = [
   { icon: Camera, title: "Photo Optimizer", description: "Notation photo par photo et une photo principale recommandée." },
   { icon: Sparkles, title: "Bio Generator", description: "5 bios dans ton style, construites à partir de ton vrai profil." },
   { icon: MessageCircle, title: "Coach de conversation", description: "Colle une conversation en panne, obtiens 3 façons de la relancer." },
-  { icon: Swords, title: "Simulateur de match", description: "Entraîne-toi à de vraies conversations avec un persona IA." },
+  { icon: Swords, title: "Simulateur de match", description: "Entraîne-toi à de vraies conversations avec un match simulé par ton coach." },
   { icon: Gauge, title: "Dating Score", description: "Un seul chiffre qui suit la solidité de ton profil dans le temps." },
 ];
 
@@ -51,7 +51,7 @@ export default function AiDatingCoachPage() {
           <Badge variant="accent" className="mb-6">
             Ton coach de rencontre, disponible 24h/24
           </Badge>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Un coach de rencontre IA qui coache vraiment</h1>
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Un coach de rencontre qui coache vraiment</h1>
           <p className="mt-5 text-balance text-lg text-muted-foreground">
             Pas juste un score — une boîte à outils complète qui réécrit ta bio, classe tes photos, et t&apos;aide à
             t&apos;entraîner aux conversations avant qu&apos;elles ne comptent vraiment.
@@ -103,7 +103,7 @@ export default function AiDatingCoachPage() {
       </section>
 
       <section className="px-6 py-24 text-center">
-        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Découvre ton coach de rencontre IA</h2>
+        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Découvre ton coach de rencontre</h2>
         <div className="mt-8">
           <Button size="lg" asChild>
             <Link href="/auth/login">

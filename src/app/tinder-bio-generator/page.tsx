@@ -41,7 +41,7 @@ const FAQ = [
 ];
 
 export const metadata: Metadata = buildMetadata({
-  title: "Générateur de bio Tinder par IA — gratuit",
+  title: "Générateur de bio Tinder par ton coach — gratuit",
   description:
     "Génère 5 bios Tinder dans ton style — drôle, mystérieux, confiant, romantique, ou premium — construites à partir de ton vrai profil, gratuit à essayer.",
   path: "/tinder-bio-generator",
@@ -58,7 +58,7 @@ export default function TinderBioGeneratorPage() {
           <Badge variant="accent" className="mb-6">
             5 bios, ton style, en quelques secondes
           </Badge>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Générateur de bio Tinder par IA, gratuit</h1>
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Générateur de bio Tinder par ton coach, gratuit</h1>
           <p className="mt-5 text-balance text-lg text-muted-foreground">
             Choisis un style — drôle, mystérieux, confiant, romantique, ou premium — et obtiens 5 bios construites
             à partir de ton vrai profil, pas du remplissage générique.

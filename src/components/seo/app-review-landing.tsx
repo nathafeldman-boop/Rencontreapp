@@ -12,7 +12,7 @@ import type { AppReviewContent } from "@/lib/content/app-reviews";
 
 const STEPS = [
   { title: "Envoie ton profil", description: "Photos, bio, et quelques questions rapides." },
-  { title: "L'IA l'analyse", description: "Notation sur les photos, la bio, l'attractivité et le potentiel de conversation." },
+  { title: "Ton coach l'analyse", description: "Notation sur les photos, la bio, l'attractivité et le potentiel de conversation." },
   { title: "Obtiens ton score", description: "Vois exactement ce qui fonctionne et ce qu'il faut corriger en premier." },
 ];
 

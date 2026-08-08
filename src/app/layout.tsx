@@ -21,10 +21,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: `${SITE_NAME} — Obtiens plus de matchs grâce à l'IA`, template: `%s — ${SITE_NAME}` },
+  title: { default: `${SITE_NAME} — Obtiens plus de matchs grâce à ton coach`, template: `%s — ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
   openGraph: {
-    title: `${SITE_NAME} — Obtiens plus de matchs grâce à l'IA`,
+    title: `${SITE_NAME} — Obtiens plus de matchs grâce à ton coach`,
     description: SITE_DESCRIPTION,
     url: SITE_URL,
     siteName: SITE_NAME,
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Obtiens plus de matchs grâce à l'IA`,
+    title: `${SITE_NAME} — Obtiens plus de matchs grâce à ton coach`,
     description: SITE_DESCRIPTION,
   },
   robots: { index: true, follow: true },

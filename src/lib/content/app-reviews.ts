@@ -13,10 +13,10 @@ export const APP_REVIEWS: AppReviewContent[] = [
   {
     slug: "tinder-profile-review",
     appName: "Tinder",
-    title: "Analyse de profil Tinder gratuite — par IA",
+    title: "Analyse de profil Tinder gratuite — par ton coach",
     metaDescription:
-      "Obtiens une analyse gratuite de ton profil Tinder par IA. Découvre exactement quelles photos te coûtent des matchs et comment corriger ta bio en moins de 60 secondes.",
-    headline: "Fais analyser ton profil Tinder par une IA, gratuitement",
+      "Obtiens une analyse gratuite de ton profil Tinder par ton coach. Découvre exactement quelles photos te coûtent des matchs et comment corriger ta bio en moins de 60 secondes.",
+    headline: "Fais analyser ton profil Tinder par ton coach, gratuitement",
     intro:
       "Sur Tinder, tout se joue presque entièrement dans la première demi-seconde — ta photo principale fait l'essentiel du travail. Envoie ton profil et obtiens un décryptage photo par photo de ce qui t'aide et de ce qui te coûte des swipes.",
     painPoints: [
@@ -44,10 +44,10 @@ export const APP_REVIEWS: AppReviewContent[] = [
   {
     slug: "hinge-profile-review",
     appName: "Hinge",
-    title: "Analyse de profil Hinge gratuite — par IA",
+    title: "Analyse de profil Hinge gratuite — par ton coach",
     metaDescription:
-      "Obtiens une analyse gratuite de ton profil Hinge par IA — photos, prompts, et solidité globale du profil notés en moins de 60 secondes.",
-    headline: "Fais analyser ton profil Hinge par une IA, gratuitement",
+      "Obtiens une analyse gratuite de ton profil Hinge par ton coach — photos, prompts, et solidité globale du profil notés en moins de 60 secondes.",
+    headline: "Fais analyser ton profil Hinge par ton coach, gratuitement",
     intro:
       "Hinge récompense la spécificité — les prompts vagues et les photos génériques se fondent dans la masse. Envoie ton profil et vois exactement quelles parties fonctionnent et lesquelles se font scroller.",
     painPoints: [
@@ -76,10 +76,10 @@ export const APP_REVIEWS: AppReviewContent[] = [
   {
     slug: "bumble-profile-review",
     appName: "Bumble",
-    title: "Analyse de profil Bumble gratuite — par IA",
+    title: "Analyse de profil Bumble gratuite — par ton coach",
     metaDescription:
-      "Obtiens une analyse gratuite de ton profil Bumble par IA. Découvre ce qui facilite — ou complique — le premier message pour un match.",
-    headline: "Fais analyser ton profil Bumble par une IA, gratuitement",
+      "Obtiens une analyse gratuite de ton profil Bumble par ton coach. Découvre ce qui facilite — ou complique — le premier message pour un match.",
+    headline: "Fais analyser ton profil Bumble par ton coach, gratuitement",
     intro:
       "Sur Bumble, c'est elle qui écrit en premier — ce qui veut dire que ton profil doit rendre ça facile. Envoie le tien et vois exactement ce qui fonctionne et ce qui fait hésiter.",
     painPoints: [

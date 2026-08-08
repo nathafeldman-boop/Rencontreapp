@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
 
   return buildMetadata({
     title: `${creator.name} x Flirtcraft`,
-    description: `${creator.name} t'envoie vers Flirtcraft — obtiens une analyse IA gratuite de ton profil de rencontre.`,
+    description: `${creator.name} t'envoie vers Flirtcraft — obtiens une analyse gratuite de ton profil de rencontre par ton coach.`,
     path: `/creator/${slug}`,
   });
 }
@@ -55,10 +55,10 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
             {creator.name} x Flirtcraft
           </Badge>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            {creator.headline ?? `${creator.name} t'envoie ici — obtiens plus de matchs avec l'IA`}
+            {creator.headline ?? `${creator.name} t'envoie ici — obtiens plus de matchs avec ton coach`}
           </h1>
           <p className="mt-5 text-balance text-lg text-muted-foreground">
-            Envoie ton profil de rencontre et obtiens une analyse IA gratuite — photos, bio, et potentiel de
+            Envoie ton profil de rencontre et obtiens une analyse gratuite par ton coach — photos, bio, et potentiel de
             conversation, notés en environ une minute.
           </p>
 

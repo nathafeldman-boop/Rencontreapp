@@ -14,7 +14,7 @@ const FREE_FEATURES = ["Dating Score en moins d'une minute", "2 conseils personn
 const PREMIUM_FEATURES = [
   "Analyse complète : photos, bio, attractivité, conversation",
   "Photo Optimizer & Bio Generator illimités",
-  "Coach de conversation IA (4 modes)",
+  "Coach de conversation (4 modes)",
   "Simulateur de match & plan d'amélioration personnalisé",
 ];
 

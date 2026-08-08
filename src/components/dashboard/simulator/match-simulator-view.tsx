@@ -64,7 +64,7 @@ export function MatchSimulatorView() {
       });
 
       if (!res.ok) {
-        setError(res.status === 429 ? "Tu as utilisé tous tes crédits IA pour ce mois-ci." : "Une erreur est survenue.");
+        setError(res.status === 429 ? "Tu as utilisé tous tes crédits coaching pour ce mois-ci." : "Une erreur est survenue.");
         return;
       }
 

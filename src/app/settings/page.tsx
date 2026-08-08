@@ -80,7 +80,7 @@ export default async function SettingsPage() {
         </CardHeader>
         <CardContent>
           <p className="mb-3 text-sm text-muted-foreground">
-            Tes hobbys, ton métier, ce que tu fais dans la vie — utilisés par l&apos;IA pour personnaliser tes
+            Tes hobbys, ton métier, ce que tu fais dans la vie — utilisés par ton coach pour personnaliser tes
             bios, réponses et conseils au lieu d&apos;inventer des détails.
           </p>
           <HobbiesEditor initialHobbies={hobbiesAnswer?.answer ?? ""} />

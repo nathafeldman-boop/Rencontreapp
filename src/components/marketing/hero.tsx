@@ -77,7 +77,7 @@ export function Hero() {
       <div className="mx-auto flex max-w-xl flex-col items-center text-center">
         <motion.div initial="hidden" animate="show" variants={fadeUp} transition={{ duration: 0.45 }}>
           <Badge variant="accent" className="mb-6">
-            Analyse IA gratuite en 60 secondes
+            Analyse gratuite en 60 secondes, par ton coach
           </Badge>
         </motion.div>
 
@@ -98,7 +98,7 @@ export function Hero() {
           transition={{ duration: 0.45, delay: 0.1 }}
           className="mt-4 text-balance text-lg text-muted-foreground"
         >
-          FlirtCraft analyse tes photos, ta bio et ton profil avec l&apos;IA pour identifier ce qui peut te faire
+          FlirtCraft analyse tes photos, ta bio et ton profil avec ton coach pour identifier ce qui peut te faire
           perdre des matchs — et te montre exactement quoi améliorer.
         </motion.p>
 

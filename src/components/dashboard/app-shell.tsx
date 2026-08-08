@@ -19,7 +19,7 @@ import { createClient } from "@/lib/supabase/client";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/optimize", label: "Optimisation", icon: Wand2 },
-  { href: "/dashboard/ai", label: "IA", icon: Sparkles },
+  { href: "/dashboard/ai", label: "Coach", icon: Sparkles },
   { href: "/dashboard/stats", label: "Statistiques", icon: TrendingUp },
   { href: "/dashboard/profile", label: "Mon profil", icon: User },
   { href: "/settings", label: "Paramètres", icon: Settings },

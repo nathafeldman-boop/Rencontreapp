@@ -6,12 +6,12 @@ import { Camera, Gauge, MessageCircle, Sparkles } from "lucide-react";
 const SOLUTIONS = [
   {
     icon: Camera,
-    title: "Analyse IA des photos",
+    title: "Analyse des photos par ton coach",
     description: "On classe tes photos par potentiel de swipe et on te dit exactement laquelle mettre en premier.",
   },
   {
     icon: Sparkles,
-    title: "Optimisation IA de la bio",
+    title: "Optimisation de la bio par ton coach",
     description: "Une bio réécrite autour de ce qui te rend vraiment intéressant — pas du remplissage générique.",
   },
   {

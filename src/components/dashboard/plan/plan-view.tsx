@@ -25,7 +25,7 @@ export function PlanView({ initialDays }: { initialDays: PlanDay[] | null }) {
       const res = await fetch("/api/ai/dating-plan", { method: "POST" });
       if (!res.ok) {
         setError(
-          res.status === 429 ? "Tu as utilisé tous tes crédits IA pour ce mois-ci." : "Impossible de créer ton plan — réessaie."
+          res.status === 429 ? "Tu as utilisé tous tes crédits coaching pour ce mois-ci." : "Impossible de créer ton plan — réessaie."
         );
         return;
       }

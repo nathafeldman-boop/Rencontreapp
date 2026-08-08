@@ -186,7 +186,7 @@ export default async function DashboardPage() {
     {
       key: "bio",
       label: "Bio",
-      description: "Génère 5 bios avec l'IA et choisis la meilleure — ton score bio est recalculé aussitôt.",
+      description: "Génère 5 bios avec ton coach et choisis la meilleure — ton score bio est recalculé aussitôt.",
       href: "/dashboard/bio",
       done: (bioGenerationCount ?? 0) > 0,
     },
@@ -207,7 +207,7 @@ export default async function DashboardPage() {
     {
       key: "simulator",
       label: "Entraînement",
-      description: "Entraîne-toi face à un match IA et obtiens un bilan noté à la fin.",
+      description: "Entraîne-toi face à un match simulé par ton coach et obtiens un bilan noté à la fin.",
       href: "/dashboard/simulator",
       done: (simulatorSessionCount ?? 0) > 0,
     },

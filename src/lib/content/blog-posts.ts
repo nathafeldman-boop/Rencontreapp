@@ -128,22 +128,22 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "how-ai-improves-your-dating-profile",
-    title: "Comment l'IA améliore ton profil de rencontre",
+    title: "Comment ton coach améliore ton profil de rencontre",
     excerpt:
-      "Ce qu'un coach de rencontre IA peut vraiment faire de différent par rapport à l'avis d'un ami ou une checklist générique.",
+      "Ce qu'un coach de rencontre peut vraiment faire de différent par rapport à l'avis d'un ami ou une checklist générique.",
     publishedAt: "2026-02-05",
     readingMinutes: 5,
     sections: [
       {
         heading: "Un second avis, sans la gêne",
         body: [
-          "La plupart des gens n'obtiennent jamais de retour honnête sur leur profil de rencontre. Les amis sont trop polis pour dire qu'une photo te dessert, et les articles génériques « top 10 conseils Tinder » ne peuvent rien te dire sur ton profil spécifique. Une analyse IA comble cet écart — un retour précis et cohérent sur tes vraies photos et ta vraie bio, pas des conseils généraux.",
+          "La plupart des gens n'obtiennent jamais de retour honnête sur leur profil de rencontre. Les amis sont trop polis pour dire qu'une photo te dessert, et les articles génériques « top 10 conseils Tinder » ne peuvent rien te dire sur ton profil spécifique. Une analyse par ton coach comble cet écart — un retour précis et cohérent sur tes vraies photos et ta vraie bio, pas des conseils généraux.",
         ],
       },
       {
         heading: "Noter ce qui prédit réellement les matchs",
         body: [
-          "Plutôt qu'un seul verdict vague « bon/mauvais », une analyse IA utile décompose un profil selon les dimensions qui affectent séparément les matchs : qualité et ordre des photos, attractivité perçue, solidité de la bio, et à quel point ton profil facilite le démarrage d'une conversation. Savoir laquelle de ces dimensions est la plus faible te dit exactement où concentrer tes efforts.",
+          "Plutôt qu'un seul verdict vague « bon/mauvais », une analyse utile de ton coach décompose un profil selon les dimensions qui affectent séparément les matchs : qualité et ordre des photos, attractivité perçue, solidité de la bio, et à quel point ton profil facilite le démarrage d'une conversation. Savoir laquelle de ces dimensions est la plus faible te dit exactement où concentrer tes efforts.",
         ],
       },
       {
@@ -155,7 +155,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         heading: "S'entraîner avant que ça compte",
         body: [
-          "Le Simulateur de match va plus loin : une conversation d'entraînement en direct face à un persona IA, notée ensuite, pour que tu puisses améliorer tes phrases d'accroche et tes réflexes conversationnels avant de vraiment parler à un match réel. C'est la différence entre lire des conseils de conversation et vraiment les mettre en pratique.",
+          "Le Simulateur de match va plus loin : une conversation d'entraînement en direct face à un persona simulé par ton coach, notée ensuite, pour que tu puisses améliorer tes phrases d'accroche et tes réflexes conversationnels avant de vraiment parler à un match réel. C'est la différence entre lire des conseils de conversation et vraiment les mettre en pratique.",
         ],
       },
       {
@@ -271,7 +271,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         heading: "Entraîne-toi avant que ça compte vraiment",
         body: [
-          "Si tu bloques régulièrement au même endroit, le Coach de conversation de Flirtcraft analyse ta conversation réelle et propose 3 relances adaptées à ton style, et le Simulateur de match te permet de t'entraîner face à une IA avant de retenter sur une vraie conversation.",
+          "Si tu bloques régulièrement au même endroit, le Coach de conversation de Flirtcraft analyse ta conversation réelle et propose 3 relances adaptées à ton style, et le Simulateur de match te permet de t'entraîner face à ton coach avant de retenter sur une vraie conversation.",
         ],
       },
     ],

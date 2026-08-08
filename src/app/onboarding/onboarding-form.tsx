@@ -340,7 +340,7 @@ export function OnboardingForm() {
               <div className="flex flex-col gap-4">
                 <h1 className="text-xl font-semibold">Parle-nous un peu de toi</h1>
                 <p className="-mt-2 text-sm text-muted-foreground">
-                  Tes hobbys, ce que tu fais dans la vie, tes centres d&apos;intérêt — ça aide l&apos;IA à
+                  Tes hobbys, ce que tu fais dans la vie, tes centres d&apos;intérêt — ça aide ton coach à
                   personnaliser tes bios, tes réponses et tes conseils.
                 </p>
                 <textarea

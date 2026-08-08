@@ -7,7 +7,7 @@ import { buildMetadata } from "@/lib/seo/site";
 
 export const metadata: Metadata = buildMetadata({
   title: "Conseils de rencontre & astuces de profil",
-  description: "Des conseils pratiques et précis sur les matchs Tinder, les photos de rencontre, et comment l'IA peut améliorer ton profil.",
+  description: "Des conseils pratiques et précis sur les matchs Tinder, les photos de rencontre, et comment ton coach peut améliorer ton profil.",
   path: "/blog",
 });
 

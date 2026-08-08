@@ -52,7 +52,7 @@ export function HobbiesPrompt() {
         <div>
           <p className="text-sm font-medium">Parle-nous un peu de toi</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            On ne t&apos;a pas posé la question à l&apos;inscription — sans ça, l&apos;IA peut inventer des
+            On ne t&apos;a pas posé la question à l&apos;inscription — sans ça, ton coach peut inventer des
             détails (un métier, une passion) plutôt que de partir de ce qui est vrai. Tes hobbys, ce que tu fais
             dans la vie, tes centres d&apos;intérêt.
           </p>

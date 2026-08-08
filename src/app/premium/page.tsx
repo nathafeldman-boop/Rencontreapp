@@ -16,7 +16,7 @@ const MONTHLY_TOOLS = [
   {
     icon: Sparkles,
     label: "Bio Generator",
-    detail: "Bios générées par IA en illimité, adaptées à ton style, ton objectif et ton app de rencontre.",
+    detail: "Bios générées par ton coach en illimité, adaptées à ton style, ton objectif et ton app de rencontre.",
   },
   {
     icon: MessageCircle,
@@ -26,7 +26,7 @@ const MONTHLY_TOOLS = [
   {
     icon: Swords,
     label: "Simulateur de match",
-    detail: "Entraîne-toi sur de vraies conversations avec un match IA et obtiens un bilan noté après chaque session.",
+    detail: "Entraîne-toi sur de vraies conversations avec un match simulé par ton coach et obtiens un bilan noté après chaque session.",
   },
   {
     icon: CalendarCheck,
@@ -76,7 +76,7 @@ export default async function PremiumPage() {
         <Badge variant="accent">Premium</Badge>
         <h1 className="mt-4 text-2xl font-semibold tracking-tight">Tout ce que tu reçois, chaque mois</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Un seul abonnement, cinq outils IA, et un coach qui s&apos;affine à chaque utilisation.
+          Un seul abonnement, cinq outils, et un coach qui s&apos;affine à chaque utilisation.
         </p>
       </div>
 
