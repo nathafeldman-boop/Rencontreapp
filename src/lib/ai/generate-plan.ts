@@ -11,13 +11,13 @@ interface GeneratePlanInput {
 }
 
 const FALLBACK_DAYS: Omit<PlanDay, "done">[] = [
-  { day: 1, title: "Upgrade your main photo", description: "Swap in your highest-scoring photo as your lead image." },
-  { day: 2, title: "Rewrite your bio", description: "Use the Bio Generator to try a style you haven't used before." },
-  { day: 3, title: "Clean up your photo lineup", description: "Run \"Build my best profile\" and remove your weakest photo." },
-  { day: 4, title: "Practice your opener", description: "Run one session in the Match Simulator focused on your first message." },
-  { day: 5, title: "Test new conversation starters", description: "Use the Conversation Coach on a real stalled conversation." },
-  { day: 6, title: "Re-check your attractiveness score", description: "Add or reorder a photo that shows you in a social setting." },
-  { day: 7, title: "Re-run your full analysis", description: "See how much your score moved this week." },
+  { day: 1, title: "Améliore ta photo principale", description: "Mets ta photo la mieux notée en première position." },
+  { day: 2, title: "Réécris ta bio", description: "Utilise le Bio Generator pour essayer un style que tu n'as pas encore testé." },
+  { day: 3, title: "Fais le tri dans tes photos", description: "Lance \"Construire mon meilleur profil\" et retire ta photo la plus faible." },
+  { day: 4, title: "Entraîne-toi sur ton accroche", description: "Fais une session dans le Simulateur de match centrée sur ton premier message." },
+  { day: 5, title: "Teste de nouvelles relances", description: "Utilise le Coach de conversation sur une vraie conversation qui stagne." },
+  { day: 6, title: "Revérifie ton score d'attractivité", description: "Ajoute ou réordonne une photo qui te montre dans un contexte social." },
+  { day: 7, title: "Relance ton analyse complète", description: "Regarde de combien ton score a bougé cette semaine." },
 ];
 
 export async function generateDatingPlan(input: GeneratePlanInput): Promise<{ days: PlanDay[]; isSimulated: boolean }> {
@@ -49,7 +49,9 @@ async function generateWithMistral(input: GeneratePlanInput): Promise<PlanDay[]>
           "You are a dating coach building a 7-day action plan for a Flirtcraft user. Each day is one small, " +
           "concrete, doable action (not vague advice) that uses Flirtcraft's own tools (Photo Optimizer, Bio " +
           "Generator, Conversation Coach, Match Simulator) where relevant. Build momentum: easiest wins first. " +
-          'Respond with ONLY JSON: { "days": [{ "day": 1-7, "title", "description" }] } (exactly 7 items).',
+          'Respond with ONLY JSON: { "days": [{ "day": 1-7, "title", "description" }] } (exactly 7 items). ' +
+          "Every title and description must be written in French (français), never in English, regardless of " +
+          "what language these instructions are written in.",
       },
       {
         role: "user",

@@ -108,8 +108,8 @@ recommendations (4-6 objets { category: 'photos'|'bio'|'conversation', title, de
 PRIORITÉ : les 2-3 premiers sont les plus gros problèmes du profil — titre du style "Problème n°1 : ...",
 "Problème n°2 : ...", chaque detail doit citer le sous-score concerné (ex: "(Bio : 22/100)") et expliquer
 concrètement pourquoi et quoi changer, en intégrant si pertinent les dimensions personnalité, différenciation,
-cohérence ou première impression ; l'avant-dernier a pour titre "Quick win" (la modification la plus facile
-à fort impact immédiat) ; le dernier a pour titre "Biggest opportunity" (la modification au plus gros impact
+cohérence ou première impression ; l'avant-dernier a pour titre "Gain rapide" (la modification la plus facile
+à fort impact immédiat) ; le dernier a pour titre "Plus gros potentiel" (la modification au plus gros impact
 potentiel) ),
 bio_rewrite (une réécriture naturelle et crédible de la bio — jamais un texte qui sonne comme une pub ou
 comme écrit par une IA — qui reste fidèle à ce que dit la bio d'origine),

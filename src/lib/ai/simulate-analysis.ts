@@ -222,7 +222,7 @@ function buildRecommendations({
 
   recs.push({
     category: "photos",
-    title: "Quick win",
+    title: "Gain rapide",
     detail:
       photo_score < 55
         ? "Remplace ta photo principale par un plan solo, net, bien éclairé, où ton visage est clairement visible. C'est le changement le plus facile avec le plus d'impact immédiat sur ton taux de swipe."
@@ -231,7 +231,7 @@ function buildRecommendations({
 
   recs.push({
     category: bio_score < 55 ? "bio" : "conversation",
-    title: "Biggest opportunity",
+    title: "Plus gros potentiel",
     detail:
       bio_score < 55
         ? `Réécris entièrement ta bio autour d'un détail précis et spécifique à toi, pas une liste de qualités. C'est le levier avec le plus gros potentiel d'impact sur ton profil actuel (Bio : ${bio_score}/100).`
