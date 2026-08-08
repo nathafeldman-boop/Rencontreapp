@@ -166,6 +166,116 @@ export const BLOG_POSTS: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "prompts-hinge-qui-marchent",
+    title: "Comment écrire des prompts Hinge qui donnent vraiment envie de répondre",
+    excerpt:
+      "Sur Hinge, le prompt que tu choisis compte autant que ce que tu réponds. Voici comment éviter les réponses génériques qui se noient dans la masse.",
+    publishedAt: "2026-02-12",
+    readingMinutes: 5,
+    sections: [
+      {
+        heading: "Le prompt n'est qu'une amorce — la réponse fait tout le travail",
+        body: [
+          "Beaucoup de gens choisissent un prompt Hinge au hasard et y répondent avec la première idée générique qui leur vient (« Je suis doué(e) pour... la cuisine »). Le problème, c'est que Hinge affiche des centaines de réponses à peu près identiques à ce même prompt chaque jour. Une réponse générique se noie, même si le prompt choisi était le bon.",
+          "La règle simple : chaque réponse doit contenir un détail que personne d'autre ne pourrait écrire mot pour mot. Pas « j'aime voyager », mais « j'ai raté mon vol pour Lisbonne et je m'en sers encore comme excuse pour ne jamais planifier à l'avance ».",
+        ],
+      },
+      {
+        heading: "Choisis des prompts qui appellent une histoire, pas une liste",
+        body: [
+          "Les prompts du type « Mes centres d'intérêt » ou « Je recherche » poussent presque tout le monde vers des listes de qualités interchangeables. Les prompts qui demandent un scénario, une opinion ou une anecdote (« Le débat le plus stupide dans lequel je me suis engagé(e) », « Ma théorie non scientifique sur... ») forcent naturellement une réponse plus spécifique et plus facile à commenter.",
+        ],
+      },
+      {
+        heading: "Termine par quelque chose de facile à relancer",
+        body: [
+          "Une bonne réponse à un prompt Hinge se termine rarement sur un point final plat. Une pointe d'humour, une opinion tranchée ou une question implicite donne à la personne qui lit exactement de quoi envoyer un premier message — c'est souvent la différence entre un like silencieux et une vraie conversation qui démarre.",
+        ],
+      },
+      {
+        heading: "Varie tes trois prompts",
+        body: [
+          "Hinge en demande trois : évite qu'ils racontent tous la même facette de toi (trois blagues, ou trois anecdotes de voyage). Un mélange — une touche d'humour, un vrai détail personnel, et une ouverture sur tes objectifs ou ta personnalité — donne un profil plus complet et plus facile à cerner en quelques secondes.",
+          "C'est exactement ce que Flirtcraft évalue quand tu envoies ton profil Hinge : pas seulement si un prompt est « bien », mais si les trois ensemble racontent quelque chose de cohérent et mémorable.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "combien-de-photos-profil-rencontre",
+    title: "Combien de photos mettre sur ton profil de rencontre (et dans quel ordre)",
+    excerpt:
+      "Trop peu de photos et tu parais peu investi(e). Trop et tu dilues tes meilleures. Voici comment trouver le bon nombre — et le bon ordre.",
+    publishedAt: "2026-02-19",
+    readingMinutes: 5,
+    sections: [
+      {
+        heading: "Le nombre qui fonctionne le mieux : entre 4 et 6",
+        body: [
+          "En dessous de 3-4 photos, un profil paraît peu investi ou donne l'impression que tu as quelque chose à cacher. Au-delà de 6-7, tes meilleures photos se retrouvent diluées parmi des images plus faibles, et la personne qui swipe doit faire plus d'efforts pour se faire une opinion claire. Entre 4 et 6 photos, bien choisies, couvre l'essentiel sans fatiguer l'attention.",
+        ],
+      },
+      {
+        heading: "L'ordre compte plus que la quantité",
+        body: [
+          "Ta première photo doit être ta plus forte sans exception — nette, seul(e), bien éclairée, visage clairement visible. Les photos 2 et 3 doivent confirmer et enrichir cette première impression (contexte, langage corporel, un vrai sourire). Les dernières photos servent à montrer de la variété : un hobby, un voyage, un moment social — chacune pensée comme une accroche de conversation potentielle plutôt qu'un simple remplissage.",
+        ],
+      },
+      {
+        heading: "Chaque photo doit avoir un rôle, pas juste être « une bonne photo »",
+        body: [
+          "Une photo peut être objectivement réussie et pourtant ne rien apporter à ton profil si elle répète ce qu'une autre montre déjà (deux selfies au même angle, trois photos de soirée). Avant d'ajouter une photo, demande-toi ce qu'elle montre que les autres ne montrent pas déjà — expression, contexte, activité, tenue. Si la réponse est « rien de nouveau », elle prend la place d'une photo qui pourrait vraiment servir.",
+        ],
+      },
+      {
+        heading: "Teste, ne devine pas",
+        body: [
+          "La plupart des gens gardent l'ordre dans lequel ils ont importé leurs photos, sans jamais vérifier si c'est le bon. Le Photo Optimizer de Flirtcraft note chaque photo individuellement et propose un ordre optimisé en un clic, à partir d'une vraie analyse plutôt que d'une intuition.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "relancer-conversation-qui-stagne",
+    title: "Comment relancer une conversation qui s'éteint sur une app de rencontre",
+    excerpt:
+      "« Haha oui » n'est pas une fin de conversation, c'est une occasion manquée. Voici comment repartir sans que ça sonne forcé.",
+    publishedAt: "2026-02-26",
+    readingMinutes: 5,
+    sections: [
+      {
+        heading: "Pourquoi les conversations meurent (ce n'est presque jamais un manque d'intérêt)",
+        body: [
+          "La plupart des conversations qui s'éteignent ne meurent pas parce que l'intérêt a disparu — elles meurent parce qu'un message a demandé trop peu d'effort pour continuer. Un « Haha, sympa ! » ou un « Ça va et toi ? » ferme la porte au lieu de l'ouvrir. La bonne nouvelle : c'est un problème mécanique, pas un jugement sur la conversation elle-même.",
+        ],
+      },
+      {
+        heading: "Ne t'excuse pas d'avoir mis du temps à répondre",
+        body: [
+          "« Désolé(e) pour le retard, la vie est folle en ce moment » n'ajoute rien et attire l'attention sur un délai que l'autre personne n'a probablement même pas remarqué. Reprends directement là où c'est intéressant, comme si le fil n'avait jamais été interrompu.",
+        ],
+      },
+      {
+        heading: "Rebondis sur un détail précis, pas sur le dernier message générique",
+        body: [
+          "Si la conversation s'est arrêtée sur un échange plat, remonte plus haut et accroche-toi à un détail spécifique mentionné plus tôt — un lieu, un projet, une opinion. Une relance du type « Au fait, ça a donné quoi ton entretien dont tu parlais ? » montre que tu as vraiment suivi, ce qu'un « Tu fais quoi de beau ? » générique ne fait jamais.",
+        ],
+      },
+      {
+        heading: "Termine toujours sur quelque chose de facile à attraper",
+        body: [
+          "Une relance qui se termine par une affirmation plate risque de retomber à plat une deuxième fois. Une question ouverte, une provocation légère, ou un choix binaire amusant (« thé ou café, et je juge selon ta réponse ») donne à l'autre personne quelque chose de concret à quoi répondre, plutôt qu'un vague « d'accord ».",
+        ],
+      },
+      {
+        heading: "Entraîne-toi avant que ça compte vraiment",
+        body: [
+          "Si tu bloques régulièrement au même endroit, le Coach de conversation de Flirtcraft analyse ta conversation réelle et propose 3 relances adaptées à ton style, et le Simulateur de match te permet de t'entraîner face à une IA avant de retenter sur une vraie conversation.",
+        ],
+      },
+    ],
+  },
 ];
 
 export function getBlogPost(slug: string) {
