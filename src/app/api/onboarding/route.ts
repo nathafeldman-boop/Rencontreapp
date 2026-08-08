@@ -23,6 +23,11 @@ export async function POST(request: NextRequest) {
   const parsed = onboardingSubmissionSchema.safeParse(json);
 
   if (!parsed.success) {
+    // Surfaced in Vercel runtime logs — the client only shows a generic
+    // "Validation failed" plus the issue list, so this is what lets us see
+    // exactly which field/value tripped the schema without waiting on a
+    // user screenshot with the raw payload.
+    console.error("[api/onboarding] validation failed", { body: json, issues: parsed.error.issues });
     return apiValidationError(parsed.error);
   }
 

@@ -76,7 +76,10 @@ export default function OnboardingPage() {
   }, [step]);
 
   function canAdvance() {
-    if (step === 1) return form.age !== "" && form.gender !== "" && form.location.trim() !== "";
+    if (step === 1) {
+      const age = Number(form.age);
+      return Number.isInteger(age) && age >= 18 && age <= 100 && form.gender !== "" && form.location.trim() !== "";
+    }
     if (step === 2) return form.dating_app !== "";
     if (step === 3) return form.objective !== "";
     if (step === 4) return form.weekly_matches !== "";
@@ -110,10 +113,19 @@ export default function OnboardingPage() {
         });
         if (!res.ok) {
           const body = await res.json().catch(() => null);
+          const issueDetail = Array.isArray(body?.issues)
+            ? body.issues
+                .map((issue: { path?: (string | number)[]; message?: string }) =>
+                  `${issue.path?.join(".") || "champ"} : ${issue.message}`
+                )
+                .join(" · ")
+            : null;
           throw new Error(
-            body?.error
-              ? `Impossible d'enregistrer tes réponses : ${body.error}`
-              : "Impossible d'enregistrer tes réponses — réessaie."
+            issueDetail
+              ? `Impossible d'enregistrer tes réponses : ${issueDetail}`
+              : body?.error
+                ? `Impossible d'enregistrer tes réponses : ${body.error}`
+                : "Impossible d'enregistrer tes réponses — réessaie."
           );
         }
         track(AnalyticsEvent.OnboardingCompleted, { steps_completed: 6 });
