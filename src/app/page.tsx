@@ -11,6 +11,8 @@ import { Hero } from "@/components/marketing/hero";
 const GameplayPreview = dynamic(() => import("@/components/marketing/gameplay-preview").then((m) => m.GameplayPreview));
 const BeforeAfterSection = dynamic(() => import("@/components/marketing/before-after").then((m) => m.BeforeAfterSection));
 const Testimonials = dynamic(() => import("@/components/marketing/testimonials").then((m) => m.Testimonials));
+const Pricing = dynamic(() => import("@/components/marketing/pricing").then((m) => m.Pricing));
+const FaqAccordion = dynamic(() => import("@/components/marketing/faq-accordion").then((m) => m.FaqAccordion));
 const FinalCta = dynamic(() => import("@/components/marketing/final-cta").then((m) => m.FinalCta));
 
 export default function LandingPage() {
@@ -20,6 +22,8 @@ export default function LandingPage() {
       <Testimonials />
       <GameplayPreview />
       <BeforeAfterSection />
+      <Pricing />
+      <FaqAccordion />
       <FinalCta />
     </main>
   );
