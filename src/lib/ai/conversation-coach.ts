@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { callMistral, callMistralJson } from "@/lib/ai/mistral";
+import { callMistral, callMistralJson, withVisionModelFallback } from "@/lib/ai/mistral";
 import type { ConversationSuggestion, CoachMode } from "@/types/database.types";
 
 const MODE_PROMPT: Record<Exclude<CoachMode, "auto">, string> = {
@@ -117,28 +117,30 @@ export async function extractConversationFromImage(
   imageDataUrl: string
 ): Promise<{ text: string; isSimulated: boolean }> {
   try {
-    const result = await callMistral({
-      model: "mistral-large-latest",
-      temperature: 0.1,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You transcribe dating-app conversation screenshots into plain text. Read every message bubble " +
-            'top to bottom. Right-aligned / colored bubbles are the app user ("Toi"), left-aligned / gray ' +
-            'bubbles are their match ("Match"). Output ONLY the transcript, one line per message, formatted ' +
-            'exactly as "Toi : <message>" or "Match : <message>" — no commentary, no markdown, no extra text. ' +
-            "If you can't read any messages, output exactly: ERREUR_LECTURE",
-        },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Transcris cette conversation." },
-            { type: "image_url", image_url: imageDataUrl },
-          ],
-        },
-      ],
-    });
+    const result = await withVisionModelFallback((model) =>
+      callMistral({
+        model,
+        temperature: 0.1,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You transcribe dating-app conversation screenshots into plain text. Read every message bubble " +
+              'top to bottom. Right-aligned / colored bubbles are the app user ("Toi"), left-aligned / gray ' +
+              'bubbles are their match ("Match"). Output ONLY the transcript, one line per message, formatted ' +
+              'exactly as "Toi : <message>" or "Match : <message>" — no commentary, no markdown, no extra text. ' +
+              "If you can't read any messages, output exactly: ERREUR_LECTURE",
+          },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Transcris cette conversation." },
+              { type: "image_url", image_url: imageDataUrl },
+            ],
+          },
+        ],
+      })
+    );
 
     const text = result.choices[0]?.message.content?.trim();
     if (!text || text === "ERREUR_LECTURE") {
@@ -204,16 +206,21 @@ async function callMistralForSuggestions(
   mode: CoachMode,
   contextSummary?: string
 ): Promise<ConversationSuggestion[]> {
+  // .length(3) used to throw out 3 otherwise-good suggestions whenever a
+  // single `explanation` came back short/missing — same for the exact-3
+  // requirement whenever Mistral returned 2. Accept 1-3 real suggestions
+  // and a missing/short explanation (defaulted below) instead of discarding
+  // valid replies and falling back to canned templates.
   const schema = z.object({
     suggestions: z
       .array(
         z.object({
           tone: z.string().min(1).max(40),
           message: z.string().min(3).max(300),
-          explanation: z.string().min(10).max(300),
+          explanation: z.string().max(300).optional(),
         })
       )
-      .length(3),
+      .min(1),
   });
 
   const instructions =
@@ -249,8 +256,12 @@ async function callMistralForSuggestions(
   });
 
   const autoFallbackOrder: ConversationSuggestion["tone"][] = ["funny", "flirty", "natural"];
-  return schema.parse(response).suggestions.map((s, i) => ({
-    ...s,
-    tone: normalizeTone(s.tone, mode === "auto" ? autoFallbackOrder[i] : MODE_TO_TONE[mode]),
-  }));
+  return schema
+    .parse(response)
+    .suggestions.slice(0, 3)
+    .map((s, i) => ({
+      ...s,
+      tone: normalizeTone(s.tone, mode === "auto" ? autoFallbackOrder[i] : MODE_TO_TONE[mode]),
+      explanation: s.explanation?.trim() || "Une réponse adaptée à la conversation et au ton choisi.",
+    }));
 }

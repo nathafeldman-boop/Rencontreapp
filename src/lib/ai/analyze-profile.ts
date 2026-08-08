@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { callMistralJson } from "@/lib/ai/mistral";
+import { callMistralJson, withVisionModelFallback } from "@/lib/ai/mistral";
 import { simulateAnalysis } from "@/lib/ai/simulate-analysis";
 import type { Recommendation } from "@/types/database.types";
 
@@ -166,7 +166,7 @@ const mistralResponseSchema = z.object({
   ),
   recommendations: z
     .array(z.object({ category: z.enum(["photos", "bio", "conversation"]), title: z.string(), detail: z.string() }))
-    .min(3)
+    .min(1)
     .max(8),
   bio_rewrite: z.string(),
   photos: z.array(mistralPhotoSchema),
@@ -204,26 +204,28 @@ async function analyzeWithMistral(input: AnalyzeProfileInput): Promise<ProfileAn
 
   const photoLabels = input.photos.map((_, i) => `Photo ${i} :`);
 
-  const response = await callMistralJson<unknown>({
-    model: "mistral-large-latest",
-    temperature: 0.4,
-    messages: [
-      { role: "system", content: ANALYSIS_ENGINE_SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: `Application de rencontre : ${input.datingApp}\nBio : "${input.bio || "(vide)"}"\n${onboardingSummary}\n\n${input.photos.length} photos suivent, dans l'ordre du profil.`,
-          },
-          ...input.photos.flatMap((photo, i) => [
-            { type: "text" as const, text: photoLabels[i] },
-            { type: "image_url" as const, image_url: photo.signedUrl },
-          ]),
-        ],
-      },
-    ],
-  });
+  const response = await withVisionModelFallback((model) =>
+    callMistralJson<unknown>({
+      model,
+      temperature: 0.4,
+      messages: [
+        { role: "system", content: ANALYSIS_ENGINE_SYSTEM_PROMPT },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Application de rencontre : ${input.datingApp}\nBio : "${input.bio || "(vide)"}"\n${onboardingSummary}\n\n${input.photos.length} photos suivent, dans l'ordre du profil.`,
+            },
+            ...input.photos.flatMap((photo, i) => [
+              { type: "text" as const, text: photoLabels[i] },
+              { type: "image_url" as const, image_url: photo.signedUrl },
+            ]),
+          ],
+        },
+      ],
+    })
+  );
 
   const parsed = mistralResponseSchema.parse(response);
 

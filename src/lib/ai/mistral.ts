@@ -22,6 +22,8 @@ interface MistralChatOptions {
   retries?: number;
 }
 
+type MistralApiError = Error & { status?: number; retryAfterMs?: number };
+
 async function requestMistral(
   { model, messages, temperature, responseFormat, timeoutMs }: Required<Omit<MistralChatOptions, "retries">>
 ) {
@@ -42,8 +44,17 @@ async function requestMistral(
 
   if (!response.ok) {
     const errorBody = await response.text();
-    const error = new Error(`Mistral API error (${response.status}): ${errorBody}`);
-    (error as Error & { status?: number }).status = response.status;
+    const error: MistralApiError = new Error(`Mistral API error (${response.status}): ${errorBody}`);
+    error.status = response.status;
+
+    const retryAfterHeader = response.headers.get("retry-after");
+    if (retryAfterHeader) {
+      const seconds = Number(retryAfterHeader);
+      error.retryAfterMs = Number.isFinite(seconds)
+        ? seconds * 1000
+        : Math.max(0, new Date(retryAfterHeader).getTime() - Date.now());
+    }
+
     throw error;
   }
 
@@ -55,13 +66,18 @@ async function requestMistral(
 /**
  * Thin wrapper around the Mistral chat completions endpoint. Supports
  * multimodal messages (text + image_url parts) for the vision-based photo
- * analysis in `analyze-profile.ts` — pass a vision-capable model
- * (e.g. "pixtral-large-latest") when a message includes image parts.
+ * analysis in `analyze-profile.ts` — pass a vision-capable model (see
+ * `VISION_MODEL_CANDIDATES` / `withVisionModelFallback` below) when a
+ * message includes image parts.
  *
- * Retries once (by default) on a timeout, network failure, or 5xx —
+ * Retries (by default once) on a timeout, network failure, 5xx, or 429 —
  * every caller already falls back to a deterministic simulation on any
  * thrown error (see the `isSimulated` pattern throughout `lib/ai/`), so
  * this only exists to absorb a transient blip before paying that cost.
+ * 429 specifically honors the `Retry-After` header when Mistral sends one;
+ * other retries use exponential backoff. Any other 4xx is a real client
+ * error (bad request, invalid model, auth) that a retry can't fix, so it
+ * throws immediately.
  */
 export async function callMistral({
   model = "mistral-large-latest",
@@ -78,10 +94,13 @@ export async function callMistral({
       return await requestMistral({ model, messages, temperature, responseFormat, timeoutMs });
     } catch (err) {
       lastError = err;
-      const status = (err as Error & { status?: number }).status;
-      const isClientError = typeof status === "number" && status >= 400 && status < 500;
+      const { status, retryAfterMs } = err as MistralApiError;
+      const isRateLimited = status === 429;
+      const isClientError = typeof status === "number" && status >= 400 && status < 500 && !isRateLimited;
       if (isClientError || attempt === retries) throw err;
-      await new Promise((resolve) => setTimeout(resolve, 400 * (attempt + 1)));
+
+      const backoffMs = retryAfterMs ?? 400 * 2 ** attempt;
+      await new Promise((resolve) => setTimeout(resolve, backoffMs));
     }
   }
 
@@ -102,4 +121,57 @@ export async function callMistralJson<T>(options: Omit<MistralChatOptions, "resp
   } catch {
     throw new Error("Mistral returned invalid JSON.");
   }
+}
+
+/**
+ * Vision-capable model candidates, tried in order. Checked against Mistral's
+ * docs on 2026-08-08: "mistral-large-latest" is text-only (it silently
+ * ignores image parts instead of erroring, which is what produced ~15/100
+ * scores in prod — see analyze-profile.ts), "pixtral-large-latest" has been
+ * fully removed, and "pixtral-large-2411" is deprecated (2026-02-27) with
+ * Mistral steering integrations toward Medium 3.5. Re-verify this list
+ * against docs.mistral.ai/capabilities/vision before it's next touched —
+ * Mistral has churned vision model names before.
+ */
+export const VISION_MODEL_CANDIDATES = [
+  "mistral-medium-latest", // Mistral Medium 3.5 — current recommended multimodal model
+  "pixtral-large-2411", // deprecated but still served as a pinned version; kept as a second attempt
+  "mistral-large-latest", // NOT vision-capable — last resort so a request never hard-fails outright
+] as const;
+
+function isInvalidModelError(err: unknown): boolean {
+  const status = (err as MistralApiError).status;
+  if (status !== 400) return false;
+  const message = (err as Error).message ?? "";
+  return /invalid.{0,10}model|model.{0,10}not.{0,10}found|unknown model|model_not_found/i.test(message);
+}
+
+/**
+ * Runs `call` once per candidate model, in order, falling through to the
+ * next ONLY when Mistral rejects the model name itself (400 invalid_model —
+ * e.g. an alias Mistral has fully removed, like the old "pixtral-large-latest"
+ * that broke every real analysis in prod). Every other failure — 429 rate
+ * limit, timeout, 5xx, or a downstream schema/parse error thrown by the
+ * caller after a successful response — propagates immediately instead of
+ * being swallowed into "just try a worse model".
+ */
+export async function withVisionModelFallback<T>(
+  call: (model: string) => Promise<T>,
+  models: readonly string[] = VISION_MODEL_CANDIDATES
+): Promise<T> {
+  let lastError: unknown;
+
+  for (const model of models) {
+    try {
+      const result = await call(model);
+      console.info(`[mistral] Vision request served by model: ${model}`);
+      return result;
+    } catch (err) {
+      if (!isInvalidModelError(err)) throw err;
+      console.warn(`[mistral] Model "${model}" rejected as invalid (400) — trying next vision candidate.`, err);
+      lastError = err;
+    }
+  }
+
+  throw lastError;
 }

@@ -28,6 +28,20 @@ export async function POST() {
     return apiError("No billing account yet — subscribe first.", 404);
   }
 
+  // Some accounts have a non-Stripe placeholder in stripe_customer_id (e.g.
+  // manually-granted premium access) — Stripe would throw "No such
+  // customer" on those, which surfaced as an unhandled 500. Fail cleanly
+  // instead; never touch the subscriptions row here.
+  if (!subscription.stripe_customer_id.startsWith("cus_")) {
+    console.error(
+      `[api/stripe/portal] user ${user.id} has a non-Stripe customer id: ${subscription.stripe_customer_id}`
+    );
+    return apiError(
+      "Ton abonnement n'est pas encore relié à un compte de facturation Stripe. Contacte le support pour régulariser ton accès.",
+      409
+    );
+  }
+
   const stripe = getStripeClient();
   const session = await stripe.billingPortal.sessions.create({
     customer: subscription.stripe_customer_id,
