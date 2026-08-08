@@ -28,6 +28,7 @@ import { useStripeRedirect } from "@/hooks/use-stripe-redirect";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils";
+import { stripProblemPrefix } from "@/lib/utils/recommendations";
 import type { DatingApp, Recommendation } from "@/types/database.types";
 
 // Below-the-fold, framer-motion-heavy sections — deferred so the
@@ -140,11 +141,6 @@ function potentialLabel(overall: number): string {
   if (overall < 50) return "Potentiel à débloquer";
   if (overall < 75) return "Marge de progression";
   return "Détails à peaufiner";
-}
-
-function stripProblemPrefix(title: string): string {
-  const match = title.match(/^Problème n°\d+\s*:\s*(.+)$/);
-  return match ? match[1] : title;
 }
 
 export function PaywallView({ data }: { data: PaywallData }) {

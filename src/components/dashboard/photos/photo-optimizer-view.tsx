@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, Loader2, Sparkles, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, GripVertical, Loader2, Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +37,36 @@ export function PhotoOptimizerView({
   const [building, setBuilding] = useState(false);
   const [built, setBuilt] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [orderSaved, setOrderSaved] = useState(false);
+
+  async function persistOrder(order: OptimizerPhoto[]) {
+    setOrderSaved(false);
+    const res = await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ photo_order: order.map((p) => p.path) }),
+    });
+    if (res.ok) {
+      setOrderSaved(true);
+      track(AnalyticsEvent.PhotoOptimizerUsed, { photo_count: order.length });
+    }
+  }
+
+  function movePhoto(from: number, to: number) {
+    if (to < 0 || to >= photos.length || from === to) return;
+    const next = [...photos];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setPhotos(next);
+    persistOrder(next);
+  }
+
+  function handleDrop(dropIndex: number) {
+    if (dragIndex === null) return;
+    movePhoto(dragIndex, dropIndex);
+    setDragIndex(null);
+  }
 
   async function buildBestProfile() {
     setBuilding(true);
@@ -88,7 +118,12 @@ export function PhotoOptimizerView({
         </Button>
       </div>
 
-      {built && (
+      <p className="text-xs text-muted-foreground">
+        Glisse une photo pour la réordonner (ou utilise les flèches sur mobile) — l&apos;ordre est enregistré
+        automatiquement sur ton profil FlirtCraft. Cela ne modifie pas ton profil Tinder/Hinge/Bumble.
+      </p>
+
+      {(built || orderSaved) && (
         <p className="rounded-lg bg-secondary px-4 py-2 text-sm text-secondary-foreground">
           ✓ L&apos;ordre de ton profil a été mis à jour.
         </p>
@@ -97,52 +132,77 @@ export function PhotoOptimizerView({
 
       <div className="grid gap-4 sm:grid-cols-2">
         {photos.map((photo, i) => (
-          <motion.div
+          <div
             key={photo.path}
-            layout
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.05 }}
+            draggable
+            onDragStart={() => setDragIndex(i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => handleDrop(i)}
           >
-            <Card className="overflow-hidden">
-              <div className="relative aspect-[4/3] bg-muted">
-                {photo.url && (
-                  <Image
-                    src={photo.url}
-                    alt={`Ta photo de profil, notée ${photo.score}/100`}
-                    fill
-                    sizes="300px"
-                    className="object-cover"
-                    unoptimized
-                  />
-                )}
-                <Badge
-                  className="absolute left-2 top-2"
-                  variant={photo.suggestedRole === "remove" ? "secondary" : "default"}
-                >
-                  {ROLE_LABEL[photo.suggestedRole]}
-                </Badge>
-                <span className="absolute right-2 top-2 flex size-9 items-center justify-center rounded-full bg-background/90 text-sm font-semibold">
-                  {photo.score}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2 p-4">
-                {photo.pros.map((pro) => (
-                  <p key={pro} className="flex items-start gap-1.5 text-xs text-foreground">
-                    <Check className="mt-0.5 size-3.5 shrink-0 text-primary" />
-                    {pro}
-                  </p>
-                ))}
-                {photo.cons.map((con) => (
-                  <p key={con} className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                    <X className="mt-0.5 size-3.5 shrink-0 text-destructive" />
-                    {con}
-                  </p>
-                ))}
-                <p className="mt-1 text-xs font-medium">{photo.recommendation}</p>
-              </div>
-            </Card>
-          </motion.div>
+            <motion.div layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.05 }}>
+              <Card className="overflow-hidden">
+                <div className="relative aspect-[4/3] cursor-grab bg-muted active:cursor-grabbing">
+                  {photo.url && (
+                    <Image
+                      src={photo.url}
+                      alt={`Ta photo de profil, notée ${photo.score}/100`}
+                      fill
+                      sizes="300px"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  )}
+                  <Badge
+                    className="absolute left-2 top-2"
+                    variant={photo.suggestedRole === "remove" ? "secondary" : "default"}
+                  >
+                    {i === 0 ? "Photo principale" : ROLE_LABEL[photo.suggestedRole]}
+                  </Badge>
+                  <span className="absolute right-2 top-2 flex size-9 items-center justify-center rounded-full bg-background/90 text-sm font-semibold">
+                    {photo.score}
+                  </span>
+                  <span className="absolute bottom-2 left-2 flex size-7 items-center justify-center rounded-full bg-background/80 text-muted-foreground">
+                    <GripVertical className="size-4" />
+                  </span>
+                  <div className="absolute bottom-2 right-2 flex flex-col overflow-hidden rounded-full bg-background/90">
+                    <button
+                      type="button"
+                      aria-label="Monter cette photo"
+                      disabled={i === 0}
+                      onClick={() => movePhoto(i, i - 1)}
+                      className="flex size-7 items-center justify-center disabled:opacity-30"
+                    >
+                      <ChevronUp className="size-4" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Descendre cette photo"
+                      disabled={i === photos.length - 1}
+                      onClick={() => movePhoto(i, i + 1)}
+                      className="flex size-7 items-center justify-center disabled:opacity-30"
+                    >
+                      <ChevronDown className="size-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 p-4">
+                  {photo.pros.map((pro) => (
+                    <p key={pro} className="flex items-start gap-1.5 text-xs text-foreground">
+                      <Check className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                      {pro}
+                    </p>
+                  ))}
+                  {photo.cons.map((con) => (
+                    <p key={con} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                      <X className="mt-0.5 size-3.5 shrink-0 text-destructive" />
+                      {con}
+                    </p>
+                  ))}
+                  <p className="mt-1 text-xs font-medium">{photo.recommendation}</p>
+                </div>
+              </Card>
+            </motion.div>
+          </div>
         ))}
       </div>
     </div>

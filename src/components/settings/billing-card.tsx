@@ -51,7 +51,7 @@ export function BillingCard({ plan, status, currentPeriodEnd, hasBillingAccount 
         {hasBillingAccount ? (
           <Button variant="outline" onClick={openPortal} disabled={loading} className="w-fit">
             {loading ? <Loader2 className="animate-spin" /> : null}
-            Gérer la facturation
+            Gérer mon abonnement
           </Button>
         ) : (
           <Button asChild className="w-fit">
@@ -60,6 +60,10 @@ export function BillingCard({ plan, status, currentPeriodEnd, hasBillingAccount 
         )}
 
         {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <Link href="/premium" className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
+          Voir le comparatif Gratuit vs Premium
+        </Link>
       </CardContent>
     </Card>
   );

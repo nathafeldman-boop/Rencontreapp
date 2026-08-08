@@ -2,16 +2,33 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Crown, LayoutDashboard, LogOut, Settings, Sparkles } from "lucide-react";
+import {
+  Camera,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  Sparkles,
+  TrendingUp,
+  User,
+  Wand2,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/premium", label: "Premium", icon: Crown },
-  { href: "/settings", label: "Réglages", icon: Settings },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/optimize", label: "Optimisation", icon: Wand2 },
+  { href: "/dashboard/ai", label: "IA", icon: Sparkles },
+  { href: "/dashboard/stats", label: "Statistiques", icon: TrendingUp },
+  { href: "/dashboard/profile", label: "Mon profil", icon: User },
+  { href: "/settings", label: "Paramètres", icon: Settings },
 ];
+
+function isActive(pathname: string, href: string) {
+  if (href === "/dashboard") return pathname === "/dashboard";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -24,41 +41,78 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+    <div className="flex flex-1">
+      {/* Desktop sidebar */}
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card sm:flex">
+        <Link href="/dashboard" className="flex items-center gap-2 px-6 py-6 font-semibold">
+          <span className="flex size-7 items-center justify-center rounded-full bg-brand-gradient">
+            <Camera className="size-3.5 text-primary-foreground" />
+          </span>
+          Flirtcraft
+        </Link>
+        <nav className="flex flex-1 flex-col gap-1 px-3">
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive(pathname, item.href) ? "page" : undefined}
+              className={cn(
+                "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                isActive(pathname, item.href)
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              )}
+            >
+              <item.icon className="size-4" />
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+        <button
+          onClick={handleSignOut}
+          className="mx-3 mb-6 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-muted-foreground outline-none transition-colors hover:bg-secondary hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          <LogOut className="size-4" />
+          Se déconnecter
+        </button>
+      </aside>
+
+      <div className="flex flex-1 flex-col">
+        {/* Mobile top bar */}
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background/80 px-6 py-4 backdrop-blur sm:hidden">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
             <Sparkles className="size-4 text-primary" />
             Flirtcraft
           </Link>
-          <nav className="flex items-center gap-1">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={pathname === item.href ? "page" : undefined}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                  pathname === item.href
-                    ? "bg-secondary text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <item.icon className="size-4" />
-                <span className="sr-only sm:not-sr-only">{item.label}</span>
-              </Link>
-            ))}
-            <button
-              onClick={handleSignOut}
-              aria-label="Se déconnecter"
-              className="ml-1 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground outline-none transition-colors hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              <LogOut className="size-4" />
-            </button>
-          </nav>
-        </div>
-      </header>
-      <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">{children}</div>
+          <button
+            onClick={handleSignOut}
+            aria-label="Se déconnecter"
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground outline-none transition-colors hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </header>
+
+        <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10 pb-28 sm:pb-10">{children}</main>
+      </div>
+
+      {/* Mobile bottom tabs */}
+      <nav className="fixed inset-x-0 bottom-0 z-20 flex justify-around border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden">
+        {NAV_ITEMS.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={isActive(pathname, item.href) ? "page" : undefined}
+            className={cn(
+              "flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+              isActive(pathname, item.href) ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            <item.icon className="size-5" />
+            {item.label}
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }

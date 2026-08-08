@@ -36,6 +36,7 @@ export const AnalyticsEvent = {
   ConversationCoachUsed: "conversation_coach_used",
   PhotoOptimizerUsed: "photo_optimizer_used",
   DatingPlanGenerated: "dating_plan_generated",
+  DatingStatsAdded: "dating_stats_added",
 
   // ---- Growth (referral & creator attribution) --------------------------
   ReferralLinkCopied: "referral_link_copied",
@@ -74,6 +75,7 @@ export interface AnalyticsEventProps {
   [AnalyticsEvent.ConversationCoachUsed]: Record<string, never>;
   [AnalyticsEvent.PhotoOptimizerUsed]: { photo_count: number };
   [AnalyticsEvent.DatingPlanGenerated]: Record<string, never>;
+  [AnalyticsEvent.DatingStatsAdded]: { platform: string };
 
   [AnalyticsEvent.ReferralLinkCopied]: Record<string, never>;
   [AnalyticsEvent.ReferralSignup]: { referral_code: string };

@@ -37,9 +37,17 @@ export async function POST(request: NextRequest) {
   return apiSuccess({ profile_id: data.id }, 201);
 }
 
-const patchSchema = z.object({ bio: z.string().min(1).max(1000) });
+const patchSchema = z
+  .object({
+    bio: z.string().min(1).max(1000).optional(),
+    /** New display order for `profiles.photos` — from the Optimisation page's drag-and-drop / arrow reorder. Must be exactly the same set of paths, just reordered. */
+    photo_order: z.array(z.string().min(1)).min(1).max(9).optional(),
+  })
+  .refine((data) => data.bio !== undefined || data.photo_order !== undefined, {
+    message: "Provide `bio` and/or `photo_order`.",
+  });
 
-/** Updates the bio on the user's most recent profile — e.g. "Use this bio" from the Bio Generator. */
+/** Updates the bio and/or photo order on the user's most recent profile. */
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
   const {
@@ -58,7 +66,7 @@ export async function PATCH(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id")
+    .select("id, photos")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -68,7 +76,21 @@ export async function PATCH(request: NextRequest) {
     return apiError("No profile found.", 422);
   }
 
-  const { error } = await supabase.from("profiles").update({ bio: parsed.data.bio }).eq("id", profile.id);
+  const update: { bio?: string; photos?: string[] } = {};
+  if (parsed.data.bio !== undefined) update.bio = parsed.data.bio;
+
+  if (parsed.data.photo_order !== undefined) {
+    // Reorder only — never let the client add/remove photos through this endpoint.
+    const existing = new Set(profile.photos ?? []);
+    const isSameSet =
+      parsed.data.photo_order.length === existing.size && parsed.data.photo_order.every((path) => existing.has(path));
+    if (!isSameSet) {
+      return apiError("photo_order must contain exactly the profile's existing photos.", 422);
+    }
+    update.photos = parsed.data.photo_order;
+  }
+
+  const { error } = await supabase.from("profiles").update(update).eq("id", profile.id);
 
   if (error) {
     return apiError(error.message, 500);

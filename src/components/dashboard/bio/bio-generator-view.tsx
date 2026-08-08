@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Copy, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { Check, Copy, Loader2, Pencil, RefreshCw, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,13 +21,44 @@ const STYLES: { value: BioStyle; label: string }[] = [
   { value: "premium", label: "Premium" },
 ];
 
-export function BioGeneratorView({ currentBio }: { currentBio: string }) {
+export function BioGeneratorView({
+  currentBio,
+  bioScore,
+  bioProblem,
+}: {
+  currentBio: string;
+  /** Optional — only known once an analysis has run. Shown alongside the current bio when present. */
+  bioScore?: number;
+  bioProblem?: string;
+}) {
   const [style, setStyle] = useState<BioStyle>("confident");
   const [bios, setBios] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedIndex, setSavedIndex] = useState<number | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [draftBio, setDraftBio] = useState(currentBio);
+  const [savingManual, setSavingManual] = useState(false);
+  const [manualSaved, setManualSaved] = useState(false);
   const { copiedKey, copy } = useClipboardCopy();
+
+  async function saveManualBio() {
+    setSavingManual(true);
+    setManualSaved(false);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bio: draftBio }),
+      });
+      if (res.ok) {
+        setManualSaved(true);
+        setEditing(false);
+      }
+    } finally {
+      setSavingManual(false);
+    }
+  }
 
   async function generate() {
     setLoading(true);
@@ -73,9 +104,49 @@ export function BioGeneratorView({ currentBio }: { currentBio: string }) {
     <div className="flex flex-col gap-6">
       {currentBio && (
         <Card>
-          <CardContent className="p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bio actuelle</p>
-            <p className="mt-1 text-sm">{currentBio}</p>
+          <CardContent className="flex flex-col gap-3 p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bio actuelle</p>
+              <div className="flex items-center gap-2">
+                {bioScore !== undefined && (
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                    {bioScore}/100
+                  </span>
+                )}
+                <Button size="sm" variant="ghost" onClick={() => setEditing((e) => !e)}>
+                  <Pencil className="size-3.5" />
+                  Modifier
+                </Button>
+              </div>
+            </div>
+
+            {bioProblem && (
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">Problème détecté : </span>
+                {bioProblem}
+              </p>
+            )}
+
+            {editing ? (
+              <div className="flex flex-col gap-2">
+                <textarea
+                  rows={4}
+                  className="w-full rounded-lg border border-input bg-transparent px-4 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={draftBio}
+                  onChange={(e) => setDraftBio(e.target.value)}
+                />
+                <Button size="sm" onClick={saveManualBio} disabled={savingManual || !draftBio.trim()} className="w-fit">
+                  {savingManual ? <Loader2 className="animate-spin" /> : <Check className="size-3.5" />}
+                  Enregistrer
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm">{currentBio}</p>
+            )}
+
+            {manualSaved && !editing && (
+              <p className="text-xs text-primary">✓ Bio mise à jour sur ton profil.</p>
+            )}
           </CardContent>
         </Card>
       )}

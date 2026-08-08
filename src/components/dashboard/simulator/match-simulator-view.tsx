@@ -32,7 +32,13 @@ export function MatchSimulatorView() {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [ending, setEnding] = useState(false);
-  const [result, setResult] = useState<{ score: number; feedback: string } | null>(null);
+  const [result, setResult] = useState<{
+    score: number;
+    strengths: string[];
+    weaknesses: string[];
+    whatYouCouldHaveDone: string;
+    bestPossibleReply: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +93,13 @@ export function MatchSimulatorView() {
         return;
       }
       const { data } = await res.json();
-      setResult({ score: data.score, feedback: data.feedback });
+      setResult({
+        score: data.score,
+        strengths: data.strengths,
+        weaknesses: data.weaknesses,
+        whatYouCouldHaveDone: data.whatYouCouldHaveDone,
+        bestPossibleReply: data.bestPossibleReply,
+      });
       setStage("scored");
       track(AnalyticsEvent.AiCoachUsed, { conversation_score: data.score });
     } catch {
@@ -147,17 +159,63 @@ export function MatchSimulatorView() {
 
   if (stage === "scored" && result) {
     return (
-      <div className="flex flex-col items-center gap-4 py-8 text-center">
-        <Trophy className="size-8 text-primary" />
-        <p className="text-sm text-muted-foreground">Score de la conversation</p>
-        <div className="flex size-24 items-center justify-center rounded-full bg-brand-gradient text-3xl font-semibold text-primary-foreground">
-          {result.score}
+      <div className="flex flex-col gap-6 py-6">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <Trophy className="size-8 text-primary" />
+          <p className="text-sm text-muted-foreground">Score de la conversation</p>
+          <div className="flex size-24 items-center justify-center rounded-full bg-brand-gradient text-3xl font-semibold text-primary-foreground">
+            {result.score}
+          </div>
+          <div className="w-full max-w-xs">
+            <Progress value={result.score} />
+          </div>
         </div>
-        <div className="w-full max-w-xs">
-          <Progress value={result.score} />
+
+        <div className="flex flex-col gap-3 text-left">
+          <Card>
+            <CardContent className="flex flex-col gap-1.5 p-4">
+              <p className="text-sm font-medium">🔥 Points forts</p>
+              <ul className="flex flex-col gap-1">
+                {result.strengths.map((s, i) => (
+                  <li key={i} className="text-sm text-muted-foreground">
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="flex flex-col gap-1.5 p-4">
+              <p className="text-sm font-medium">⚠️ Points faibles</p>
+              <ul className="flex flex-col gap-1">
+                {result.weaknesses.map((w, i) => (
+                  <li key={i} className="text-sm text-muted-foreground">
+                    {w}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="flex flex-col gap-1.5 p-4">
+              <p className="text-sm font-medium">🎯 Ce que tu aurais pu faire</p>
+              <p className="text-sm text-muted-foreground">{result.whatYouCouldHaveDone}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="flex flex-col gap-1.5 p-4">
+              <p className="text-sm font-medium">💡 Meilleure réponse possible</p>
+              <p className="text-sm text-muted-foreground">{result.bestPossibleReply}</p>
+            </CardContent>
+          </Card>
         </div>
-        <p className="max-w-sm text-sm text-muted-foreground">{result.feedback}</p>
-        <Button onClick={reset}>Recommencer</Button>
+
+        <Button onClick={reset} className="mx-auto">
+          Recommencer
+        </Button>
       </div>
     );
   }

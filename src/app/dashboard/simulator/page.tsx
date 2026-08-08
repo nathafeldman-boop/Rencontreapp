@@ -6,9 +6,9 @@ import { MatchSimulatorView } from "@/components/dashboard/simulator/match-simul
 export default function MatchSimulatorPage() {
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/dashboard/ai" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" />
-        Tableau de bord
+        FlirtCraft AI
       </Link>
 
       <div>

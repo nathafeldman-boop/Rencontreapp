@@ -50,10 +50,18 @@ async function callMistralForReply(persona: MatchPersona, messages: MatchMessage
   return reply;
 }
 
+export interface ConversationScoreResult {
+  score: number;
+  strengths: string[];
+  weaknesses: string[];
+  whatYouCouldHaveDone: string;
+  bestPossibleReply: string;
+}
+
 export async function scoreConversation(
   messages: MatchMessage[],
   contextSummary?: string
-): Promise<{ score: number; feedback: string; isSimulated: boolean }> {
+): Promise<ConversationScoreResult & { isSimulated: boolean }> {
   try {
     const result = await callMistralForScore(messages, contextSummary);
     return { ...result, isSimulated: false };
@@ -66,8 +74,14 @@ export async function scoreConversation(
 async function callMistralForScore(
   messages: MatchMessage[],
   contextSummary?: string
-): Promise<{ score: number; feedback: string }> {
-  const schema = z.object({ score: z.number().min(0).max(100), feedback: z.string().min(10).max(400) });
+): Promise<ConversationScoreResult> {
+  const schema = z.object({
+    score: z.number().min(0).max(100),
+    strengths: z.array(z.string().min(1).max(160)).min(1).max(4),
+    weaknesses: z.array(z.string().min(1).max(160)).min(1).max(4),
+    what_you_could_have_done: z.string().min(10).max(300),
+    best_possible_reply: z.string().min(1).max(300),
+  });
 
   const response = await callMistralJson<unknown>({
     model: "mistral-large-latest",
@@ -78,10 +92,14 @@ async function callMistralForScore(
         content:
           "You just finished roleplaying as a dating match in a practice conversation. Now switch roles: " +
           "score the human user's conversation skills 0-100 (humor, confidence, engagement, ability to keep " +
-          "the conversation going) and give one short paragraph of specific, constructive feedback. If the " +
-          "user's known context mentions a specific problem they're working on, connect your feedback to it " +
-          "directly instead of giving generic advice. " +
-          'Respond with ONLY JSON: { "score": number, "feedback": string }.',
+          "the conversation going). Be honest, not just encouraging — a mediocre conversation should score " +
+          "accordingly. If the user's known context mentions a specific problem they're working on, connect " +
+          "your feedback to it directly instead of giving generic advice. " +
+          'Respond with ONLY JSON: { "score": number, "strengths": string[] (1-3 short, specific things they ' +
+          'did well), "weaknesses": string[] (1-3 short, specific things that held the conversation back), ' +
+          '"what_you_could_have_done": string (one concrete alternative approach for the weakest moment), ' +
+          '"best_possible_reply": string (the single best reply they could have sent at their last message, ' +
+          "written exactly as they'd type it) }.",
       },
       {
         role: "user",
@@ -95,19 +113,38 @@ async function callMistralForScore(
     ],
   });
 
-  return schema.parse(response);
+  const parsed = schema.parse(response);
+  return {
+    score: parsed.score,
+    strengths: parsed.strengths,
+    weaknesses: parsed.weaknesses,
+    whatYouCouldHaveDone: parsed.what_you_could_have_done,
+    bestPossibleReply: parsed.best_possible_reply,
+  };
 }
 
-function heuristicScore(messages: MatchMessage[]): { score: number; feedback: string } {
+function heuristicScore(messages: MatchMessage[]): ConversationScoreResult {
   const userMessages = messages.filter((m) => m.role === "user");
   const avgLength = userMessages.reduce((sum, m) => sum + m.content.length, 0) / Math.max(1, userMessages.length);
   const score = Math.round(Math.min(95, 40 + userMessages.length * 4 + Math.min(20, avgLength / 4)));
+  const lastUserMessage = userMessages[userMessages.length - 1]?.content ?? "";
 
   return {
     score,
-    feedback:
+    strengths:
+      userMessages.length >= 4
+        ? ["Tu as maintenu un vrai échange plutôt qu'une conversation à sens unique."]
+        : ["Tu as osé lancer la conversation."],
+    weaknesses:
       userMessages.length < 4
-        ? "You wrapped up early — longer conversations give you more room to build rapport before asking for the date."
-        : "Solid back-and-forth. Keep leaning into specific, curious follow-up questions to keep the energy up.",
+        ? ["La conversation s'est arrêtée tôt — moins de place pour créer une vraie connexion avant de proposer un rendez-vous."]
+        : ["Certaines relances restent un peu génériques plutôt que de rebondir sur un détail précis dit par ton match."],
+    whatYouCouldHaveDone:
+      userMessages.length < 4
+        ? "Pose une question ouverte sur un détail précis de sa réponse précédente pour prolonger l'échange avant de conclure."
+        : "Rebondis sur un détail spécifique que ton match a mentionné plutôt que de poser une question générique.",
+    bestPossibleReply: lastUserMessage
+      ? "Essaie une relance qui reprend un mot précis de sa dernière réponse plutôt qu'une question fermée."
+      : "Envoie une accroche qui réagit à quelque chose de concret dans son profil plutôt qu'un simple \"salut\".",
   };
 }

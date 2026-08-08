@@ -11,6 +11,9 @@ export type DatingGoal = "serious_relationship" | "casual_dating" | "friends" | 
 export type DatingApp = "tinder" | "bumble" | "hinge" | "other";
 export type SubscriptionPlan = "free" | "premium_monthly" | "premium_annual";
 export type SubscriptionStatus = "trialing" | "active" | "past_due" | "canceled" | "incomplete";
+/** Broader than `DatingApp` — includes Meetic, used only by manual stats entry and the (unimplemented) platform-connector architecture. */
+export type DatingPlatform = "tinder" | "hinge" | "bumble" | "meetic" | "other";
+export type DatingConnectionStatus = "not_connected" | "connected" | "error";
 
 export interface Recommendation {
   category: "photos" | "bio" | "conversation";
@@ -376,6 +379,47 @@ export interface Database {
           category: FeedbackCategory;
         };
         Update: Partial<Database["public"]["Tables"]["feedback"]["Row"]>;
+        Relationships: [];
+      };
+      dating_stats: {
+        Row: {
+          id: string;
+          user_id: string;
+          platform: DatingPlatform;
+          period_start: string;
+          period_end: string;
+          likes: number;
+          matches: number;
+          conversations: number;
+          replies: number;
+          dates: number;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["dating_stats"]["Row"], "id">> & {
+          user_id: string;
+          platform: DatingPlatform;
+          period_start: string;
+          period_end: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["dating_stats"]["Row"]>;
+        Relationships: [];
+      };
+      dating_connections: {
+        Row: {
+          id: string;
+          user_id: string;
+          platform: Exclude<DatingPlatform, "other">;
+          status: DatingConnectionStatus;
+          connected_at: string | null;
+          last_sync: string | null;
+          metadata: Record<string, unknown>;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["dating_connections"]["Row"], "id">> & {
+          user_id: string;
+          platform: Exclude<DatingPlatform, "other">;
+        };
+        Update: Partial<Database["public"]["Tables"]["dating_connections"]["Row"]>;
         Relationships: [];
       };
     };

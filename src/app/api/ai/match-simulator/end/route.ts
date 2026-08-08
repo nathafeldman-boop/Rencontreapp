@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
   }
 
   const context = await getUserContext(supabase, user.id);
-  const { score, feedback, isSimulated } = await scoreConversation(session.messages, summarizeUserContext(context));
+  const { score, strengths, weaknesses, whatYouCouldHaveDone, bestPossibleReply, isSimulated } =
+    await scoreConversation(session.messages, summarizeUserContext(context));
 
   const { error: updateError } = await supabase
     .from("match_simulator_sessions")
@@ -46,5 +47,5 @@ export async function POST(request: NextRequest) {
     return apiError(updateError.message, 500);
   }
 
-  return apiSuccess({ score, feedback, isSimulated });
+  return apiSuccess({ score, strengths, weaknesses, whatYouCouldHaveDone, bestPossibleReply, isSimulated });
 }
