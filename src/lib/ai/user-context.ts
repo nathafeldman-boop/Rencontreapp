@@ -10,6 +10,7 @@ export interface UserContext {
   weeklyMatches?: string;
   biggestProblem?: string;
   confidence?: string;
+  hobbies?: string;
   latestScores?: {
     overall: number;
     photo: number;
@@ -24,6 +25,7 @@ const ONBOARDING_QUESTIONS = {
   weeklyMatches: "How many matches do you get weekly?",
   biggestProblem: "What's your biggest problem right now?",
   confidence: "How confident are you with your profile?",
+  hobbies: "What are your hobbies/interests?",
 } as const;
 
 /**
@@ -68,6 +70,7 @@ export async function getUserContext(
     weeklyMatches: findAnswer(ONBOARDING_QUESTIONS.weeklyMatches),
     biggestProblem: findAnswer(ONBOARDING_QUESTIONS.biggestProblem),
     confidence: findAnswer(ONBOARDING_QUESTIONS.confidence),
+    hobbies: findAnswer(ONBOARDING_QUESTIONS.hobbies),
     latestScores: latestAnalysis
       ? {
           overall: latestAnalysis.overall_score,
@@ -85,6 +88,7 @@ export function summarizeUserContext(ctx: UserContext): string {
   const lines: string[] = [];
 
   if (ctx.datingApp) lines.push(`Dating app: ${ctx.datingApp}`);
+  if (ctx.hobbies) lines.push(`Hobbies/interests: ${ctx.hobbies}`);
   if (ctx.objective) lines.push(`Main objective: ${ctx.objective}`);
   if (ctx.biggestProblem) lines.push(`Self-reported biggest problem: ${ctx.biggestProblem}`);
   if (ctx.weeklyMatches) lines.push(`Current weekly matches: ${ctx.weeklyMatches}`);

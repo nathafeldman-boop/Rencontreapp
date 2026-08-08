@@ -29,7 +29,7 @@ const DATING_APPS: { value: DatingApp; label: string }[] = [
   { value: "other", label: "Autre" },
 ];
 
-const STEP_COUNT = 7;
+const STEP_COUNT = 8;
 
 interface FormState {
   age: string;
@@ -40,6 +40,7 @@ interface FormState {
   weekly_matches: string;
   biggest_problem: string;
   confidence: number;
+  hobbies: string;
   bio: string;
   photos: File[];
 }
@@ -59,6 +60,7 @@ export function OnboardingForm() {
     weekly_matches: "",
     biggest_problem: "",
     confidence: 5,
+    hobbies: "",
     bio: "",
     photos: [],
   });
@@ -69,7 +71,7 @@ export function OnboardingForm() {
 
   const uploadStepTracked = useRef(false);
   useEffect(() => {
-    if (step === 7 && !uploadStepTracked.current) {
+    if (step === 8 && !uploadStepTracked.current) {
       uploadStepTracked.current = true;
       track(AnalyticsEvent.ProfileUploadStarted, {});
     }
@@ -85,16 +87,17 @@ export function OnboardingForm() {
     if (step === 4) return form.weekly_matches !== "";
     if (step === 5) return form.biggest_problem !== "";
     if (step === 6) return true; // slider always has a value
-    if (step === 7) return form.bio.trim().length > 0 && form.photos.length >= MIN_PHOTOS;
+    if (step === 7) return form.hobbies.trim().length > 0;
+    if (step === 8) return form.bio.trim().length > 0 && form.photos.length >= MIN_PHOTOS;
     return false;
   }
 
   async function handleNext() {
     setError(null);
 
-    // Steps 1-6 collect the answers; persist them right before the upload
+    // Steps 1-7 collect the answers; persist them right before the upload
     // step so a drop-off after this point still leaves usable data.
-    if (step === 6) {
+    if (step === 7) {
       setSubmittingAnswers(true);
       try {
         const res = await fetch("/api/onboarding", {
@@ -109,6 +112,7 @@ export function OnboardingForm() {
             weekly_matches: form.weekly_matches,
             biggest_problem: form.biggest_problem,
             confidence: form.confidence,
+            hobbies: form.hobbies,
           }),
         });
         if (!res.ok) {
@@ -128,7 +132,7 @@ export function OnboardingForm() {
                 : "Impossible d'enregistrer tes réponses — réessaie."
           );
         }
-        track(AnalyticsEvent.OnboardingCompleted, { steps_completed: 6 });
+        track(AnalyticsEvent.OnboardingCompleted, { steps_completed: 7 });
       } catch (e) {
         setError(e instanceof Error ? e.message : "Une erreur est survenue.");
         setSubmittingAnswers(false);
@@ -333,6 +337,23 @@ export function OnboardingForm() {
             )}
 
             {step === 7 && (
+              <div className="flex flex-col gap-4">
+                <h1 className="text-xl font-semibold">Parle-nous un peu de toi</h1>
+                <p className="-mt-2 text-sm text-muted-foreground">
+                  Tes hobbys, ce que tu fais dans la vie, tes centres d&apos;intérêt — ça aide l&apos;IA à
+                  personnaliser tes bios, tes réponses et tes conseils.
+                </p>
+                <textarea
+                  rows={4}
+                  placeholder="Ex : escalade le week-end, je bosse dans le marketing, fan de cuisine thaï, je voyage dès que je peux..."
+                  className="w-full rounded-lg border border-input bg-transparent px-4 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={form.hobbies}
+                  onChange={(e) => setForm((f) => ({ ...f, hobbies: e.target.value }))}
+                />
+              </div>
+            )}
+
+            {step === 8 && (
               <div className="flex flex-col gap-4">
                 <h1 className="text-xl font-semibold">Envoie ton profil</h1>
                 <p className="-mt-2 text-sm text-muted-foreground">

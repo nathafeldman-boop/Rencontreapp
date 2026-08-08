@@ -45,6 +45,9 @@ export const onboardingSubmissionSchema = z.object({
 
   // Step 6 — confidence slider
   confidence: z.number().int().min(1).max(10),
+
+  // Step 7 — hobbies/lifestyle, so the AI tools can personalize beyond dating-app mechanics
+  hobbies: z.string().min(1).max(300),
 });
 
 export type OnboardingSubmission = z.infer<typeof onboardingSubmissionSchema>;

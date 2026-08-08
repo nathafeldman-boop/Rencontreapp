@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     return apiValidationError(parsed.error);
   }
 
-  const { age, gender, location, dating_app, objective, weekly_matches, biggest_problem, confidence } =
+  const { age, gender, location, dating_app, objective, weekly_matches, biggest_problem, confidence, hobbies } =
     parsed.data;
 
   const { error: userError } = await supabase
@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       answer: biggestProblemLabel(biggest_problem),
     },
     { user_id: user.id, question: "How confident are you with your profile?", answer: `${confidence}/10` },
+    { user_id: user.id, question: "What are your hobbies/interests?", answer: hobbies },
   ]);
 
   if (answersError) {
