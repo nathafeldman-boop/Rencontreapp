@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/client";
-import { MIN_PHOTOS, MAX_PHOTOS } from "@/components/onboarding/photo-dropzone";
+import { MAX_PHOTOS } from "@/components/onboarding/photo-dropzone";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 
@@ -25,6 +25,15 @@ interface OptimizerPhoto {
   recommendation: string;
   suggestedRole: "primary" | "secondary" | "remove";
 }
+
+/**
+ * Floor for deleting from the *already-uploaded* set — distinct from
+ * onboarding's MIN_PHOTOS (3), which only gates the initial upload step.
+ * Matches PATCH /api/profile's own floor (`photos` array min length 1) so
+ * users aren't blocked from clearing out bad/test photos once they're
+ * already past onboarding.
+ */
+const MIN_PHOTOS_TO_KEEP = 1;
 
 const ROLE_ORDER = { primary: 0, secondary: 1, remove: 2 } as const;
 const ROLE_LABEL = { primary: "Photo principale", secondary: "Secondaire", remove: "À envisager de retirer" } as const;
@@ -98,8 +107,8 @@ export function PhotoOptimizerView({
   }
 
   async function deletePhoto(path: string) {
-    if (photos.length <= MIN_PHOTOS) {
-      setError(`Ton profil doit garder au moins ${MIN_PHOTOS} photos.`);
+    if (photos.length <= MIN_PHOTOS_TO_KEEP) {
+      setError(`Ton profil doit garder au moins ${MIN_PHOTOS_TO_KEEP} photo.`);
       return;
     }
     setError(null);
@@ -310,7 +319,7 @@ export function PhotoOptimizerView({
                   <button
                     type="button"
                     aria-label="Supprimer cette photo"
-                    disabled={deletingPath === photo.path || photos.length <= MIN_PHOTOS}
+                    disabled={deletingPath === photo.path || photos.length <= MIN_PHOTOS_TO_KEEP}
                     onClick={() => deletePhoto(photo.path)}
                     className="absolute left-2 bottom-2 flex size-7 items-center justify-center rounded-full bg-background/90 text-destructive disabled:opacity-30"
                   >

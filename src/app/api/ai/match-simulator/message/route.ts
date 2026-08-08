@@ -8,7 +8,11 @@ import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
 import type { MatchMessage } from "@/types/database.types";
 
 const bodySchema = z.object({
-  sessionId: z.string().uuid().optional(),
+  // `.nullish()` (not just `.optional()`) because the client's React state
+  // starts at `null` and `JSON.stringify` keeps `"sessionId":null` in the
+  // body (it only drops `undefined` keys) — `.optional()` alone rejected
+  // that first-message payload with a 422 every time.
+  sessionId: z.string().uuid().nullish(),
   persona: z
     .object({
       gender: z.enum(["male", "female", "non_binary", "other"]),

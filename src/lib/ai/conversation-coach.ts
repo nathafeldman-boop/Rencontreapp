@@ -118,7 +118,7 @@ export async function extractConversationFromImage(
 ): Promise<{ text: string; isSimulated: boolean }> {
   try {
     const result = await callMistral({
-      model: "pixtral-large-latest",
+      model: "mistral-large-latest",
       temperature: 0.1,
       messages: [
         {
@@ -166,17 +166,49 @@ export async function getConversationSuggestions(
   }
 }
 
+/**
+ * The model doesn't always echo back exactly "funny"/"flirty"/"natural"/
+ * "confident" (synonyms, capitalization, French words) — normalizing here
+ * instead of a strict zod enum means a slightly-off tone label no longer
+ * discards 3 otherwise-good suggestions and falls back to canned English
+ * templates.
+ */
+const TONE_ALIASES: Record<string, ConversationSuggestion["tone"]> = {
+  funny: "funny",
+  drole: "funny",
+  humorous: "funny",
+  playful: "funny",
+  flirty: "flirty",
+  flirt: "flirty",
+  flirtatious: "flirty",
+  natural: "natural",
+  naturel: "natural",
+  casual: "natural",
+  "low-key": "natural",
+  confident: "confident",
+  confiant: "confident",
+  direct: "confident",
+};
+
+function normalizeTone(raw: string, fallback: ConversationSuggestion["tone"]): ConversationSuggestion["tone"] {
+  const key = raw
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+  return TONE_ALIASES[key] ?? fallback;
+}
+
 async function callMistralForSuggestions(
   conversationText: string,
   mode: CoachMode,
   contextSummary?: string
 ): Promise<ConversationSuggestion[]> {
-  const toneEnum = mode === "auto" ? (["funny", "flirty", "natural"] as const) : ([MODE_TO_TONE[mode]] as const);
   const schema = z.object({
     suggestions: z
       .array(
         z.object({
-          tone: z.enum(toneEnum),
+          tone: z.string().min(1).max(40),
           message: z.string().min(3).max(300),
           explanation: z.string().min(10).max(300),
         })
@@ -213,5 +245,9 @@ async function callMistralForSuggestions(
     ],
   });
 
-  return schema.parse(response).suggestions;
+  const autoFallbackOrder: ConversationSuggestion["tone"][] = ["funny", "flirty", "natural"];
+  return schema.parse(response).suggestions.map((s, i) => ({
+    ...s,
+    tone: normalizeTone(s.tone, mode === "auto" ? autoFallbackOrder[i] : MODE_TO_TONE[mode]),
+  }));
 }

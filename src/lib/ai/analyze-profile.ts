@@ -183,7 +183,7 @@ async function analyzeWithMistral(input: AnalyzeProfileInput): Promise<ProfileAn
   const photoLabels = input.photos.map((_, i) => `Photo ${i} :`);
 
   const response = await callMistralJson<unknown>({
-    model: "pixtral-large-latest",
+    model: "mistral-large-latest",
     temperature: 0.4,
     messages: [
       { role: "system", content: ANALYSIS_ENGINE_SYSTEM_PROMPT },
