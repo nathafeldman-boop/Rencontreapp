@@ -88,7 +88,7 @@ export async function PATCH(request: NextRequest) {
     return apiError("No profile found.", 422);
   }
 
-  const update: { bio?: string; photos?: string[] } = {};
+  const update: { bio?: string; photos?: string[]; photos_optimized?: boolean } = {};
   if (parsed.data.bio !== undefined) update.bio = parsed.data.bio;
 
   if (parsed.data.photos !== undefined) {
@@ -97,6 +97,7 @@ export async function PATCH(request: NextRequest) {
       return apiError("photos must only reference this account's own uploads.", 422);
     }
     update.photos = parsed.data.photos;
+    update.photos_optimized = true;
   }
 
   const { error } = await supabase.from("profiles").update(update).eq("id", profile.id);

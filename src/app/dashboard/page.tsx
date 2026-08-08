@@ -27,6 +27,8 @@ import { ViewTracker } from "@/components/dashboard/view-tracker";
 import { ShareScoreCard } from "@/components/dashboard/share-score-card";
 import { WeeklyReportCard } from "@/components/dashboard/weekly-report-card";
 import { ComeBackBanner } from "@/components/dashboard/come-back-banner";
+import { NextStepFunnel, type FunnelStep } from "@/components/dashboard/next-step-funnel";
+import { DailyReminderPrompt } from "@/components/dashboard/daily-reminder-prompt";
 import { computeBadges, getLevel, nextLevel } from "@/lib/gamification/badges";
 import { getWeeklyReport } from "@/lib/reports/weekly-report";
 import { getDisplayFirstName } from "@/lib/utils/display-name";
@@ -75,9 +77,12 @@ export default async function DashboardPage() {
     { data: plan },
     { count: bioGenerationCount },
     { count: simulatorSessionCount },
+    { count: coachSessionCount },
+    { data: profileFlags },
     weeklyReport,
     { data: objectiveAnswer },
     { data: recentStats },
+    { data: userRow },
   ] = await Promise.all([
     supabase.from("dating_plans").select("days").eq("user_id", user?.id ?? "").maybeSingle(),
     supabase.from("bio_generations").select("*", { count: "exact", head: true }).eq("user_id", user?.id ?? ""),
@@ -86,6 +91,14 @@ export default async function DashboardPage() {
       .select("*", { count: "exact", head: true })
       .eq("user_id", user?.id ?? "")
       .not("ended_at", "is", null),
+    supabase.from("conversation_coach_sessions").select("*", { count: "exact", head: true }).eq("user_id", user?.id ?? ""),
+    supabase
+      .from("profiles")
+      .select("photos_optimized")
+      .eq("user_id", user?.id ?? "")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
     getWeeklyReport(supabase, user?.id ?? ""),
     supabase
       .from("onboarding_answers")
@@ -98,6 +111,7 @@ export default async function DashboardPage() {
       .select("matches, conversations, replies, dates")
       .eq("user_id", user?.id ?? "")
       .gte("period_end", statsSince),
+    supabase.from("users").select("daily_reminder_enabled").eq("id", user?.id ?? "").maybeSingle(),
   ]);
 
   const firstName = getDisplayFirstName(user);
@@ -159,6 +173,44 @@ export default async function DashboardPage() {
 
   const topProblems = recommendations.slice(0, 3);
 
+  const funnelSteps: FunnelStep[] = [
+    {
+      key: "bio",
+      label: "Bio",
+      description: "Génère 5 bios avec l'IA et choisis la meilleure — ton score bio est recalculé aussitôt.",
+      href: "/dashboard/bio",
+      done: (bioGenerationCount ?? 0) > 0,
+    },
+    {
+      key: "photos",
+      label: "Photos",
+      description: "Réorganise, remplace ou supprime tes photos pour construire ton meilleur profil.",
+      href: "/dashboard/photos",
+      done: profileFlags?.photos_optimized ?? false,
+    },
+    {
+      key: "coach",
+      label: "Coach",
+      description: "Colle une conversation (ou envoie une capture) et obtiens 3 réponses prêtes à envoyer.",
+      href: "/dashboard/coach",
+      done: (coachSessionCount ?? 0) > 0,
+    },
+    {
+      key: "simulator",
+      label: "Entraînement",
+      description: "Entraîne-toi face à un match IA et obtiens un bilan noté à la fin.",
+      href: "/dashboard/simulator",
+      done: (simulatorSessionCount ?? 0) > 0,
+    },
+    {
+      key: "stats",
+      label: "Statistiques",
+      description: "Ajoute tes vrais chiffres (matchs, conversations, dates) pour suivre ta progression réelle.",
+      href: "/dashboard/stats",
+      done: hasStats,
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-8">
       <ViewTracker event={AnalyticsEvent.DashboardViewed} properties={{ has_active_plan: true }} />
@@ -207,6 +259,8 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
+      <NextStepFunnel steps={funnelSteps} />
+
       {badges.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {badges.map((badge) => (
@@ -241,6 +295,8 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {userRow && userRow.daily_reminder_enabled === null && <DailyReminderPrompt />}
 
       {topProblems.length > 0 && (
         <Card className="border-primary/30 bg-accent/40">
@@ -308,7 +364,7 @@ export default async function DashboardPage() {
       {weeklyReport && <WeeklyReportCard report={weeklyReport} />}
 
       <div>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">Ton coach, à la demande</h2>
+        <h2 className="mb-3 text-sm font-medium text-muted-foreground">Tous les outils</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {TOOLS.map((tool) => (
             <Button key={tool.href} variant="outline" className="h-auto justify-between py-4" asChild>

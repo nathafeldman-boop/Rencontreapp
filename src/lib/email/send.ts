@@ -1,5 +1,5 @@
 import { sendEmail } from "@/lib/email/resend";
-import { welcomeEmail, referralRewardEmail, weeklyReportEmail } from "@/lib/email/templates";
+import { welcomeEmail, referralRewardEmail, weeklyReportEmail, dailyReminderEmail } from "@/lib/email/templates";
 import { clientEnv } from "@/lib/env";
 import type { WeeklyReport } from "@/lib/reports/weekly-report";
 
@@ -24,5 +24,13 @@ export function sendWeeklyReportEmail(to: string, report: WeeklyReport) {
     to,
     subject: `Ton rapport hebdomadaire — ${report.latestScore}/100`,
     html: weeklyReportEmail(clientEnv.NEXT_PUBLIC_SITE_URL, report),
+  });
+}
+
+export function sendDailyReminderEmail(to: string) {
+  return sendEmail({
+    to,
+    subject: "Ton rappel quotidien Flirtcraft 📊",
+    html: dailyReminderEmail(clientEnv.NEXT_PUBLIC_SITE_URL),
   });
 }

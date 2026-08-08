@@ -65,6 +65,7 @@ export interface Database {
           country: string | null;
           dating_goal: DatingGoal | null;
           dating_apps_used: DatingApp[];
+          daily_reminder_enabled: boolean | null;
           created_at: string;
           updated_at: string;
         };
@@ -82,6 +83,7 @@ export interface Database {
           bio: string | null;
           photos: string[];
           dating_app: DatingApp;
+          photos_optimized: boolean;
           created_at: string;
           updated_at: string;
         };

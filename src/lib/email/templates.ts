@@ -53,6 +53,19 @@ export function referralRewardEmail(siteUrl: string, rewardDays: number) {
   );
 }
 
+export function dailyReminderEmail(siteUrl: string) {
+  return baseLayout(
+    `<p style="margin:0 0 4px;font-size:17px;font-weight:600;">Ton point du jour 📊</p>
+     <p style="margin:0 0 12px;color:#6b7280;">Tinder/Meetic ne sont pas encore connectés automatiquement — prends
+     30 secondes pour mettre à jour tes matchs, conversations et dates du jour. Un nouveau match ? Demande à
+     l&apos;IA quoi répondre avant de te lancer.</p>
+     ${button("Mettre à jour mes stats", `${siteUrl}/dashboard/stats`)}
+     <p style="margin:16px 0 0;"><a href="${siteUrl}/dashboard/ai" style="color:#ec4899;text-decoration:none;font-weight:600;">Ou va directement parler à l&apos;IA →</a></p>
+     <p style="margin:20px 0 0;font-size:12px;color:#9ca3af;">Tu peux désactiver ce rappel à tout moment depuis Réglages.</p>`,
+    "Ton rappel quotidien Flirtcraft — mets à jour tes stats en 30 secondes."
+  );
+}
+
 export function weeklyReportEmail(siteUrl: string, report: WeeklyReport) {
   const deltaLine =
     report.scoreDelta === null
