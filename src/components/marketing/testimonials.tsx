@@ -123,8 +123,8 @@ const EXAMPLES = [
   },
 ];
 
-const AUTOPLAY_INTERVAL_MS = 5200;
-const RESUME_AFTER_INTERACTION_MS = 7000;
+const AUTOPLAY_INTERVAL_MS = 1800;
+const RESUME_AFTER_INTERACTION_MS = 4000;
 const MOBILE_QUERY = "(max-width: 639px)";
 
 export function Testimonials() {
