@@ -6,6 +6,8 @@ import { extractConversationFromImage } from "@/lib/ai/conversation-coach";
 import { checkCredits, consumeCredits } from "@/lib/ai/credits";
 import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
 
+export const maxDuration = 60;
+
 const bodySchema = z.object({
   image: z.string().startsWith("data:image/"),
 });

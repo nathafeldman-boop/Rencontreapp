@@ -22,86 +22,86 @@ const FALLBACK: Record<CoachMode, ConversationSuggestion[]> = {
   auto: [
     {
       tone: "funny",
-      message: "Strong opening. I'll allow it — but only if you can beat me at trivia. Terms and conditions apply.",
-      explanation: "Playful challenge invites a reply and keeps the tone light without trying too hard.",
+      message: "Belle entrée en matière. Je te laisse une chance — mais seulement si tu me bats au quiz culture générale. Conditions applicables.",
+      explanation: "Un défi joueur donne envie de répondre et garde un ton léger sans en faire trop.",
     },
     {
       tone: "flirty",
-      message: "Hi you. I was going to play it cool but that felt like a waste of a good opener.",
-      explanation: "Direct interest signals confidence, and the self-aware line keeps it from feeling too intense.",
+      message: "Hey toi. J'allais jouer les indifférentes mais ça aurait été gâcher une bonne accroche.",
+      explanation: "Un intérêt direct montre de la confiance, et l'auto-dérision évite que ça sonne trop intense.",
     },
     {
       tone: "natural",
-      message: "Hey! How's your week going so far?",
-      explanation: "Low-pressure and easy to answer — good when you want to keep momentum without overthinking it.",
+      message: "Hey ! Ta semaine se passe comment jusqu'ici ?",
+      explanation: "Facile à répondre, sans pression — parfait pour garder l'élan sans trop réfléchir.",
     },
   ],
   flirt: [
     {
       tone: "flirty",
-      message: "Careful, keep talking like that and I'll have to ask for your number.",
-      explanation: "Direct but playful — signals interest without being heavy.",
+      message: "Attention, continue comme ça et je vais devoir te demander ton numéro.",
+      explanation: "Direct mais joueur — montre de l'intérêt sans être lourd.",
     },
     {
       tone: "flirty",
-      message: "I was doing fine until you sent that. Now I'm distracted.",
-      explanation: "Flattery with a light, confident delivery invites more of the same energy back.",
+      message: "J'allais bien jusqu'à ce que tu m'envoies ça. Maintenant je suis distrait(e).",
+      explanation: "Un compliment livré avec légèreté et confiance donne envie de continuer sur cette énergie.",
     },
     {
       tone: "flirty",
-      message: "Okay, that's officially the best part of my day so far.",
-      explanation: "Warm and specific enough to feel genuine rather than a stock line.",
+      message: "Ok, c'est officiellement le meilleur moment de ma journée jusqu'ici.",
+      explanation: "Chaleureux et assez précis pour sonner sincère plutôt que comme une phrase toute faite.",
     },
   ],
   funny: [
     {
       tone: "funny",
-      message: "I'm contractually obligated to say something charming here, give me a second.",
-      explanation: "Self-aware humor is low-risk and almost always lands.",
+      message: "Je suis contractuellement obligé(e) de dire un truc charmant ici, laisse-moi une seconde.",
+      explanation: "L'auto-dérision est sans risque et fonctionne presque à tous les coups.",
     },
     {
       tone: "funny",
-      message: "Okay but is this a green flag or are we speedrunning a red one, I need to know now.",
-      explanation: "Playful and current — invites a joke back rather than a one-word reply.",
+      message: "Ok mais c'est un green flag ou on est en train de rusher un red flag, j'ai besoin de savoir maintenant.",
+      explanation: "Léger et dans l'air du temps — donne envie de répondre par une blague plutôt qu'un mot.",
     },
     {
       tone: "funny",
-      message: "Noted for the record: you're funnier than my last three matches combined.",
-      explanation: "Compliment wrapped in a joke — light enough to not feel intense.",
+      message: "Pour info : t'es plus drôle que mes trois derniers matchs réunis.",
+      explanation: "Un compliment emballé dans une blague — assez léger pour ne pas sonner trop intense.",
     },
   ],
   natural: [
     {
       tone: "natural",
-      message: "Haha okay, I wasn't expecting that answer.",
-      explanation: "Simple and genuine — keeps things moving without trying too hard.",
+      message: "Haha ok, je m'attendais pas à cette réponse.",
+      explanation: "Simple et sincère — garde la conversation vivante sans en faire trop.",
     },
     {
       tone: "natural",
-      message: "Wait, tell me more about that.",
-      explanation: "Easy, curious follow-up that hands the conversation back naturally.",
+      message: "Attends, raconte-moi en plus.",
+      explanation: "Une relance facile et curieuse qui relance naturellement la conversation.",
     },
     {
       tone: "natural",
-      message: "That's actually a really good point, hadn't thought about it that way.",
-      explanation: "Low-key and conversational, like texting a friend.",
+      message: "En fait c'est un bon point, j'y avais pas pensé comme ça.",
+      explanation: "Décontracté et conversationnel, comme si tu écrivais à un(e) ami(e).",
     },
   ],
   confident: [
     {
       tone: "confident",
-      message: "I like where this is going. Let's grab a drink and keep it going in person.",
-      explanation: "Direct ask, no hedging — confidence reads well over text.",
+      message: "J'aime bien la tournure que ça prend. On va boire un verre pour continuer ça en vrai ?",
+      explanation: "Une proposition directe, sans détour — la confiance se ressent bien à l'écrit.",
     },
     {
       tone: "confident",
-      message: "I don't usually say this early, but I think we'd get along well.",
-      explanation: "Assured statement of interest without over-explaining.",
+      message: "D'habitude je dis pas ça aussi tôt, mais je pense qu'on s'entendrait bien.",
+      explanation: "Une affirmation d'intérêt assurée, sans trop en expliquer.",
     },
     {
       tone: "confident",
-      message: "You seem like you don't waste time. Same. What are you doing Friday?",
-      explanation: "Matches directness with directness — filters for someone who appreciates it.",
+      message: "T'as l'air d'être quelqu'un qui perd pas de temps. Pareil. Tu fais quoi vendredi ?",
+      explanation: "Répond à la franchise par la franchise — filtre pour quelqu'un qui apprécie ça.",
     },
   ],
 };
@@ -231,7 +231,10 @@ async function callMistralForSuggestions(
         content:
           "You are a dating conversation coach. Given a pasted conversation (most recent message last), " +
           `${instructions} Each needs a short explanation of why it works. Respond with ONLY JSON matching ` +
-          '{ "suggestions": [{ "tone", "message", "explanation" }] } (exactly 3 items).',
+          '{ "suggestions": [{ "tone", "message", "explanation" }] } (exactly 3 items). ' +
+          "The JSON keys stay as specified (in English), but every string VALUE — tone, message, and " +
+          "explanation — must be written in French (français), never in English, regardless of what language " +
+          "these instructions are written in.",
       },
       {
         role: "user",

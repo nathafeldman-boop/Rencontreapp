@@ -13,39 +13,39 @@ const STYLE_PROMPT: Record<BioStyle, string> = {
 
 const FALLBACK_TEMPLATES: Record<BioStyle, string[]> = {
   funny: [
-    "Professional dog-petter, amateur chef (ask me about the great risotto incident).",
-    "Warning: will make you laugh at inconvenient times, like the third date.",
-    "Currently accepting applications for someone to judge my questionable karaoke choices.",
-    "I peaked at mini-golf in 2019 and I'm still riding that high.",
-    "Looking for someone who thinks my puns are a feature, not a bug.",
+    "Caresseur de chiens professionnel, cuisinier amateur (demande-moi l'histoire du risotto raté).",
+    "Attention : je te ferai rire à des moments inopportuns, genre au troisième rendez-vous.",
+    "J'accepte les candidatures pour juger mes choix de karaoké discutables.",
+    "J'ai atteint mon pic au mini-golf en 2019 et je vis encore sur cette gloire.",
+    "Je cherche quelqu'un qui trouve mes jeux de mots charmants et pas juste fatigants.",
   ],
   mysterious: [
-    "Ask me about the trip that changed everything. I'll only tell you in person.",
-    "Three truths and a very good lie — you find out which is which.",
-    "I collect stories more than things. Want to be one?",
-    "Not everything's on the profile. Some things are better discovered.",
-    "There's a reason my friends call me the wildcard. I'll let you find out why.",
+    "Demande-moi le voyage qui a tout changé. Je ne le raconte qu'en personne.",
+    "Trois vérités et un très bon mensonge — à toi de deviner lesquels.",
+    "Je collectionne les histoires plus que les objets. Tu veux en devenir une ?",
+    "Tout n'est pas sur le profil. Certaines choses se découvrent mieux en vrai.",
+    "Si mes amis m'appellent l'imprévisible, il y a une raison. Je te laisse la découvrir.",
   ],
   confident: [
-    "I know what I want, and I'm not afraid to go get it — that includes this.",
-    "Direct, ambitious, and looking for someone who matches that energy.",
-    "I don't do small talk well. Let's skip to the interesting part.",
-    "Building something I'm proud of. Looking for someone building the same.",
-    "I show up for the people I care about. Consistently. That's the whole pitch.",
+    "Je sais ce que je veux, et je n'ai pas peur d'aller le chercher — toi y compris.",
+    "Direct, ambitieux, et je cherche quelqu'un avec la même énergie.",
+    "Les banalités, très peu pour moi. Passons directement à ce qui est intéressant.",
+    "Je construis quelque chose dont je suis fier. Je cherche quelqu'un qui fait pareil.",
+    "Je suis présent pour les gens qui comptent pour moi. Toujours. C'est tout mon argument.",
   ],
   romantic: [
-    "Believer in slow mornings, long dinners, and finding someone worth both.",
-    "Looking for the kind of person you plan a future around, not just a weekend.",
-    "Still believe in the big romantic gesture. Just need the right reason for one.",
-    "Good conversation, better company — building toward something real.",
-    "Not looking for perfect. Looking for someone worth the effort.",
+    "Croyant des matins tranquilles, des longs dîners, et de trouver quelqu'un qui les mérite.",
+    "Je cherche le genre de personne pour qui on planifie un avenir, pas juste un week-end.",
+    "Je crois encore aux grands gestes romantiques. Il me faut juste la bonne raison d'en faire un.",
+    "Bonne conversation, meilleure compagnie — je construis vers quelque chose de vrai.",
+    "Je ne cherche pas la perfection. Je cherche quelqu'un qui mérite l'effort.",
   ],
   premium: [
-    "Building a life I'm proud of — good work, good people, good stories to tell.",
-    "Equal parts ambition and adventure. Looking for a partner in both.",
-    "High standards, low drama. Let's see if we're a match.",
-    "Passport's getting full. Looking for someone to fill the next page with.",
-    "Curated life, open calendar. Let's find time for something good.",
+    "Je construis une vie dont je suis fier — du bon travail, des gens bien, de belles histoires à raconter.",
+    "Moitié ambition, moitié aventure. Je cherche un partenaire pour les deux.",
+    "Standards élevés, zéro drame. Voyons si on matche.",
+    "Mon passeport se remplit. Je cherche quelqu'un pour en écrire la prochaine page.",
+    "Vie organisée, agenda ouvert. Trouvons du temps pour quelque chose de bien.",
   ],
 };
 
@@ -81,7 +81,8 @@ async function generateWithMistral({ sourceBio, style, datingApp, contextSummary
           "Each bio must be under 300 characters, specific rather than generic, and end with something " +
           "easy to reply to. If the user's context mentions a specific problem (e.g. conversations dying, " +
           "not enough matches), lean the bio toward fixing that specifically. Respond with ONLY JSON: " +
-          '{ "bios": [5 distinct bio strings] }.',
+          '{ "bios": [5 distinct bio strings] }. Every bio must be written in French (français), never in ' +
+          "English, regardless of what language these instructions are written in.",
       },
       {
         role: "user",

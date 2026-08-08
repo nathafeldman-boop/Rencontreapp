@@ -4,11 +4,11 @@ import { callMistral, callMistralJson } from "@/lib/ai/mistral";
 import type { MatchMessage, MatchPersona } from "@/types/database.types";
 
 const FALLBACK_REPLIES = [
-  "Haha okay, I wasn't expecting that answer.",
-  "Wait, tell me more about that.",
-  "Okay you're actually kind of funny, noted.",
-  "Hmm, I'll allow it. What else you got?",
-  "That's a bold opinion, I respect it though.",
+  "Haha ok, je m'attendais pas à cette réponse.",
+  "Attends, raconte-moi en plus.",
+  "Ok en fait t'es plutôt drôle, je note.",
+  "Hmm, je vais laisser passer. T'as quoi d'autre ?",
+  "C'est un avis osé, mais je le respecte.",
 ];
 
 export async function getPersonaReply(
@@ -36,7 +36,9 @@ async function callMistralForReply(persona: MatchPersona, messages: MatchMessage
           `You are roleplaying as a dating app match: ${persona.gender}, personality: ${persona.personality}. ` +
           "This is a practice mode for the real user to train their conversation skills. Stay fully in character, " +
           "keep replies short (1-3 sentences) like a real text conversation, and react naturally — reward good " +
-          "energy and humor, and cool off on boring or low-effort messages, just like a real match would.",
+          "energy and humor, and cool off on boring or low-effort messages, just like a real match would. " +
+          "IMPORTANT: always reply in French (français), never in English, regardless of what language the " +
+          "instructions above are written in.",
       },
       ...messages.map((m) => ({
         role: (m.role === "user" ? "user" : "assistant") as "user" | "assistant",
@@ -99,7 +101,10 @@ async function callMistralForScore(
           'did well), "weaknesses": string[] (1-3 short, specific things that held the conversation back), ' +
           '"what_you_could_have_done": string (one concrete alternative approach for the weakest moment), ' +
           '"best_possible_reply": string (the single best reply they could have sent at their last message, ' +
-          "written exactly as they'd type it) }.",
+          "written exactly as they'd type it) }. " +
+          "The JSON keys must stay exactly as specified (in English) — but every string VALUE (strengths, " +
+          "weaknesses, what_you_could_have_done, best_possible_reply) must be written in French (français), " +
+          "never in English.",
       },
       {
         role: "user",

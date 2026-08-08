@@ -14,6 +14,9 @@ import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { BioStyle } from "@/types/database.types";
 
+/** How long to wait before refreshing again to pick up the background Mistral rescore (see /api/profile PATCH). */
+const RESCORE_REFRESH_DELAY_MS = 12_000;
+
 const STYLES: { value: BioStyle; label: string }[] = [
   { value: "funny", label: "Drôle" },
   { value: "mysterious", label: "Mystérieux" },
@@ -43,7 +46,6 @@ export function BioGeneratorView({
   const [savingManual, setSavingManual] = useState(false);
   const [manualSaved, setManualSaved] = useState(false);
   const [rescoring, setRescoring] = useState(false);
-  const [newScore, setNewScore] = useState<number | null>(null);
   const { copiedKey, copy } = useClipboardCopy();
 
   async function saveManualBio() {
@@ -58,26 +60,26 @@ export function BioGeneratorView({
       if (res.ok) {
         setManualSaved(true);
         setEditing(false);
-        await handleRescore(res);
+        triggerBackgroundRescoreRefresh();
       }
     } finally {
       setSavingManual(false);
     }
   }
 
-  async function handleRescore(res: Response) {
+  /**
+   * The PATCH itself responds fast — Mistral's rescore now runs in the
+   * background after the response (see /api/profile's `after()`), so we no
+   * longer get a score back synchronously. Refresh once right away (bio
+   * text change), then again after a delay to pick up the rescored number.
+   */
+  function triggerBackgroundRescoreRefresh() {
+    router.refresh();
     setRescoring(true);
-    try {
-      const { data } = await res.json();
-      if (data?.score?.bio !== undefined) {
-        setNewScore(data.score.bio);
-      }
+    setTimeout(() => {
       router.refresh();
-    } catch {
-      // Best-effort — the bio is already saved either way.
-    } finally {
       setRescoring(false);
-    }
+    }, RESCORE_REFRESH_DELAY_MS);
   }
 
   async function generate() {
@@ -120,7 +122,7 @@ export function BioGeneratorView({
     if (res.ok) {
       setSavedIndex(index);
       track(AnalyticsEvent.BioApplied, { style });
-      await handleRescore(res);
+      triggerBackgroundRescoreRefresh();
     }
   }
 
@@ -133,9 +135,9 @@ export function BioGeneratorView({
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bio actuelle</p>
               <div className="flex items-center gap-2">
                 {rescoring && <Loader2 className="size-3.5 animate-spin text-muted-foreground" />}
-                {(newScore ?? bioScore) !== undefined && (
+                {bioScore !== undefined && (
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                    {newScore ?? bioScore}/100
+                    {bioScore}/100
                   </span>
                 )}
                 <Button
@@ -178,7 +180,7 @@ export function BioGeneratorView({
 
             {manualSaved && !editing && (
               <p className="text-xs text-primary">
-                ✓ Bio mise à jour sur ton profil{newScore !== null && ` — nouveau score bio : ${newScore}/100`}.
+                ✓ Bio mise à jour sur ton profil{rescoring && " — recalcul du score en cours…"}.
               </p>
             )}
           </CardContent>
@@ -224,20 +226,14 @@ export function BioGeneratorView({
                       size="sm"
                       variant="secondary"
                       onClick={() => applyBio(bio, i)}
-                      disabled={savedIndex === i || (rescoring && savedIndex !== null)}
+                      disabled={savedIndex === i}
                     >
                       {savedIndex === i && rescoring ? (
                         <Loader2 className="size-3.5 animate-spin" />
                       ) : savedIndex === i ? (
                         <Check className="size-3.5" />
                       ) : null}
-                      {savedIndex === i
-                        ? rescoring
-                          ? "Recalcul du score…"
-                          : newScore !== null
-                            ? `Choisie — nouveau score : ${newScore}/100`
-                            : "Choisie"
-                        : "Choisir"}
+                      {savedIndex === i ? (rescoring ? "Recalcul du score…" : "Choisie") : "Choisir"}
                     </Button>
                   </div>
                 </CardContent>

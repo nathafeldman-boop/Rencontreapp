@@ -35,6 +35,9 @@ interface OptimizerPhoto {
  */
 const MIN_PHOTOS_TO_KEEP = 1;
 
+/** How long to wait before refreshing again to pick up the background Mistral rescore (see /api/profile PATCH). */
+const RESCORE_REFRESH_DELAY_MS = 12_000;
+
 const ROLE_ORDER = { primary: 0, secondary: 1, remove: 2 } as const;
 const ROLE_LABEL = { primary: "Photo principale", secondary: "Secondaire", remove: "À envisager de retirer" } as const;
 
@@ -54,7 +57,6 @@ export function PhotoOptimizerView({
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [orderSaved, setOrderSaved] = useState(false);
   const [rescoring, setRescoring] = useState(false);
-  const [newScore, setNewScore] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
   const [deletingPath, setDeletingPath] = useState<string | null>(null);
 
@@ -71,24 +73,27 @@ export function PhotoOptimizerView({
 
   async function persistPhotos(order: OptimizerPhoto[]) {
     setOrderSaved(false);
-    setRescoring(true);
-    try {
-      const res = await fetch("/api/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photos: order.map((p) => p.path) }),
-      });
-      if (res.ok) {
-        setOrderSaved(true);
-        track(AnalyticsEvent.PhotoOptimizerUsed, { photo_count: order.length });
-        const { data } = await res.json();
-        if (data?.score?.overall !== undefined) setNewScore(data.score.overall);
+    // The PATCH itself (saving the photo set) responds fast — Mistral's
+    // rescore now runs in the background after the response (see
+    // /api/profile's `after()`), so this only reflects the save, not the
+    // score recalculation. We refresh once immediately (order/membership),
+    // then again after a delay to pick up the rescored numbers.
+    const res = await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ photos: order.map((p) => p.path) }),
+    });
+    if (res.ok) {
+      setOrderSaved(true);
+      track(AnalyticsEvent.PhotoOptimizerUsed, { photo_count: order.length });
+      router.refresh();
+      setRescoring(true);
+      setTimeout(() => {
         router.refresh();
-      }
-      return res.ok;
-    } finally {
-      setRescoring(false);
+        setRescoring(false);
+      }, RESCORE_REFRESH_DELAY_MS);
     }
+    return res.ok;
   }
 
   function movePhoto(from: number, to: number) {
@@ -257,7 +262,7 @@ export function PhotoOptimizerView({
 
       {(built || orderSaved) && !rescoring && (
         <p className="rounded-lg bg-secondary px-4 py-2 text-sm text-secondary-foreground">
-          ✓ Ton profil a été mis à jour{newScore !== null && ` — nouveau score global : ${newScore}/100`}.
+          ✓ Ton profil a été mis à jour.
         </p>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}

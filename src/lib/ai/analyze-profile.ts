@@ -141,7 +141,12 @@ const mistralResponseSchema = z.object({
   bio_score: scoreSchema,
   attractiveness_score: scoreSchema,
   conversation_score: scoreSchema,
-  free_insights: z.array(z.string()).min(1).max(3),
+  // Mistral occasionally collapses a single insight to a bare string instead
+  // of a 1-item array — coerce rather than fail the whole parse over it.
+  free_insights: z.preprocess(
+    (val) => (typeof val === "string" ? [val] : val),
+    z.array(z.string()).min(1).max(3)
+  ),
   recommendations: z
     .array(z.object({ category: z.enum(["photos", "bio", "conversation"]), title: z.string(), detail: z.string() }))
     .min(3)

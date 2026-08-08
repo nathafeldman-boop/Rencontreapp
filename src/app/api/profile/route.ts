@@ -1,10 +1,16 @@
 import { NextRequest } from "next/server";
+import { after } from "next/server";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { profileSchema } from "@/lib/validations/profile";
 import { rescoreProfile } from "@/lib/ai/rescore-profile";
 import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
+
+// Gives the background rescore (see PATCH) enough wall-clock time to
+// finish — Mistral's vision call plus a retry can take up to ~60s.
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -56,9 +62,12 @@ const patchSchema = z
 
 /**
  * Updates the bio and/or photo set on the user's most recent profile, then
- * re-runs the Mistral analysis against the new state so the score reflects
- * the edit immediately — "Mistral is the brain": every profile change gets
- * a real recalculation, not just a static estimate.
+ * schedules a Mistral rescore against the new state — "Mistral is the
+ * brain": every profile change gets a real recalculation, not just a
+ * static estimate. The rescore runs via `after()` instead of being
+ * awaited inline: a full vision re-analysis can take 30-60s+, and blocking
+ * the response on it made every bio/photo edit feel hung. The client
+ * refreshes shortly after to pick up the new score once it lands.
  */
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
@@ -106,23 +115,24 @@ export async function PATCH(request: NextRequest) {
     return apiError(error.message, 500);
   }
 
-  const rescore = await rescoreProfile(supabase, user.id, {
+  const rescoreInput = {
     id: profile.id,
     bio: update.bio ?? profile.bio,
     photos: update.photos ?? profile.photos ?? [],
     dating_app: profile.dating_app,
+  };
+  const userId = user.id;
+
+  after(async () => {
+    // Admin client, not the request-scoped one — this runs after the
+    // response is already sent, so it shouldn't depend on request cookies.
+    const admin = createAdminClient();
+    try {
+      await rescoreProfile(admin, userId, rescoreInput);
+    } catch (err) {
+      console.error("[api/profile PATCH] background rescore failed:", err);
+    }
   });
 
-  return apiSuccess({
-    updated: true,
-    score: rescore
-      ? {
-          overall: rescore.overallScore,
-          photo: rescore.photoScore,
-          bio: rescore.bioScore,
-          attractiveness: rescore.attractivenessScore,
-          conversation: rescore.conversationScore,
-        }
-      : null,
-  });
+  return apiSuccess({ updated: true, rescoring: true });
 }

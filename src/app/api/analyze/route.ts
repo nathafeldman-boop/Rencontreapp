@@ -6,6 +6,8 @@ import { trackServer } from "@/lib/analytics/server";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { apiError, apiSuccess } from "@/lib/api/response";
 
+export const maxDuration = 60;
+
 /**
  * Scores come from `analyzeProfile` (src/lib/ai/analyze-profile.ts), which
  * calls Mistral's vision model and falls back to the deterministic
