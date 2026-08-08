@@ -20,7 +20,7 @@ export interface UserContext {
   };
 }
 
-const ONBOARDING_QUESTIONS = {
+export const ONBOARDING_QUESTIONS = {
   objective: "What's your main objective?",
   weeklyMatches: "How many matches do you get weekly?",
   biggestProblem: "What's your biggest problem right now?",

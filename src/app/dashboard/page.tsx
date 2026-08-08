@@ -29,10 +29,12 @@ import { WeeklyReportCard } from "@/components/dashboard/weekly-report-card";
 import { ComeBackBanner } from "@/components/dashboard/come-back-banner";
 import { NextStepFunnel, type FunnelStep } from "@/components/dashboard/next-step-funnel";
 import { DailyReminderPrompt } from "@/components/dashboard/daily-reminder-prompt";
+import { HobbiesPrompt } from "@/components/dashboard/hobbies-prompt";
 import { computeBadges, getLevel, nextLevel } from "@/lib/gamification/badges";
 import { getWeeklyReport } from "@/lib/reports/weekly-report";
 import { getDisplayFirstName } from "@/lib/utils/display-name";
 import { stripProblemPrefix } from "@/lib/utils/recommendations";
+import { ONBOARDING_QUESTIONS } from "@/lib/ai/user-context";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import type { Recommendation } from "@/types/database.types";
 
@@ -83,6 +85,7 @@ export default async function DashboardPage() {
     { data: objectiveAnswer },
     { data: recentStats },
     { data: userRow },
+    { data: hobbiesAnswer },
   ] = await Promise.all([
     supabase.from("dating_plans").select("days").eq("user_id", user?.id ?? "").maybeSingle(),
     supabase.from("bio_generations").select("*", { count: "exact", head: true }).eq("user_id", user?.id ?? ""),
@@ -112,6 +115,12 @@ export default async function DashboardPage() {
       .eq("user_id", user?.id ?? "")
       .gte("period_end", statsSince),
     supabase.from("users").select("daily_reminder_enabled").eq("id", user?.id ?? "").maybeSingle(),
+    supabase
+      .from("onboarding_answers")
+      .select("id")
+      .eq("user_id", user?.id ?? "")
+      .eq("question", ONBOARDING_QUESTIONS.hobbies)
+      .maybeSingle(),
   ]);
 
   const firstName = getDisplayFirstName(user);
@@ -226,6 +235,8 @@ export default async function DashboardPage() {
       </div>
 
       {weeklyReport && <ComeBackBanner daysSinceLastAnalysis={weeklyReport.daysSinceLastAnalysis} />}
+
+      {!hobbiesAnswer && <HobbiesPrompt />}
 
       <Card className="overflow-hidden border-primary/30">
         <CardContent className="flex flex-col items-center gap-4 py-8 text-center">

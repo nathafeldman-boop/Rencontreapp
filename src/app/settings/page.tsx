@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BillingCard } from "@/components/settings/billing-card";
 import { SignOutButton } from "@/components/settings/sign-out-button";
 import { ReminderToggle } from "@/components/settings/reminder-toggle";
+import { HobbiesEditor } from "@/components/settings/hobbies-editor";
+import { ONBOARDING_QUESTIONS } from "@/lib/ai/user-context";
 
 const PROVIDER_LABEL: Record<string, string> = {
   google: "Google",
@@ -18,13 +20,19 @@ export default async function SettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: subscription }, { data: userRow }] = await Promise.all([
+  const [{ data: subscription }, { data: userRow }, { data: hobbiesAnswer }] = await Promise.all([
     supabase
       .from("subscriptions")
       .select("plan, status, current_period_end, stripe_customer_id")
       .eq("user_id", user?.id ?? "")
       .maybeSingle(),
     supabase.from("users").select("daily_reminder_enabled").eq("id", user?.id ?? "").maybeSingle(),
+    supabase
+      .from("onboarding_answers")
+      .select("answer")
+      .eq("user_id", user?.id ?? "")
+      .eq("question", ONBOARDING_QUESTIONS.hobbies)
+      .maybeSingle(),
   ]);
 
   const provider = user?.app_metadata?.provider as string | undefined;
@@ -63,6 +71,19 @@ export default async function SettingsPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">{user?.email}</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Centres d&apos;intérêt</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Tes hobbys, ton métier, ce que tu fais dans la vie — utilisés par l&apos;IA pour personnaliser tes
+            bios, réponses et conseils au lieu d&apos;inventer des détails.
+          </p>
+          <HobbiesEditor initialHobbies={hobbiesAnswer?.answer ?? ""} />
         </CardContent>
       </Card>
 
