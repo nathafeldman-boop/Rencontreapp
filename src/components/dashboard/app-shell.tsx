@@ -77,7 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </button>
       </aside>
 
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile top bar */}
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background/80 px-6 py-4 backdrop-blur sm:hidden">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </header>
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10 pb-28 sm:pb-10">{children}</main>
+        <main className="mx-auto w-full min-w-0 max-w-3xl flex-1 px-6 py-10 pb-28 sm:pb-10">{children}</main>
       </div>
 
       {/* Mobile bottom tabs */}

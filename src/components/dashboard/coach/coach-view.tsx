@@ -140,8 +140,8 @@ export function CoachView() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex gap-2 overflow-x-auto pb-1">
+    <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 gap-2 overflow-x-auto pb-1">
         {MODES.map((m) => (
           <button
             key={m.value}
@@ -206,7 +206,7 @@ export function CoachView() {
             ref={textareaRef}
             rows={1}
             placeholder="Colle ta conversation, ou écris ton message…"
-            className="max-h-32 flex-1 resize-none rounded-2xl border border-input bg-transparent px-4 py-2.5 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="max-h-32 min-w-0 flex-1 resize-none rounded-2xl border border-input bg-transparent px-4 py-2.5 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}

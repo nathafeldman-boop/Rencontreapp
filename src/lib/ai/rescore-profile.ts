@@ -53,6 +53,25 @@ export async function rescoreProfile(
     },
   });
 
+  // Auto-remove any "photo" Mistral confirms isn't a real photo of a person
+  // (app screenshot, meme, graphic, document, etc.) — never on a simulated
+  // fallback result, which can't actually see the image and defaults every
+  // photo to real, and never down to zero photos even if every upload is
+  // somehow flagged (better to leave a bad profile intact than empty).
+  if (!result.isSimulated) {
+    const fakePaths = result.photoAnalyses.filter((p) => !p.is_real_photo).map((p) => p.photo_path);
+    const keptPaths = photos.map((p) => p.path).filter((path) => !fakePaths.includes(path));
+
+    if (fakePaths.length > 0 && keptPaths.length > 0) {
+      await supabase.from("profiles").update({ photos: keptPaths }).eq("id", profile.id);
+      await supabase.storage.from("profile-photos").remove(fakePaths);
+      // Recompute against only the real photos so the stored score/photo_analyses
+      // match what's actually left on the profile, instead of persisting a score
+      // that was dragged down by a screenshot that's already gone.
+      return rescoreProfile(supabase, userId, { ...profile, photos: keptPaths });
+    }
+  }
+
   const { data: analysis, error: insertError } = await supabase
     .from("analyses")
     .insert({

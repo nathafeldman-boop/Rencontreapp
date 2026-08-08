@@ -7,6 +7,8 @@ import type { Recommendation } from "@/types/database.types";
 export interface PhotoAnalysisResult {
   photo_path: string;
   position: number;
+  /** False when this "photo" isn't a real photo of a person (app screenshot, meme, graphic, stock image, document, etc.) — see rescore-profile.ts, which strips these out of profiles.photos automatically. */
+  is_real_photo: boolean;
   score: number;
   confidence_score: number;
   attractiveness_score: number;
@@ -85,6 +87,19 @@ variété, ordre, potentiel de première impression — uniquement l'EFFICACITÉ
 rencontre, jamais la valeur personnelle ou la beauté intrinsèque de la personne. La première photo est
 critique : demande-toi si elle donne envie de regarder les suivantes.
 
+AVANT toute autre analyse d'une photo, vérifie que c'est une VRAIE photo d'une vraie personne, prise dans le
+monde réel, utilisable sur une app de rencontre. Rejette (is_real_photo: false) toute image qui est : une
+capture d'écran d'application, de site web, de conversation ou d'interface (barre d'adresse, boutons,
+fenêtres, texte d'interface visibles) ; un mème, un montage, un graphisme, un logo ou une illustration ; une
+image composée uniquement de texte ; une photo de stock/générique manifestement pas prise par l'utilisateur
+(watermark, mise en scène commerciale) ; un document, une pièce d'identité, un QR code, ou une image sans
+aucune personne clairement reconnaissable comme sujet principal. Accepte (is_real_photo: true) toute vraie
+photo d'une personne — selfie, photo prise par quelqu'un d'autre, photo de groupe — même de mauvaise qualité ;
+"vraie" ne veut pas dire "bonne", juste "authentique et utilisable". Si is_real_photo est false, score,
+confidence_score, attractiveness_score et technical_score doivent tous être 0-5, suggested_role doit être
+'remove', et cons/recommendation doivent dire explicitement que ce n'est pas une photo utilisable et doit être
+remplacée — jamais évaluer la "qualité" d'une image qui n'est pas une vraie photo de la personne.
+
 Analyse la cohérence globale : une photo peut être excellente individuellement mais mauvaise dans le profil
 si toutes les photos se ressemblent, si aucune ne montre de personnalité, si la bio raconte quelque chose que
 les photos ne confirment pas, ou si le profil manque de variété.
@@ -113,10 +128,11 @@ cohérence ou première impression ; l'avant-dernier a pour titre "Gain rapide" 
 potentiel) ),
 bio_rewrite (une réécriture naturelle et crédible de la bio — jamais un texte qui sonne comme une pub ou
 comme écrit par une IA — qui reste fidèle à ce que dit la bio d'origine),
-photos (un objet par photo reçue, dans le même ordre, chacun { index (0-based), score, confidence_score,
-attractiveness_score, technical_score (entiers 0-100), pros (max 3 phrases courtes), cons (max 3 phrases
-courtes), recommendation (une phrase actionnable, honnête), suggested_role: 'primary'|'secondary'|'remove' } ;
-exactement une photo doit être 'primary').
+photos (un objet par photo reçue, dans le même ordre, chacun { index (0-based), is_real_photo (boolean, voir
+règles ci-dessus), score, confidence_score, attractiveness_score, technical_score (entiers 0-100), pros (max 3
+phrases courtes), cons (max 3 phrases courtes), recommendation (une phrase actionnable, honnête),
+suggested_role: 'primary'|'secondary'|'remove' } ; exactement une photo parmi celles avec is_real_photo: true
+doit être 'primary' — si aucune photo n'est réelle, n'importe laquelle peut être 'primary' par défaut).
 
 Avant de répondre, relis ton analyse et demande-toi : "Pourrais-je défendre cette note face à quelqu'un qui
 connaît très bien Tinder, Hinge et Bumble ?" Si non, réévalue. Ne gonfle jamais artificiellement les scores.`;
@@ -125,6 +141,7 @@ const scoreSchema = z.number().min(0).max(100);
 
 const mistralPhotoSchema = z.object({
   index: z.number().int().min(0),
+  is_real_photo: z.boolean(),
   score: scoreSchema,
   confidence_score: scoreSchema,
   attractiveness_score: scoreSchema,
@@ -218,6 +235,7 @@ async function analyzeWithMistral(input: AnalyzeProfileInput): Promise<ProfileAn
   const photoAnalyses: PhotoAnalysisResult[] = parsed.photos.map((p) => ({
     photo_path: input.photos[p.index]?.path ?? input.photos[0].path,
     position: p.index,
+    is_real_photo: p.is_real_photo,
     score: p.score,
     confidence_score: p.confidence_score,
     attractiveness_score: p.attractiveness_score,
@@ -256,6 +274,10 @@ function simulatedFallback(input: AnalyzeProfileInput): ProfileAnalysisResult {
   const photoAnalyses: PhotoAnalysisResult[] = input.photos.map((photo, i) => ({
     photo_path: photo.path,
     position: i,
+    // The deterministic fallback never actually looks at the image, so it
+    // can't tell a real photo from a screenshot — assume real and let the
+    // next successful Mistral analysis catch it instead of guessing wrong.
+    is_real_photo: true,
     score: Math.max(20, result.photo_score + (i === 0 ? 8 : -4 * i)),
     confidence_score: result.attractiveness_score,
     attractiveness_score: result.attractiveness_score,
