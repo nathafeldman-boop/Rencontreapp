@@ -50,6 +50,7 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
 
     if (analysis) {
       const data: ResultsData = {
+        id,
         overall: analysis.overall_score,
         photo: analysis.photo_score ?? 0,
         bio: analysis.bio_score ?? 0,

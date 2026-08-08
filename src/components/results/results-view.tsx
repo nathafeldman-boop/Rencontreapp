@@ -15,6 +15,7 @@ import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 
 export interface ResultsData {
+  id?: string;
   overall: number;
   photo: number;
   bio: number;
@@ -154,7 +155,7 @@ export function ResultsView({ data }: { data: ResultsData }) {
         </div>
 
         <Button size="lg" className="mt-8 w-full" asChild>
-          <Link href="/paywall">
+          <Link href={data.id ? `/paywall?id=${data.id}` : "/paywall"}>
             Débloquer mon analyse complète
             <ArrowRight />
           </Link>

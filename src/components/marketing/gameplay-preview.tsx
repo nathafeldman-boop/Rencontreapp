@@ -25,7 +25,13 @@ const SUB_SCORES = [
   { label: "Conversation", value: 66 },
 ];
 
-export function GameplayPreview() {
+export function GameplayPreview({
+  title = "Regarde Flirtcraft à l'œuvre",
+  subtitle = "De l'envoi de ton profil à un score complet — en moins d'une minute.",
+}: {
+  title?: string;
+  subtitle?: string;
+}) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -43,11 +49,9 @@ export function GameplayPreview() {
           transition={{ duration: 0.4 }}
           className="text-2xl font-semibold tracking-tight sm:text-3xl"
         >
-          Regarde Flirtcraft à l&apos;œuvre
+          {title}
         </motion.h2>
-        <p className="mt-3 text-muted-foreground">
-          De l&apos;envoi de ton profil à un score complet — en moins d&apos;une minute.
-        </p>
+        <p className="mt-3 text-muted-foreground">{subtitle}</p>
       </div>
 
       <motion.div
