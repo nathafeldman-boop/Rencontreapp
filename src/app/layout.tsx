@@ -7,6 +7,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { organizationJsonLd, softwareApplicationJsonLd } from "@/lib/seo/structured-data";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo/site";
 import { clientEnv } from "@/lib/env";
+import { Footer } from "@/components/marketing/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full flex flex-col">
         <PostHogProvider>{children}</PostHogProvider>
+        <Footer />
       </body>
     </html>
   );
