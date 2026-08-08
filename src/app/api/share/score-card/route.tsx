@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
             letterSpacing: 1,
           }}
         >
-          MatchAI
+          Flirtcraft
         </div>
       </div>
     ),

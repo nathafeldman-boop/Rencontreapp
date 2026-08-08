@@ -28,8 +28,8 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
   if (!creator) return {};
 
   return buildMetadata({
-    title: `${creator.name} x MatchAI`,
-    description: `${creator.name} t'envoie vers MatchAI — obtiens une analyse IA gratuite de ton profil de rencontre.`,
+    title: `${creator.name} x Flirtcraft`,
+    description: `${creator.name} t'envoie vers Flirtcraft — obtiens une analyse IA gratuite de ton profil de rencontre.`,
     path: `/creator/${slug}`,
   });
 }
@@ -52,7 +52,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
       <section className="px-6 pt-20 pb-16 sm:pt-28">
         <div className="mx-auto flex max-w-xl flex-col items-center text-center">
           <Badge variant="accent" className="mb-6">
-            {creator.name} x MatchAI
+            {creator.name} x Flirtcraft
           </Badge>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             {creator.headline ?? `${creator.name} t'envoie ici — obtiens plus de matchs avec l'IA`}

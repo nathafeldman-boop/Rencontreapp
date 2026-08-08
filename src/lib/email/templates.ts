@@ -14,7 +14,7 @@ function baseLayout(body: string, preheader: string) {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
             <tr>
               <td style="padding:28px 32px 0;">
-                <span style="font-size:18px;font-weight:700;background:linear-gradient(135deg,${BRAND_FROM},${BRAND_TO});-webkit-background-clip:text;background-clip:text;color:${BRAND_FROM};">MatchAI</span>
+                <span style="font-size:18px;font-weight:700;background:linear-gradient(135deg,${BRAND_FROM},${BRAND_TO});-webkit-background-clip:text;background-clip:text;color:${BRAND_FROM};">Flirtcraft</span>
               </td>
             </tr>
             <tr>
@@ -23,7 +23,7 @@ function baseLayout(body: string, preheader: string) {
               </td>
             </tr>
           </table>
-          <p style="margin-top:20px;font-size:12px;color:#9ca3af;">MatchAI — Analyse et coaching de profil de rencontre par IA.</p>
+          <p style="margin-top:20px;font-size:12px;color:#9ca3af;">Flirtcraft — Analyse et coaching de profil de rencontre par IA.</p>
         </td>
       </tr>
     </table>
@@ -37,19 +37,19 @@ function button(label: string, url: string) {
 
 export function welcomeEmail(siteUrl: string) {
   return baseLayout(
-    `<p style="margin:0 0 4px;font-size:17px;font-weight:600;">Bienvenue sur MatchAI 👋</p>
+    `<p style="margin:0 0 4px;font-size:17px;font-weight:600;">Bienvenue sur Flirtcraft 👋</p>
      <p style="margin:0 0 12px;color:#6b7280;">Ton compte est prêt. Envoie tes photos et ta bio pour obtenir ton premier Dating Score en moins d'une minute.</p>
      ${button("Lancer mon analyse", `${siteUrl}/onboarding`)}`,
-    "Ton compte MatchAI est prêt — lance ta première analyse."
+    "Ton compte Flirtcraft est prêt — lance ta première analyse."
   );
 }
 
 export function referralRewardEmail(siteUrl: string, rewardDays: number) {
   return baseLayout(
     `<p style="margin:0 0 4px;font-size:17px;font-weight:600;">Tu viens de débloquer ${rewardDays} jours de Premium 🎁</p>
-     <p style="margin:0 0 12px;color:#6b7280;">Un(e) ami(e) que tu as invité(e) a rejoint MatchAI. Ton Premium a été prolongé automatiquement — rien à faire de ton côté.</p>
+     <p style="margin:0 0 12px;color:#6b7280;">Un(e) ami(e) que tu as invité(e) a rejoint Flirtcraft. Ton Premium a été prolongé automatiquement — rien à faire de ton côté.</p>
      ${button("Voir mon compte", `${siteUrl}/dashboard`)}`,
-    `Tu as débloqué ${rewardDays} jours de Premium sur MatchAI.`
+    `Tu as débloqué ${rewardDays} jours de Premium sur Flirtcraft.`
   );
 }
 

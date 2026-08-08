@@ -158,7 +158,7 @@ async function callMistralForSuggestions(
       {
         role: "user",
         content: [
-          contextSummary && `What MatchAI already knows about this person:\n${contextSummary}`,
+          contextSummary && `What Flirtcraft already knows about this person:\n${contextSummary}`,
           `Conversation so far:\n${conversationText}`,
         ]
           .filter(Boolean)

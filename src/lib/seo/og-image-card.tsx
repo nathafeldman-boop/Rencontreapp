@@ -29,7 +29,7 @@ export function OgImageCard() {
           color: "white",
         }}
       >
-        MatchAI
+        Flirtcraft
       </div>
       <div
         style={{

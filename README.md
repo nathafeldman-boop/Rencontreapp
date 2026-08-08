@@ -1,4 +1,4 @@
-# MatchAI
+# Flirtcraft
 
 > "Obtiens plus de matchs grâce à une analyse IA de ton profil."
 
@@ -45,7 +45,7 @@ Next.js 16 renomme `middleware.ts` en `proxy.ts` — c'est le nom utilisé ici
 ## 2. Arborescence
 
 ```
-matchai/
+flirtcraft/
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx                    # "/" — landing page (acquisition TikTok)
@@ -570,7 +570,7 @@ dynamiques → prerendered statiquement (`○`/`●` dans `next build`).
   `referral_invites` (qui a été attribué à qui, `referred_user_id` unique
   → un compte n'est jamais compté deux fois), `referral_rewards` (ledger
   de récompenses avec `expires_at`).
-- **Lien personnel** : `matchai.com/r/<code>` (`app/r/[code]/route.ts`) —
+- **Lien personnel** : `flirtcraft.com/r/<code>` (`app/r/[code]/route.ts`) —
   pose le cookie `mai_ref` et redirige vers `/`, sans requête base (le code
   n'est validé qu'à l'inscription, pour que le lien reste rapide même
   scrapé/cliqué en boucle).
@@ -801,12 +801,12 @@ réutilisant les composants et l'architecture des étapes précédentes.
   `/dashboard/coach`, en plus du mode Auto existant.
 - **Feature virale — Share Dating Score** (`/api/share/score-card`) — carte
   PNG 1200×630 générée à la volée (`next/og`), partagée via l'API Web Share
-  native ou téléchargée, watermark MatchAI.
+  native ou téléchargée, watermark Flirtcraft.
 - **Page Premium** (`/premium`) — comparatif Free vs Premium détaillé, "ce
   que vous recevez chaque mois", accessible depuis le paywall et la nav du
   dashboard.
 - **Feedback client** (table `feedback`, `/api/feedback`, `FeedbackWidget`)
-  — "Did MatchAI help you?" après les résultats et après le Bio Generator,
+  — "Did Flirtcraft help you?" après les résultats et après le Bio Generator,
   capture bug/feature/general.
 - **Weekly Dating Report + relance in-app** (`lib/reports/weekly-report.ts`)
   — calculé à la volée à partir des tables `analyses`/`photo_analyses`
@@ -872,14 +872,14 @@ automatisation non officielle** :
   l'accès par des clients non officiels.
 - Risque juridique réel (DMCA, CFAA aux US, équivalents en UE) et risque de
   bannissement en masse des comptes utilisateurs qui connecteraient leur
-  compte Tinder/Hinge à MatchAI dans ce but.
+  compte Tinder/Hinge à Flirtcraft dans ce but.
 - Fragilité technique — un scraper non officiel casse à chaque changement
   d'UI/API côté Tinder/Hinge, créant une dette de maintenance permanente
   pour une fonctionnalité potentiellement illégale.
 
 La seule voie viable est un partenariat officiel (API partenaire Match
 Group, si et quand elle existe) ou de rester sur le modèle actuel :
-l'utilisateur importe manuellement ses photos et sa bio, ce que MatchAI
+l'utilisateur importe manuellement ses photos et sa bio, ce que Flirtcraft
 fait déjà bien.
 
 ### 4. Métriques à surveiller après lancement (complète §19)
@@ -900,7 +900,7 @@ fait déjà bien.
 ### Installation locale
 
 ```bash
-git clone <repo-url> && cd matchai
+git clone <repo-url> && cd flirtcraft
 npm install
 cp .env.example .env.local   # renseigner les clés, voir §22
 npm run dev
@@ -921,7 +921,7 @@ Supabase (`supabase db push` depuis un projet lié).
    activer le provider Google OAuth (Auth > Providers) avec l'URL de
    callback `https://<domaine>/auth/callback`, régénérer les types
    (`npx supabase gen types typescript --project-id <ref> > src/types/database.types.ts`).
-2. **Stripe** : mode live, créer le produit "MatchAI Premium" + prix
+2. **Stripe** : mode live, créer le produit "Flirtcraft Premium" + prix
    7,99€/mois, configurer le endpoint webhook sur
    `https://<domaine>/api/stripe/webhook` (événements
    `checkout.session.completed`, `customer.subscription.updated`,

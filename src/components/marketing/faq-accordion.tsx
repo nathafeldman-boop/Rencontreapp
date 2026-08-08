@@ -9,7 +9,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Mon paiement est-il sécurisé ?",
-    a: "Les paiements sont traités par Stripe. MatchAI ne voit ni ne stocke jamais ton numéro de carte.",
+    a: "Les paiements sont traités par Stripe. Flirtcraft ne voit ni ne stocke jamais ton numéro de carte.",
   },
   {
     q: "Qu'advient-il de mes données si j'annule ?",

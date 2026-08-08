@@ -28,7 +28,7 @@ export const APP_REVIEWS: AppReviewContent[] = [
       {
         question: "L'analyse de profil Tinder est-elle vraiment gratuite ?",
         answer:
-          "Oui — la première analyse (score global plus quelques recommandations spécifiques) est gratuite. Le décryptage complet avec toutes les recommandations se débloque avec MatchAI Premium.",
+          "Oui — la première analyse (score global plus quelques recommandations spécifiques) est gratuite. Le décryptage complet avec toutes les recommandations se débloque avec Flirtcraft Premium.",
       },
       {
         question: "Combien de temps prend l'analyse Tinder ?",
@@ -59,7 +59,7 @@ export const APP_REVIEWS: AppReviewContent[] = [
       {
         question: "L'analyse de profil Hinge est-elle vraiment gratuite ?",
         answer:
-          "Oui — la première analyse (score global plus quelques recommandations spécifiques) est gratuite. Le décryptage complet avec toutes les recommandations se débloque avec MatchAI Premium.",
+          "Oui — la première analyse (score global plus quelques recommandations spécifiques) est gratuite. Le décryptage complet avec toutes les recommandations se débloque avec Flirtcraft Premium.",
       },
       {
         question: "L'analyse couvre-t-elle spécifiquement mes prompts ?",
@@ -91,7 +91,7 @@ export const APP_REVIEWS: AppReviewContent[] = [
       {
         question: "L'analyse de profil Bumble est-elle vraiment gratuite ?",
         answer:
-          "Oui — la première analyse (score global plus quelques recommandations spécifiques) est gratuite. Le décryptage complet avec toutes les recommandations se débloque avec MatchAI Premium.",
+          "Oui — la première analyse (score global plus quelques recommandations spécifiques) est gratuite. Le décryptage complet avec toutes les recommandations se débloque avec Flirtcraft Premium.",
       },
       {
         question: "Est-ce que ça peut aider plus de gens à m'écrire en premier ?",

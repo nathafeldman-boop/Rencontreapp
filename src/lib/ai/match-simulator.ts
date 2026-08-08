@@ -86,7 +86,7 @@ async function callMistralForScore(
       {
         role: "user",
         content: [
-          contextSummary && `What MatchAI already knows about this person:\n${contextSummary}`,
+          contextSummary && `What Flirtcraft already knows about this person:\n${contextSummary}`,
           messages.map((m) => `${m.role === "user" ? "User" : "Match"}: ${m.content}`).join("\n"),
         ]
           .filter(Boolean)

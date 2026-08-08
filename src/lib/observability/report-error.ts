@@ -7,5 +7,5 @@
  * needs to change, since every call already goes through here.
  */
 export function reportError(error: unknown, context?: Record<string, unknown>) {
-  console.error("[MatchAI] Unhandled error", error, context ?? {});
+  console.error("[Flirtcraft] Unhandled error", error, context ?? {});
 }

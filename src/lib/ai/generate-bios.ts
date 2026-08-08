@@ -86,7 +86,7 @@ async function generateWithMistral({ sourceBio, style, datingApp, contextSummary
       {
         role: "user",
         content: [
-          contextSummary && `What MatchAI already knows about this person:\n${contextSummary}`,
+          contextSummary && `What Flirtcraft already knows about this person:\n${contextSummary}`,
           sourceBio
             ? `Write 5 new bios inspired by this person's current bio (keep any real, specific details): "${sourceBio}"`
             : "Write 5 bios for someone who hasn't shared much about themselves yet — keep them broadly appealing but not generic.",

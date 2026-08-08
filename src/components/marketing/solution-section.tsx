@@ -37,7 +37,7 @@ export function SolutionSection() {
           transition={{ duration: 0.4 }}
           className="text-2xl font-semibold tracking-tight sm:text-3xl"
         >
-          Ce que MatchAI fait concrètement
+          Ce que Flirtcraft fait concrètement
         </motion.h2>
         <p className="mt-3 text-muted-foreground">
           Un envoi. Une analyse complète et personnalisée.

@@ -46,7 +46,7 @@ export const BLOG_POSTS: BlogPost[] = [
         heading: "Aligne ton profil sur ce que tu veux vraiment",
         body: [
           "Un profil optimisé purement pour le volume de matchs et un profil optimisé pour des matchs compatibles, ce n'est pas la même chose. Si tu cherches quelque chose de sérieux, être précis à ce sujet (sans être trop insistant) filtre les personnes qui veulent la même chose, ce qui veut dire moins de matchs mais de meilleure qualité.",
-          "C'est exactement ce que l'analyse gratuite de MatchAI vérifie en premier — à quel point tes photos, ta bio et ton objectif déclaré fonctionnent réellement ensemble, pas seulement si tes photos sont « bonnes ».",
+          "C'est exactement ce que l'analyse gratuite de Flirtcraft vérifie en premier — à quel point tes photos, ta bio et ton objectif déclaré fonctionnent réellement ensemble, pas seulement si tes photos sont « bonnes ».",
         ],
       },
     ],
@@ -81,7 +81,7 @@ export const BLOG_POSTS: BlogPost[] = [
         heading: "Ce qu'il faut éviter",
         body: [
           "Les selfies dans un miroir avec un flash visible, les lunettes de soleil sur chaque photo (les gens veulent voir tes yeux sur au moins une), les photos où tu n'es clairement pas le sujet principal, et les images fortement filtrées qui ne correspondront pas à ton apparence en personne — ce décalage a tendance à faire plus de mal que de bien une fois la rencontre réelle.",
-          "Si tu ne sais pas laquelle de tes photos actuelles t'aide ou te dessert, c'est précisément ce que le Photo Optimizer de MatchAI note pour toi, photo par photo.",
+          "Si tu ne sais pas laquelle de tes photos actuelles t'aide ou te dessert, c'est précisément ce que le Photo Optimizer de Flirtcraft note pour toi, photo par photo.",
         ],
       },
     ],
@@ -121,7 +121,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         heading: "Comment vraiment découvrir ce qui ne va pas",
         body: [
-          "Deviner lequel de ces points est ton point faible est inefficace. L'analyse gratuite de MatchAI note séparément tes photos, ta bio, ton signal d'attractivité, et ton potentiel de conversation, pour que tu obtiennes, au lieu d'une vague impression que « quelque chose cloche », une liste précise et classée de ce qu'il faut corriger en premier.",
+          "Deviner lequel de ces points est ton point faible est inefficace. L'analyse gratuite de Flirtcraft note séparément tes photos, ta bio, ton signal d'attractivité, et ton potentiel de conversation, pour que tu obtiennes, au lieu d'une vague impression que « quelque chose cloche », une liste précise et classée de ce qu'il faut corriger en premier.",
         ],
       },
     ],
@@ -149,7 +149,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         heading: "Du diagnostic à l'action",
         body: [
-          "Identifier le problème n'est que la moitié du travail. MatchAI transforme chaque score en une prochaine étape concrète : quelle photo mettre en avant, une bio réécrite dans ta voix, et — pour les conversations qui s'éteignent — des suggestions de réponses accompagnées d'une explication de pourquoi elles fonctionnent, pas juste une phrase à copier-coller.",
+          "Identifier le problème n'est que la moitié du travail. Flirtcraft transforme chaque score en une prochaine étape concrète : quelle photo mettre en avant, une bio réécrite dans ta voix, et — pour les conversations qui s'éteignent — des suggestions de réponses accompagnées d'une explication de pourquoi elles fonctionnent, pas juste une phrase à copier-coller.",
         ],
       },
       {
@@ -161,7 +161,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         heading: "Essaie-le sur ton propre profil",
         body: [
-          "Le moyen le plus rapide de voir ce que ça donne, c'est de faire passer ton propre profil — la première analyse de MatchAI est gratuite et prend environ une minute.",
+          "Le moyen le plus rapide de voir ce que ça donne, c'est de faire passer ton propre profil — la première analyse de Flirtcraft est gratuite et prend environ une minute.",
         ],
       },
     ],

@@ -43,7 +43,7 @@ export function ShareScoreCard({ overallScore, photoScore, bioScore, conversatio
         await navigator.share({
           files: [file],
           title: "Mon Dating Score",
-          text: `J'ai obtenu ${overallScore}/100 sur MatchAI 🔥`,
+          text: `J'ai obtenu ${overallScore}/100 sur Flirtcraft 🔥`,
         });
         track(AnalyticsEvent.ScoreShared, { overall_score: overallScore, method: "share_sheet" });
       } else {

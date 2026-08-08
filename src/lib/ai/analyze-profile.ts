@@ -110,7 +110,7 @@ async function analyzeWithMistral(input: AnalyzeProfileInput): Promise<ProfileAn
       {
         role: "system",
         content:
-          "You are MatchAI's dating profile coach. Analyze the user's dating app profile (bio + photos) " +
+          "You are Flirtcraft's dating profile coach. Analyze the user's dating app profile (bio + photos) " +
           "and respond with ONLY a JSON object matching this exact schema: " +
           "{ overall_score, photo_score, bio_score, attractiveness_score, conversation_score (all 0-100 ints), " +
           "free_insights (1-2 short strings), " +

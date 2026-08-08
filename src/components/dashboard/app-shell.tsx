@@ -29,7 +29,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
             <Sparkles className="size-4 text-primary" />
-            MatchAI
+            Flirtcraft
           </Link>
           <nav className="flex items-center gap-1">
             {NAV_ITEMS.map((item) => (

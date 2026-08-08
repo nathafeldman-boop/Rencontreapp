@@ -13,7 +13,7 @@ const serverEnvSchema = z.object({
   MISTRAL_API_KEY: z.string().min(1),
   POSTHOG_API_KEY: z.string().optional(),
   RESEND_API_KEY: z.string().min(1),
-  RESEND_FROM_EMAIL: z.string().min(1).default("MatchAI <onboarding@resend.dev>"),
+  RESEND_FROM_EMAIL: z.string().min(1).default("Flirtcraft <onboarding@resend.dev>"),
   CRON_SECRET: z.string().min(1),
 });
 

@@ -6,7 +6,7 @@ import type { WeeklyReport } from "@/lib/reports/weekly-report";
 export function sendWelcomeEmail(to: string) {
   return sendEmail({
     to,
-    subject: "Bienvenue sur MatchAI 👋",
+    subject: "Bienvenue sur Flirtcraft 👋",
     html: welcomeEmail(clientEnv.NEXT_PUBLIC_SITE_URL),
   });
 }

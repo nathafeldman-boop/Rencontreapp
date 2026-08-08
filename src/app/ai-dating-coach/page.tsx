@@ -13,7 +13,7 @@ const FAQ = [
   {
     question: "Que fait concrètement un coach de rencontre IA ?",
     answer:
-      "MatchAI note tes photos, ta bio et ton potentiel de conversation, puis te donne des corrections précises et actionnables — une bio réécrite, un ordre de photos recommandé, et des suggestions de réponses pour de vraies conversations.",
+      "Flirtcraft note tes photos, ta bio et ton potentiel de conversation, puis te donne des corrections précises et actionnables — une bio réécrite, un ordre de photos recommandé, et des suggestions de réponses pour de vraies conversations.",
   },
   {
     question: "Est-il disponible à tout moment ?",
@@ -28,7 +28,7 @@ const FAQ = [
 export const metadata: Metadata = buildMetadata({
   title: "Coach de rencontre IA — Coaching personnalisé profil & conversation",
   description:
-    "MatchAI est un coach de rencontre IA disponible 24h/24 : analyse de profil, optimisation photo, génération de bio, coaching de conversation, et un simulateur d'entraînement en direct.",
+    "Flirtcraft est un coach de rencontre IA disponible 24h/24 : analyse de profil, optimisation photo, génération de bio, coaching de conversation, et un simulateur d'entraînement en direct.",
   path: "/ai-dating-coach",
   keywords: ["coach de rencontre ia", "application coach de rencontre", "assistant de rencontre ia", "coach de rencontre en ligne"],
 });

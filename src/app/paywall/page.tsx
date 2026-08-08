@@ -61,7 +61,7 @@ export default function PaywallPage() {
             Débloque tout ton potentiel sur les apps de rencontre.
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Arrête de deviner ce qui ne marche pas. Rejoins MatchAI Premium.
+            Arrête de deviner ce qui ne marche pas. Rejoins Flirtcraft Premium.
           </p>
         </div>
 

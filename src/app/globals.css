@@ -13,7 +13,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0.01 285);
 
-  /* Brand — MatchAI pink → violet, used sparingly for CTAs and highlights */
+  /* Brand — Flirtcraft pink → violet, used sparingly for CTAs and highlights */
   --primary: oklch(0.62 0.22 15);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.96 0.01 285);

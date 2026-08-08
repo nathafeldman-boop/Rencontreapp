@@ -27,7 +27,7 @@ const ONBOARDING_QUESTIONS = {
 } as const;
 
 /**
- * Single place that assembles "what does MatchAI already know about this
+ * Single place that assembles "what does Flirtcraft already know about this
  * user" — onboarding answers, profile, and latest scores. Every AI tool
  * (bio generator, conversation coach, match simulator, dating plan,
  * profile analysis) should build its prompt from this instead of each

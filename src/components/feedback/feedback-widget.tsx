@@ -38,11 +38,11 @@ async function submitFeedback(body: {
 }
 
 /**
- * "Did MatchAI help you?" widget — dropped in after key moments (results,
+ * "Did Flirtcraft help you?" widget — dropped in after key moments (results,
  * an AI tool run). Thumbs up/down submits immediately; either choice can
  * expand into an optional bug/feature/general note.
  */
-export function FeedbackWidget({ context, prompt = "MatchAI t'a-t-il aidé ?" }: { context: string; prompt?: string }) {
+export function FeedbackWidget({ context, prompt = "Flirtcraft t'a-t-il aidé ?" }: { context: string; prompt?: string }) {
   const [stage, setStage] = useState<Stage>("prompt");
   const [helpful, setHelpful] = useState<boolean | null>(null);
   const [category, setCategory] = useState<FeedbackCategory>("general");

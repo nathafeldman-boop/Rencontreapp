@@ -46,8 +46,8 @@ async function generateWithMistral(input: GeneratePlanInput): Promise<PlanDay[]>
       {
         role: "system",
         content:
-          "You are a dating coach building a 7-day action plan for a MatchAI user. Each day is one small, " +
-          "concrete, doable action (not vague advice) that uses MatchAI's own tools (Photo Optimizer, Bio " +
+          "You are a dating coach building a 7-day action plan for a Flirtcraft user. Each day is one small, " +
+          "concrete, doable action (not vague advice) that uses Flirtcraft's own tools (Photo Optimizer, Bio " +
           "Generator, Conversation Coach, Match Simulator) where relevant. Build momentum: easiest wins first. " +
           'Respond with ONLY JSON: { "days": [{ "day": 1-7, "title", "description" }] } (exactly 7 items).',
       },
