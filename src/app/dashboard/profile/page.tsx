@@ -142,22 +142,31 @@ export default async function MyProfilePage() {
       <Card className="border-primary/30">
         <CardContent className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:justify-around">
           <div className="text-center">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Avant</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Score de départ</p>
             <p className="mt-2 text-4xl font-semibold">{before}</p>
-            <p className="text-xs text-muted-foreground">/100</p>
+            <p className="text-xs text-muted-foreground">ta toute première analyse</p>
           </div>
-          <ArrowRight className="hidden size-6 text-muted-foreground sm:block" />
+          <ArrowRight className="hidden size-6 shrink-0 text-muted-foreground sm:block" />
           <div className="text-center">
-            <p className="text-xs font-medium uppercase tracking-wide text-primary">Score potentiel (estimation)</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground">Score actuel</p>
+            <p className="mt-2 text-4xl font-semibold">{latestAnalysis.overall_score}</p>
+            <p className="text-xs text-muted-foreground">recalculé à chaque changement</p>
+          </div>
+          <ArrowRight className="hidden size-6 shrink-0 text-muted-foreground sm:block" />
+          <div className="text-center">
+            <p className="text-xs font-medium uppercase tracking-wide text-primary">Score potentiel</p>
             <p className="mt-2 text-4xl font-semibold text-primary">{potential}</p>
-            <p className="text-xs text-muted-foreground">/100 en appliquant les recommandations</p>
+            <p className="text-xs text-muted-foreground">estimation</p>
           </div>
         </CardContent>
       </Card>
 
       <p className="text-xs text-muted-foreground">
-        Le score potentiel est une estimation indicative basée sur tes marges de progression actuelles — pas une
-        garantie de résultat.
+        <span className="font-medium text-foreground">Score de départ</span> : ta note le tout premier jour, figée
+        pour te montrer ton chemin parcouru. <span className="font-medium text-foreground">Score actuel</span> :
+        ta vraie note aujourd&apos;hui — elle bouge dès que tu modifies ta bio ou tes photos.{" "}
+        <span className="font-medium text-foreground">Score potentiel</span> : une estimation de ce que tu peux
+        atteindre en corrigeant ton plus gros point faible — pas une garantie de résultat.
       </p>
 
       <Button asChild className="w-fit">
