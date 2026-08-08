@@ -86,12 +86,9 @@ export function Hero() {
           animate="show"
           variants={fadeUp}
           transition={{ duration: 0.45, delay: 0.05 }}
-          className="text-balance text-4xl leading-[1.15] font-semibold tracking-tight sm:text-5xl"
+          className="text-balance text-3xl leading-[1.15] font-semibold tracking-tight min-[390px]:text-4xl sm:text-5xl"
         >
-          <span className="block">Tu n&apos;as peut-être pas un problème de matchs.</span>
-          <span className="mt-1 block">
-            Tu as peut-être un <span className="text-brand-gradient">problème de profil</span>.
-          </span>
+          Ton profil te fait-il <span className="text-brand-gradient">perdre des matchs</span> ?
         </motion.h1>
 
         <motion.p
@@ -99,7 +96,7 @@ export function Hero() {
           animate="show"
           variants={fadeUp}
           transition={{ duration: 0.45, delay: 0.1 }}
-          className="mt-5 text-balance text-lg text-muted-foreground"
+          className="mt-4 text-balance text-lg text-muted-foreground"
         >
           FlirtCraft analyse tes photos, ta bio et ton profil avec l&apos;IA pour identifier ce qui peut te faire
           perdre des matchs — et te montre exactement quoi améliorer.
