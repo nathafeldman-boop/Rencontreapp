@@ -44,7 +44,7 @@ export function Testimonials() {
         </motion.h2>
       </div>
 
-      <div className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-3">
+      <div className="mx-auto mt-12 flex max-w-4xl snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0 [&::-webkit-scrollbar]:hidden">
         {TESTIMONIALS.map((t, i) => (
           <motion.div
             key={t.name}
@@ -52,7 +52,7 @@ export function Testimonials() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.4, delay: i * 0.08 }}
-            className="flex flex-col rounded-xl border border-border bg-card p-5"
+            className="flex w-[80%] shrink-0 snap-center flex-col rounded-xl border border-border bg-card p-5 sm:w-auto sm:shrink"
           >
             <div className="flex items-center gap-1 text-amber-400">
               {Array.from({ length: t.rating }).map((_, idx) => (
@@ -67,6 +67,12 @@ export function Testimonials() {
               <span className="text-sm font-medium">{t.name}</span>
             </div>
           </motion.div>
+        ))}
+      </div>
+
+      <div className="mt-4 flex justify-center gap-1.5 sm:hidden">
+        {TESTIMONIALS.map((t) => (
+          <span key={t.name} className="size-1.5 rounded-full bg-border" />
         ))}
       </div>
     </section>
