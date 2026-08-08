@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { callMistralJson } from "@/lib/ai/mistral";
+import { callMistral, callMistralJson } from "@/lib/ai/mistral";
 import type { ConversationSuggestion, CoachMode } from "@/types/database.types";
 
 const MODE_PROMPT: Record<Exclude<CoachMode, "auto">, string> = {
@@ -105,6 +105,52 @@ const FALLBACK: Record<CoachMode, ConversationSuggestion[]> = {
     },
   ],
 };
+
+/**
+ * Transcribes a dating-app conversation screenshot into plain text so it
+ * can feed the same suggestion pipeline as pasted text — lets the user
+ * send a screenshot instead of retyping their conversation by hand.
+ * Bubble side is the only reliable "who said it" signal in a screenshot,
+ * so the model is told to use it (right-aligned = the user, left = match).
+ */
+export async function extractConversationFromImage(
+  imageDataUrl: string
+): Promise<{ text: string; isSimulated: boolean }> {
+  try {
+    const result = await callMistral({
+      model: "pixtral-large-latest",
+      temperature: 0.1,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You transcribe dating-app conversation screenshots into plain text. Read every message bubble " +
+            'top to bottom. Right-aligned / colored bubbles are the app user ("Toi"), left-aligned / gray ' +
+            'bubbles are their match ("Match"). Output ONLY the transcript, one line per message, formatted ' +
+            'exactly as "Toi : <message>" or "Match : <message>" — no commentary, no markdown, no extra text. ' +
+            "If you can't read any messages, output exactly: ERREUR_LECTURE",
+        },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Transcris cette conversation." },
+            { type: "image_url", image_url: imageDataUrl },
+          ],
+        },
+      ],
+    });
+
+    const text = result.choices[0]?.message.content?.trim();
+    if (!text || text === "ERREUR_LECTURE") {
+      throw new Error("Mistral could not read the screenshot");
+    }
+
+    return { text, isSimulated: false };
+  } catch (err) {
+    console.error("[extractConversationFromImage] Falling back:", err);
+    return { text: "", isSimulated: true };
+  }
+}
 
 export async function getConversationSuggestions(
   conversationText: string,

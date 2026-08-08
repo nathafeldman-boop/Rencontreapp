@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Copy, Loader2, Sparkles } from "lucide-react";
+import { Camera, Check, Copy, Loader2, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,13 +23,58 @@ const MODES: { value: CoachMode; label: string }[] = [
   { value: "confident", label: "Confiant" },
 ];
 
+const MAX_SCREENSHOT_BYTES = 4 * 1024 * 1024;
+
 export function CoachView() {
   const [conversation, setConversation] = useState("");
   const [mode, setMode] = useState<CoachMode>("auto");
   const [suggestions, setSuggestions] = useState<ConversationSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [readingScreenshot, setReadingScreenshot] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { copiedKey, copy } = useClipboardCopy();
+
+  async function handleScreenshot(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    if (file.size > MAX_SCREENSHOT_BYTES) {
+      setError("Cette capture est trop lourde (max 4 Mo) — recadre-la ou fais une capture plus courte.");
+      return;
+    }
+
+    setError(null);
+    setReadingScreenshot(true);
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch("/api/ai/conversation-coach/extract-screenshot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setError(body?.error ?? "Impossible de lire cette capture — réessaie ou écris ta conversation.");
+        return;
+      }
+
+      const { data } = await res.json();
+      setConversation(data.text);
+    } catch {
+      setError("Impossible de lire cette capture — vérifie ta connexion et réessaie.");
+    } finally {
+      setReadingScreenshot(false);
+    }
+  }
 
   async function getSuggestions() {
     setLoading(true);
@@ -73,9 +118,22 @@ export function CoachView() {
       </div>
 
       <div>
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-sm font-medium">Ta conversation</p>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleScreenshot} />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={readingScreenshot}
+          >
+            {readingScreenshot ? <Loader2 className="size-3.5 animate-spin" /> : <Camera className="size-3.5" />}
+            {readingScreenshot ? "Lecture de la capture…" : "Envoyer une capture"}
+          </Button>
+        </div>
         <textarea
           rows={6}
-          placeholder={`Match : Salut !\nToi : Hey, ça va ?\nMatch : Bien ! Tu fais quoi ce week-end ?`}
+          placeholder={`Match : Salut !\nToi : Hey, ça va ?\nMatch : Bien ! Tu fais quoi ce week-end ?\n\n...ou envoie directement une capture d'écran de ta conversation.`}
           className="w-full rounded-lg border border-input bg-transparent px-4 py-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={conversation}
           onChange={(e) => setConversation(e.target.value)}
