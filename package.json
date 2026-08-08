@@ -24,6 +24,7 @@
     "posthog-node": "^5.48.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "resend": "^6.18.1",
     "stripe": "^22.4.0",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"

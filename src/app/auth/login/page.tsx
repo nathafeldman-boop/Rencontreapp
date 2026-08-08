@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Clock, Loader2, Mail } from "lucide-react";
+import { ArrowLeft, Clock, Loader2, Mail } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,12 +21,23 @@ import { AnalyticsEvent } from "@/lib/analytics/events";
 const SIGNUP_ENABLED = true;
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "sent">("idle");
-  const [error, setError] = useState<string | null>(null);
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
 
-  const redirectUrl = () =>
-    `${window.location.origin}/auth/callback`;
+function LoginPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect_to") ?? undefined;
+
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [step, setStep] = useState<"email" | "code">("email");
+  const [status, setStatus] = useState<"idle" | "loading">("idle");
+  const [error, setError] = useState<string | null>(null);
 
   async function handleGoogleSignIn() {
     setError(null);
@@ -33,7 +45,7 @@ export default function LoginPage() {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: redirectUrl() },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) {
       setError(error.message);
@@ -45,24 +57,43 @@ export default function LoginPage() {
     }
   }
 
-  async function handleEmailSignIn(e: React.FormEvent) {
+  async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setStatus("loading");
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: redirectUrl() },
-    });
+    const { error } = await supabase.auth.signInWithOtp({ email });
     if (error) {
       setError(error.message);
       setStatus("idle");
     } else {
-      // Comme pour Google — la complétion est trackée depuis /auth/callback
-      // une fois le lien magique cliqué et la session créée.
       track(AnalyticsEvent.SignupStarted, { method: "email" });
-      setStatus("sent");
+      setStep("code");
+      setStatus("idle");
     }
+  }
+
+  async function handleVerifyCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setStatus("loading");
+
+    const res = await fetch("/api/auth/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, token: code, redirectTo }),
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      setError(body?.error ?? "Code invalide ou expiré — réessaie.");
+      setStatus("idle");
+      return;
+    }
+
+    // signup_completed est déclenché côté serveur dans /api/auth/verify-otp.
+    const { data } = await res.json();
+    router.push(data.redirectTo);
   }
 
   if (!SIGNUP_ENABLED) {
@@ -95,47 +126,85 @@ export default function LoginPage() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-sm"
       >
-        <h1 className="text-xl font-semibold tracking-tight">Crée ton compte</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Gratuit. Ton analyse démarre juste après.
-        </p>
+        {step === "email" ? (
+          <>
+            <h1 className="text-xl font-semibold tracking-tight">Crée ton compte</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Gratuit. Ton analyse démarre juste après.
+            </p>
 
-        <Button
-          variant="outline"
-          className="mt-6 w-full"
-          onClick={handleGoogleSignIn}
-          disabled={status === "loading"}
-        >
-          {status === "loading" ? <Loader2 className="animate-spin" /> : <GoogleIcon className="size-4" />}
-          Continuer avec Google
-        </Button>
-
-        <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="h-px flex-1 bg-border" />
-          ou
-          <div className="h-px flex-1 bg-border" />
-        </div>
-
-        {status === "sent" ? (
-          <p className="rounded-lg bg-secondary p-4 text-sm text-secondary-foreground">
-            Lien envoyé — vérifie ta boîte mail pour continuer.
-          </p>
-        ) : (
-          <form onSubmit={handleEmailSignIn} className="flex flex-col gap-3">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              required
-              placeholder="toi@exemple.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Button type="submit" variant="secondary" disabled={status === "loading"}>
-              {status === "loading" ? <Loader2 className="animate-spin" /> : <Mail />}
-              M&apos;envoyer un lien de connexion
+            <Button
+              variant="outline"
+              className="mt-6 w-full"
+              onClick={handleGoogleSignIn}
+              disabled={status === "loading"}
+            >
+              {status === "loading" ? <Loader2 className="animate-spin" /> : <GoogleIcon className="size-4" />}
+              Continuer avec Google
             </Button>
-          </form>
+
+            <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="h-px flex-1 bg-border" />
+              ou
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <form onSubmit={handleSendCode} className="flex flex-col gap-3">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                placeholder="toi@exemple.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <Button type="submit" variant="secondary" disabled={status === "loading"}>
+                {status === "loading" ? <Loader2 className="animate-spin" /> : <Mail />}
+                M&apos;envoyer un code de connexion
+              </Button>
+            </form>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setStep("email");
+                setCode("");
+                setError(null);
+              }}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" />
+              Retour
+            </button>
+
+            <h1 className="mt-4 text-xl font-semibold tracking-tight">Entre ton code</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              On a envoyé un code à 6 chiffres à <span className="font-medium text-foreground">{email}</span>.
+            </p>
+
+            <form onSubmit={handleVerifyCode} className="mt-6 flex flex-col gap-3">
+              <Label htmlFor="code">Code de connexion</Label>
+              <Input
+                id="code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                required
+                maxLength={6}
+                placeholder="123456"
+                className="text-center text-lg tracking-[0.3em]"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              />
+              <Button type="submit" disabled={status === "loading" || code.length !== 6}>
+                {status === "loading" ? <Loader2 className="animate-spin" /> : null}
+                Valider le code
+              </Button>
+            </form>
+          </>
         )}
 
         {error && <p className="mt-4 text-sm text-destructive">{error}</p>}

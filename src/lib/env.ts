@@ -12,6 +12,9 @@ const serverEnvSchema = z.object({
   STRIPE_PRICE_ID_ANNUAL: z.string().optional(),
   MISTRAL_API_KEY: z.string().min(1),
   POSTHOG_API_KEY: z.string().optional(),
+  RESEND_API_KEY: z.string().min(1),
+  RESEND_FROM_EMAIL: z.string().min(1).default("MatchAI <onboarding@resend.dev>"),
+  CRON_SECRET: z.string().min(1),
 });
 
 /**
@@ -56,6 +59,9 @@ function loadServerEnv() {
     STRIPE_PRICE_ID_ANNUAL: process.env.STRIPE_PRICE_ID_ANNUAL,
     MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
     POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+    CRON_SECRET: process.env.CRON_SECRET,
   });
 
   if (!parsed.success) {

@@ -6,6 +6,7 @@ import { trackServer } from "@/lib/analytics/server";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { REWARD_THRESHOLDS } from "@/lib/referrals/rewards";
 import { REFERRAL_COOKIE, CREATOR_COOKIE } from "@/lib/referrals/cookies";
+import { sendReferralRewardEmail } from "@/lib/email/send";
 import type { Database } from "@/types/database.types";
 
 export { REFERRAL_COOKIE, CREATOR_COOKIE };
@@ -101,5 +102,10 @@ async function grantReferralRewardsIfEarned(supabase: SupabaseClient<Database>, 
       reward_days: threshold.days,
       invite_count: threshold.atInviteCount,
     });
+
+    const { data: referrer } = await supabase.auth.admin.getUserById(referrerUserId);
+    if (referrer.user?.email) {
+      await sendReferralRewardEmail(referrer.user.email, threshold.days);
+    }
   }
 }
