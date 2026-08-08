@@ -108,7 +108,14 @@ export default function OnboardingPage() {
             confidence: form.confidence,
           }),
         });
-        if (!res.ok) throw new Error("Impossible d'enregistrer tes réponses — réessaie.");
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          throw new Error(
+            body?.error
+              ? `Impossible d'enregistrer tes réponses : ${body.error}`
+              : "Impossible d'enregistrer tes réponses — réessaie."
+          );
+        }
         track(AnalyticsEvent.OnboardingCompleted, { steps_completed: 6 });
       } catch (e) {
         setError(e instanceof Error ? e.message : "Une erreur est survenue.");
@@ -129,9 +136,17 @@ export default function OnboardingPage() {
       const supabase = createClient();
       const {
         data: { user },
+        error: getUserError,
       } = await supabase.auth.getUser();
 
-      if (!user) throw new Error("Ta session a expiré — reconnecte-toi.");
+      if (!user) {
+        console.error("getUser() returned no user", getUserError);
+        throw new Error(
+          getUserError?.message
+            ? `Ta session a expiré — reconnecte-toi. (${getUserError.message})`
+            : "Ta session a expiré — reconnecte-toi."
+        );
+      }
 
       const photoPaths: string[] = [];
       for (const photo of form.photos) {
@@ -154,7 +169,14 @@ export default function OnboardingPage() {
         }),
       });
 
-      if (!profileRes.ok) throw new Error("Impossible d'enregistrer ton profil — réessaie.");
+      if (!profileRes.ok) {
+        const body = await profileRes.json().catch(() => null);
+        throw new Error(
+          body?.error
+            ? `Impossible d'enregistrer ton profil : ${body.error}`
+            : "Impossible d'enregistrer ton profil — réessaie."
+        );
+      }
 
       router.push("/analyze");
     } catch (e) {
