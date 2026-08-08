@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Camera,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -45,9 +45,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Desktop sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card sm:flex">
         <Link href="/dashboard" className="flex items-center gap-2 px-6 py-6 font-semibold">
-          <span className="flex size-7 items-center justify-center rounded-full bg-brand-gradient">
-            <Camera className="size-3.5 text-primary-foreground" />
-          </span>
+          <Image src="/brand/mark.png" alt="" width={28} height={28} className="shrink-0" priority />
           Flirtcraft
         </Link>
         <nav className="flex flex-1 flex-col gap-1 px-3">
@@ -81,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Mobile top bar */}
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background/80 px-6 py-4 backdrop-blur sm:hidden">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-            <Sparkles className="size-4 text-primary" />
+            <Image src="/brand/mark.png" alt="" width={20} height={20} className="shrink-0" priority />
             Flirtcraft
           </Link>
           <button
