@@ -422,6 +422,47 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["dating_connections"]["Row"]>;
         Relationships: [];
       };
+      admin_access_codes: {
+        Row: {
+          id: string;
+          code: string;
+          label: string | null;
+          is_active: boolean;
+          created_at: string;
+          expires_at: string | null;
+          last_used_at: string | null;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["admin_access_codes"]["Row"], "id">> & {
+          code: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["admin_access_codes"]["Row"]>;
+        Relationships: [];
+      };
+      admin_sessions: {
+        Row: {
+          id: string;
+          token: string;
+          access_code_id: string;
+          created_at: string;
+          expires_at: string;
+          last_seen_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["admin_sessions"]["Row"], "id">> & {
+          token: string;
+          access_code_id: string;
+          expires_at: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["admin_sessions"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "admin_sessions_access_code_id_fkey";
+            columns: ["access_code_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_access_codes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
