@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check, Copy, Loader2, Pencil, RefreshCw, Sparkles } from "lucide-react";
 
@@ -31,6 +32,7 @@ export function BioGeneratorView({
   bioScore?: number;
   bioProblem?: string;
 }) {
+  const router = useRouter();
   const [style, setStyle] = useState<BioStyle>("confident");
   const [bios, setBios] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,6 +42,8 @@ export function BioGeneratorView({
   const [draftBio, setDraftBio] = useState(currentBio);
   const [savingManual, setSavingManual] = useState(false);
   const [manualSaved, setManualSaved] = useState(false);
+  const [rescoring, setRescoring] = useState(false);
+  const [newScore, setNewScore] = useState<number | null>(null);
   const { copiedKey, copy } = useClipboardCopy();
 
   async function saveManualBio() {
@@ -54,9 +58,25 @@ export function BioGeneratorView({
       if (res.ok) {
         setManualSaved(true);
         setEditing(false);
+        await handleRescore(res);
       }
     } finally {
       setSavingManual(false);
+    }
+  }
+
+  async function handleRescore(res: Response) {
+    setRescoring(true);
+    try {
+      const { data } = await res.json();
+      if (data?.score?.bio !== undefined) {
+        setNewScore(data.score.bio);
+      }
+      router.refresh();
+    } catch {
+      // Best-effort — the bio is already saved either way.
+    } finally {
+      setRescoring(false);
     }
   }
 
@@ -97,7 +117,11 @@ export function BioGeneratorView({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ bio }),
     });
-    if (res.ok) setSavedIndex(index);
+    if (res.ok) {
+      setSavedIndex(index);
+      track(AnalyticsEvent.BioApplied, { style });
+      await handleRescore(res);
+    }
   }
 
   return (
@@ -108,12 +132,20 @@ export function BioGeneratorView({
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bio actuelle</p>
               <div className="flex items-center gap-2">
-                {bioScore !== undefined && (
+                {rescoring && <Loader2 className="size-3.5 animate-spin text-muted-foreground" />}
+                {(newScore ?? bioScore) !== undefined && (
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                    {bioScore}/100
+                    {newScore ?? bioScore}/100
                   </span>
                 )}
-                <Button size="sm" variant="ghost" onClick={() => setEditing((e) => !e)}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    if (!editing) setDraftBio(currentBio);
+                    setEditing((e) => !e);
+                  }}
+                >
                   <Pencil className="size-3.5" />
                   Modifier
                 </Button>
@@ -145,7 +177,9 @@ export function BioGeneratorView({
             )}
 
             {manualSaved && !editing && (
-              <p className="text-xs text-primary">✓ Bio mise à jour sur ton profil.</p>
+              <p className="text-xs text-primary">
+                ✓ Bio mise à jour sur ton profil{newScore !== null && ` — nouveau score bio : ${newScore}/100`}.
+              </p>
             )}
           </CardContent>
         </Card>
@@ -186,9 +220,24 @@ export function BioGeneratorView({
                       {copiedKey === i ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
                       {copiedKey === i ? "Copié" : "Copier"}
                     </Button>
-                    <Button size="sm" variant="secondary" onClick={() => applyBio(bio, i)} disabled={savedIndex === i}>
-                      {savedIndex === i ? <Check className="size-3.5" /> : null}
-                      {savedIndex === i ? "Enregistrée sur le profil" : "Utiliser cette bio"}
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => applyBio(bio, i)}
+                      disabled={savedIndex === i || (rescoring && savedIndex !== null)}
+                    >
+                      {savedIndex === i && rescoring ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : savedIndex === i ? (
+                        <Check className="size-3.5" />
+                      ) : null}
+                      {savedIndex === i
+                        ? rescoring
+                          ? "Recalcul du score…"
+                          : newScore !== null
+                            ? `Choisie — nouveau score : ${newScore}/100`
+                            : "Choisie"
+                        : "Choisir"}
                     </Button>
                   </div>
                 </CardContent>

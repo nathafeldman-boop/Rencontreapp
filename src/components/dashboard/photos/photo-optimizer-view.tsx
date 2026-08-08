@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, ChevronDown, ChevronUp, GripVertical, Loader2, Sparkles, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, GripVertical, Loader2, Plus, Sparkles, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { createClient } from "@/lib/supabase/client";
+import { MIN_PHOTOS, MAX_PHOTOS } from "@/components/onboarding/photo-dropzone";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 
@@ -33,23 +36,49 @@ export function PhotoOptimizerView({
   initialPhotos: OptimizerPhoto[];
   hasAnalysis: boolean;
 }) {
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [photos, setPhotos] = useState(initialPhotos);
   const [building, setBuilding] = useState(false);
   const [built, setBuilt] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [orderSaved, setOrderSaved] = useState(false);
+  const [rescoring, setRescoring] = useState(false);
+  const [newScore, setNewScore] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [deletingPath, setDeletingPath] = useState<string | null>(null);
 
-  async function persistOrder(order: OptimizerPhoto[]) {
+  // Re-syncs with the freshly rescored per-photo data once router.refresh()
+  // pulls it from the server — our own optimistic edits above only touch
+  // ordering/membership, never the score/pros/cons Mistral just recomputed.
+  // Adjusted during render (not an effect) to avoid an extra render pass —
+  // see https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes.
+  const [prevInitialPhotos, setPrevInitialPhotos] = useState(initialPhotos);
+  if (initialPhotos !== prevInitialPhotos) {
+    setPrevInitialPhotos(initialPhotos);
+    setPhotos(initialPhotos);
+  }
+
+  async function persistPhotos(order: OptimizerPhoto[]) {
     setOrderSaved(false);
-    const res = await fetch("/api/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ photo_order: order.map((p) => p.path) }),
-    });
-    if (res.ok) {
-      setOrderSaved(true);
-      track(AnalyticsEvent.PhotoOptimizerUsed, { photo_count: order.length });
+    setRescoring(true);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photos: order.map((p) => p.path) }),
+      });
+      if (res.ok) {
+        setOrderSaved(true);
+        track(AnalyticsEvent.PhotoOptimizerUsed, { photo_count: order.length });
+        const { data } = await res.json();
+        if (data?.score?.overall !== undefined) setNewScore(data.score.overall);
+        router.refresh();
+      }
+      return res.ok;
+    } finally {
+      setRescoring(false);
     }
   }
 
@@ -59,13 +88,87 @@ export function PhotoOptimizerView({
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
     setPhotos(next);
-    persistOrder(next);
+    persistPhotos(next);
   }
 
   function handleDrop(dropIndex: number) {
     if (dragIndex === null) return;
     movePhoto(dragIndex, dropIndex);
     setDragIndex(null);
+  }
+
+  async function deletePhoto(path: string) {
+    if (photos.length <= MIN_PHOTOS) {
+      setError(`Ton profil doit garder au moins ${MIN_PHOTOS} photos.`);
+      return;
+    }
+    setError(null);
+    setDeletingPath(path);
+    try {
+      const next = photos.filter((p) => p.path !== path);
+      const ok = await persistPhotos(next);
+      if (ok) {
+        setPhotos(next);
+        const supabase = createClient();
+        await supabase.storage.from("profile-photos").remove([path]);
+      } else {
+        setError("Impossible de supprimer cette photo — réessaie.");
+      }
+    } finally {
+      setDeletingPath(null);
+    }
+  }
+
+  async function handleAddPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    if (photos.length >= MAX_PHOTOS) {
+      setError(`Tu peux avoir jusqu'à ${MAX_PHOTOS} photos.`);
+      return;
+    }
+
+    setError(null);
+    setUploading(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setError("Ta session a expiré — reconnecte-toi.");
+        return;
+      }
+
+      const path = `${user.id}/${crypto.randomUUID()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage.from("profile-photos").upload(path, file, { upsert: false });
+      if (uploadError) {
+        setError(`Échec de l'envoi : ${uploadError.message}`);
+        return;
+      }
+
+      const { data: signed } = await supabase.storage.from("profile-photos").createSignedUrl(path, 300);
+
+      const next = [
+        ...photos,
+        {
+          path,
+          url: signed?.signedUrl ?? "",
+          score: 0,
+          pros: [],
+          cons: [],
+          recommendation: "Score en cours de calcul…",
+          suggestedRole: "secondary" as const,
+        },
+      ];
+      setPhotos(next);
+
+      const ok = await persistPhotos(next);
+      if (!ok) setError("Photo envoyée mais impossible de la lier à ton profil — réessaie.");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function buildBestProfile() {
@@ -118,14 +221,34 @@ export function PhotoOptimizerView({
         </Button>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Glisse une photo pour la réordonner (ou utilise les flèches sur mobile) — l&apos;ordre est enregistré
-        automatiquement sur ton profil FlirtCraft. Cela ne modifie pas ton profil Tinder/Hinge/Bumble.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          Glisse une photo pour la réordonner (ou utilise les flèches sur mobile) — chaque changement recalcule ton
+          score avec Mistral. Cela ne modifie pas ton profil Tinder/Hinge/Bumble.
+        </p>
+        <div className="flex items-center gap-2">
+          {rescoring && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="size-3 animate-spin" />
+              Recalcul du score…
+            </span>
+          )}
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAddPhoto} />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading || photos.length >= MAX_PHOTOS}
+          >
+            {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
+            Ajouter une photo
+          </Button>
+        </div>
+      </div>
 
-      {(built || orderSaved) && (
+      {(built || orderSaved) && !rescoring && (
         <p className="rounded-lg bg-secondary px-4 py-2 text-sm text-secondary-foreground">
-          ✓ L&apos;ordre de ton profil a été mis à jour.
+          ✓ Ton profil a été mis à jour{newScore !== null && ` — nouveau score global : ${newScore}/100`}.
         </p>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -159,7 +282,7 @@ export function PhotoOptimizerView({
                     {i === 0 ? "Photo principale" : ROLE_LABEL[photo.suggestedRole]}
                   </Badge>
                   <span className="absolute right-2 top-2 flex size-9 items-center justify-center rounded-full bg-background/90 text-sm font-semibold">
-                    {photo.score}
+                    {photo.score || "…"}
                   </span>
                   <span className="absolute bottom-2 left-2 flex size-7 items-center justify-center rounded-full bg-background/80 text-muted-foreground">
                     <GripVertical className="size-4" />
@@ -184,6 +307,19 @@ export function PhotoOptimizerView({
                       <ChevronDown className="size-4" />
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    aria-label="Supprimer cette photo"
+                    disabled={deletingPath === photo.path || photos.length <= MIN_PHOTOS}
+                    onClick={() => deletePhoto(photo.path)}
+                    className="absolute left-2 bottom-2 flex size-7 items-center justify-center rounded-full bg-background/90 text-destructive disabled:opacity-30"
+                  >
+                    {deletingPath === photo.path ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="size-3.5" />
+                    )}
+                  </button>
                 </div>
                 <div className="flex flex-col gap-2 p-4">
                   {photo.pros.map((pro) => (

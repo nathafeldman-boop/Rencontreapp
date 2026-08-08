@@ -1,8 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import { analyzeProfile } from "@/lib/ai/analyze-profile";
+import { rescoreProfile } from "@/lib/ai/rescore-profile";
 import { getActiveSubscription } from "@/lib/subscriptions/get-active-subscription";
 import { checkCredits, consumeCredits } from "@/lib/ai/credits";
-import { signPhotoUrls } from "@/lib/supabase/signed-photo-urls";
 import { trackServer } from "@/lib/analytics/server";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { apiError, apiSuccess } from "@/lib/api/response";
@@ -49,74 +48,21 @@ export async function POST() {
     return apiError("No profile found — complete onboarding and upload your photos first.", 422);
   }
 
-  const { data: answers } = await supabase
-    .from("onboarding_answers")
-    .select("question, answer")
-    .eq("user_id", user.id);
-
-  const findAnswer = (question: string) => answers?.find((a) => a.question === question)?.answer;
-
-  const signedUrls = await signPhotoUrls(supabase, profile.photos ?? []);
-
-  const result = await analyzeProfile({
-    seed: profile.id,
-    bio: profile.bio ?? "",
-    datingApp: profile.dating_app,
-    photos: (profile.photos ?? [])
-      .filter((path) => signedUrls[path])
-      .map((path) => ({ path, signedUrl: signedUrls[path] })),
-    onboarding: {
-      objective: findAnswer("What's your main objective?"),
-      weeklyMatches: findAnswer("How many matches do you get weekly?"),
-      biggestProblem: findAnswer("What's your biggest problem right now?"),
-      confidence: findAnswer("How confident are you with your profile?"),
-    },
+  const result = await rescoreProfile(supabase, user.id, {
+    id: profile.id,
+    bio: profile.bio,
+    photos: profile.photos ?? [],
+    dating_app: profile.dating_app,
   });
 
-  const { data: analysis, error: insertError } = await supabase
-    .from("analyses")
-    .insert({
-      user_id: user.id,
-      profile_id: profile.id,
-      overall_score: result.overall_score,
-      photo_score: result.photo_score,
-      bio_score: result.bio_score,
-      attractiveness_score: result.attractiveness_score,
-      conversation_score: result.conversation_score,
-      free_insights: result.free_insights,
-      recommendations: result.recommendations,
-      is_simulated: result.isSimulated,
-    })
-    .select("id")
-    .single();
-
-  if (insertError) {
-    return apiError(insertError.message, 500);
-  }
-
-  if (result.photoAnalyses.length > 0) {
-    await supabase.from("photo_analyses").insert(
-      result.photoAnalyses.map((p) => ({
-        analysis_id: analysis.id,
-        user_id: user.id,
-        photo_path: p.photo_path,
-        position: p.position,
-        score: p.score,
-        confidence_score: p.confidence_score,
-        attractiveness_score: p.attractiveness_score,
-        technical_score: p.technical_score,
-        pros: p.pros,
-        cons: p.cons,
-        recommendation: p.recommendation,
-        suggested_role: p.suggested_role,
-      }))
-    );
+  if (!result) {
+    return apiError("Unable to analyze this profile — check that photos are uploaded.", 422);
   }
 
   if (subscription) {
     await consumeCredits(supabase, user.id, "profile_analysis");
-    trackServer(user.id, AnalyticsEvent.AnalysisRepeated, { overall_score: result.overall_score });
+    trackServer(user.id, AnalyticsEvent.AnalysisRepeated, { overall_score: result.overallScore });
   }
 
-  return apiSuccess({ analysis_id: analysis.id, overall_score: result.overall_score }, 201);
+  return apiSuccess({ analysis_id: result.analysisId, overall_score: result.overallScore }, 201);
 }

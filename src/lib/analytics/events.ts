@@ -33,6 +33,7 @@ export const AnalyticsEvent = {
   AnalysisRepeated: "analysis_repeated",
   AiCoachUsed: "ai_coach_used",
   BioGenerated: "bio_generated",
+  BioApplied: "bio_applied",
   ConversationCoachUsed: "conversation_coach_used",
   PhotoOptimizerUsed: "photo_optimizer_used",
   DatingPlanGenerated: "dating_plan_generated",
@@ -72,6 +73,7 @@ export interface AnalyticsEventProps {
   [AnalyticsEvent.AnalysisRepeated]: { overall_score: number };
   [AnalyticsEvent.AiCoachUsed]: { conversation_score: number };
   [AnalyticsEvent.BioGenerated]: { style: string };
+  [AnalyticsEvent.BioApplied]: { style: string };
   [AnalyticsEvent.ConversationCoachUsed]: Record<string, never>;
   [AnalyticsEvent.PhotoOptimizerUsed]: { photo_count: number };
   [AnalyticsEvent.DatingPlanGenerated]: Record<string, never>;
