@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { motion } from "framer-motion";
 
 interface ScorePoint {
@@ -7,12 +8,21 @@ interface ScorePoint {
   score: number;
 }
 
+interface ScoreHistoryChartProps {
+  points: ScorePoint[];
+  /** Shorter height for use as a small-multiple (the 4 sub-score trends on /dashboard/progression). */
+  compact?: boolean;
+}
+
 /** Lightweight inline-SVG line chart — no charting dependency needed for a single sparkline. */
-export function ScoreHistoryChart({ points }: { points: ScorePoint[] }) {
+export function ScoreHistoryChart({ points, compact = false }: ScoreHistoryChartProps) {
+  const gradientId = useId();
+  const heightClass = compact ? "h-20" : "h-32";
+
   if (points.length < 2) {
     return (
-      <p className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-        Run a few more analyses to see your progress over time.
+      <p className={`flex ${heightClass} items-center justify-center text-center text-sm text-muted-foreground`}>
+        Relance quelques analyses pour voir ta progression dans le temps.
       </p>
     );
   }
@@ -34,17 +44,17 @@ export function ScoreHistoryChart({ points }: { points: ScorePoint[] }) {
   const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${height} L ${coords[0].x} ${height} Z`;
 
   return (
-    <div className="h-32 w-full">
+    <div className={`${heightClass} w-full`}>
       <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="h-full w-full overflow-visible">
         <defs>
-          <linearGradient id="score-history-fill" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.25} />
             <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
           </linearGradient>
         </defs>
         <motion.path
           d={areaPath}
-          fill="url(#score-history-fill)"
+          fill={`url(#${gradientId})`}
           stroke="none"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

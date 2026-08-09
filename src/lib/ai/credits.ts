@@ -9,6 +9,7 @@ export const FEATURE_COST: Record<AiFeature, number> = {
   conversation_coach: 1,
   match_simulator: 3,
   dating_plan: 3,
+  dating_stats: 1,
 };
 
 /** Monthly allowance for any active premium plan. Free users never reach this — the dashboard is gated before it. */

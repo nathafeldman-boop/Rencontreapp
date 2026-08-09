@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
+  LineChart,
   LogOut,
   Settings,
   Sparkles,
@@ -18,6 +19,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/progression", label: "Progression", icon: LineChart },
   { href: "/dashboard/optimize", label: "Optimisation", icon: Wand2 },
   { href: "/dashboard/ai", label: "Coach", icon: Sparkles },
   { href: "/dashboard/stats", label: "Statistiques", icon: TrendingUp },

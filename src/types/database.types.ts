@@ -22,7 +22,13 @@ export interface Recommendation {
 }
 
 export type PhotoSuggestedRole = "primary" | "secondary" | "remove";
-export type AiFeature = "profile_analysis" | "bio_generator" | "conversation_coach" | "match_simulator" | "dating_plan";
+export type AiFeature =
+  | "profile_analysis"
+  | "bio_generator"
+  | "conversation_coach"
+  | "match_simulator"
+  | "dating_plan"
+  | "dating_stats";
 export type BioStyle = "funny" | "mysterious" | "confident" | "romantic" | "premium";
 
 export type CoachMode = "auto" | "flirt" | "funny" | "natural" | "confident";
