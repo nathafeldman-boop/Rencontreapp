@@ -77,12 +77,16 @@ async function callMistralForScore(
   messages: MatchMessage[],
   contextSummary?: string
 ): Promise<ConversationScoreResult> {
+  // Caps kept generous on purpose — French explanations routinely run
+  // longer than the equivalent English, and a too-tight max here silently
+  // discarded a real score in favor of the heuristic fallback (found via
+  // Vercel logs) whenever Mistral's phrasing ran a bit long.
   const schema = z.object({
     score: z.number().min(0).max(100),
-    strengths: z.array(z.string().min(1).max(160)).min(1).max(4),
-    weaknesses: z.array(z.string().min(1).max(160)).min(1).max(4),
-    what_you_could_have_done: z.string().min(10).max(300),
-    best_possible_reply: z.string().min(1).max(300),
+    strengths: z.array(z.string().min(1).max(220)).min(1).max(4),
+    weaknesses: z.array(z.string().min(1).max(220)).min(1).max(4),
+    what_you_could_have_done: z.string().min(10).max(500),
+    best_possible_reply: z.string().min(1).max(400),
   });
 
   const response = await callMistralJson<unknown>({

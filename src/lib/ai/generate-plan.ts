@@ -31,9 +31,12 @@ export async function generateDatingPlan(input: GeneratePlanInput): Promise<{ da
 }
 
 async function generateWithMistral(input: GeneratePlanInput): Promise<PlanDay[]> {
+  // description cap kept generous — a too-tight max here silently discarded
+  // a real generated plan in favor of the static template fallback (found
+  // via Vercel logs) whenever Mistral's French phrasing ran a bit long.
   const schema = z.object({
     days: z
-      .array(z.object({ day: z.number().int().min(1).max(7), title: z.string().max(80), description: z.string().max(200) }))
+      .array(z.object({ day: z.number().int().min(1).max(7), title: z.string().max(80), description: z.string().max(350) }))
       .length(7),
   });
 
