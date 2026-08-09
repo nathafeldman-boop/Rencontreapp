@@ -13,6 +13,11 @@ export function Footer() {
   // visually collide with the fixed tabs.
   if (pathname?.startsWith("/dashboard")) return null;
 
+  // /deeplink is a fullscreen, single-CTA interstitial (TikTok/Instagram
+  // in-app-browser traffic) — a footer would just add scroll below the
+  // fixed full-viewport content for no reason.
+  if (pathname?.startsWith("/deeplink")) return null;
+
   return (
     <footer className="border-t border-border px-6 py-8">
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-3 text-sm text-muted-foreground sm:flex-row sm:justify-between">

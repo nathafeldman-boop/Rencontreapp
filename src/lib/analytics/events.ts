@@ -11,6 +11,8 @@ export const AnalyticsEvent = {
   // ---- Acquisition ---------------------------------------------------------
   LandingView: "landing_view",
   ClickStartAnalysis: "click_start_analysis",
+  DeeplinkView: "deeplink_view",
+  DeeplinkCtaClicked: "deeplink_cta_clicked",
   SignupStarted: "signup_started",
   SignupCompleted: "signup_completed",
   LoggedIn: "logged_in",
@@ -56,6 +58,8 @@ export type AnalyticsEventName = (typeof AnalyticsEvent)[keyof typeof AnalyticsE
 export interface AnalyticsEventProps {
   [AnalyticsEvent.LandingView]: { source?: string; variant: string };
   [AnalyticsEvent.ClickStartAnalysis]: { cta_location: string; variant?: string };
+  [AnalyticsEvent.DeeplinkView]: { source: string };
+  [AnalyticsEvent.DeeplinkCtaClicked]: { source: string; dest: string };
   [AnalyticsEvent.SignupStarted]: { method: "google" | "email" };
   [AnalyticsEvent.SignupCompleted]: {
     method: "google" | "email";
