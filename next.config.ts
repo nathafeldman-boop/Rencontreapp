@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
+  // sharp ships a native binary — must stay external to the server bundle
+  // (not webpack/turbopack-bundled) or the build tries to trace/inline it
+  // like a plain JS module and breaks. Used by fetch-photo-as-data-url.ts.
+  serverExternalPackages: ["sharp"],
   async headers() {
     return [
       {

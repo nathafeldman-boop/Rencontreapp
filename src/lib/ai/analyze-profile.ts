@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { callMistralJson, withVisionModelFallback } from "@/lib/ai/mistral";
 import { simulateAnalysis } from "@/lib/ai/simulate-analysis";
+import { fetchPhotoAsDataUrl } from "@/lib/utils/fetch-photo-as-data-url";
 import type { Recommendation } from "@/types/database.types";
 
 export interface PhotoAnalysisResult {
@@ -204,6 +205,13 @@ async function analyzeWithMistral(input: AnalyzeProfileInput): Promise<ProfileAn
 
   const photoLabels = input.photos.map((_, i) => `Photo ${i} :`);
 
+  // Mistral must receive the image bytes inline (base64 data URL) rather
+  // than a URL it fetches itself — a Supabase signed URL passed directly
+  // as `image_url` produced "not a real photo" on every photo in prod (see
+  // fetch-photo-as-data-url.ts for the full story). Same approach already
+  // used by the conversation coach's screenshot extraction.
+  const photoDataUrls = await Promise.all(input.photos.map((photo) => fetchPhotoAsDataUrl(photo.signedUrl)));
+
   const response = await withVisionModelFallback((model) =>
     callMistralJson<unknown>({
       model,
@@ -217,9 +225,9 @@ async function analyzeWithMistral(input: AnalyzeProfileInput): Promise<ProfileAn
               type: "text",
               text: `Application de rencontre : ${input.datingApp}\nBio : "${input.bio || "(vide)"}"\n${onboardingSummary}\n\n${input.photos.length} photos suivent, dans l'ordre du profil.`,
             },
-            ...input.photos.flatMap((photo, i) => [
+            ...photoDataUrls.flatMap((dataUrl, i) => [
               { type: "text" as const, text: photoLabels[i] },
-              { type: "image_url" as const, image_url: photo.signedUrl },
+              { type: "image_url" as const, image_url: dataUrl },
             ]),
           ],
         },
@@ -228,6 +236,16 @@ async function analyzeWithMistral(input: AnalyzeProfileInput): Promise<ProfileAn
   );
 
   const parsed = mistralResponseSchema.parse(response);
+
+  // Diagnostic line — greppable in Vercel logs. Kept permanently (not a
+  // temporary console.log): the "photo_score stuck at 0-5 in prod" bug this
+  // fixed had no visibility until someone manually cross-referenced score
+  // columns, so this makes the same failure mode visible immediately if it
+  // ever recurs (e.g. Mistral changes how it reports failed image decodes).
+  console.info(
+    "[analyzeProfile] photo results:",
+    parsed.photos.map((p) => ({ index: p.index, is_real_photo: p.is_real_photo, score: p.score, cons: p.cons }))
+  );
 
   const recommendations: Recommendation[] = [
     ...parsed.recommendations,

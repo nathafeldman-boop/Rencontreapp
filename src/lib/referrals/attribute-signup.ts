@@ -44,6 +44,14 @@ export async function attributeReferralSignup(
 
   const supabase = createAdminClient();
 
+  // Each block below only `return`s on a genuine success — any failure
+  // (code not found/inactive, self-referral, already attributed) falls
+  // through to the next attribution type instead of exiting the whole
+  // function. This used to be three independent `if`s that each `return
+  // null`ed on failure: a visitor carrying both an expired referral cookie
+  // AND a valid creator cookie would hit the referral branch, fail, and
+  // `return null` before the creator branch ever ran — silently losing a
+  // valid creator attribution. Same risk existed on the affiliate branch.
   if (affiliateCode) {
     const { data: affiliate } = await supabase
       .from("affiliates")
@@ -52,15 +60,14 @@ export async function attributeReferralSignup(
       .eq("active", true)
       .maybeSingle();
 
-    if (!affiliate) return null;
+    if (affiliate) {
+      const { error } = await supabase
+        .from("affiliate_referrals")
+        .insert({ affiliate_id: affiliate.id, referred_user_id: userId });
 
-    const { error } = await supabase
-      .from("affiliate_referrals")
-      .insert({ affiliate_id: affiliate.id, referred_user_id: userId });
-
-    if (error) return null; // already attributed (unique violation) or other failure
-
-    return { affiliateCode };
+      if (!error) return { affiliateCode };
+      // already attributed (unique violation) or other failure — fall through
+    }
   }
 
   if (referralCode) {
@@ -70,17 +77,18 @@ export async function attributeReferralSignup(
       .eq("code", referralCode)
       .maybeSingle();
 
-    if (!referral || referral.user_id === userId) return null;
+    if (referral && referral.user_id !== userId) {
+      const { error } = await supabase
+        .from("referral_invites")
+        .insert({ referrer_user_id: referral.user_id, referred_user_id: userId, source: "referral" });
 
-    const { error } = await supabase
-      .from("referral_invites")
-      .insert({ referrer_user_id: referral.user_id, referred_user_id: userId, source: "referral" });
-
-    if (error) return null; // already attributed (unique violation) or other failure
-
-    await grantReferralRewardsIfEarned(supabase, referral.user_id);
-    trackServer(userId, AnalyticsEvent.ReferralSignup, { referral_code: referralCode });
-    return { referralCode };
+      if (!error) {
+        await grantReferralRewardsIfEarned(supabase, referral.user_id);
+        trackServer(userId, AnalyticsEvent.ReferralSignup, { referral_code: referralCode });
+        return { referralCode };
+      }
+      // already attributed (unique violation) or other failure — fall through
+    }
   }
 
   if (creatorSlug) {
@@ -91,14 +99,13 @@ export async function attributeReferralSignup(
       .eq("active", true)
       .maybeSingle();
 
-    if (!creator) return null;
+    if (creator) {
+      const { error } = await supabase
+        .from("referral_invites")
+        .insert({ creator_id: creator.id, referred_user_id: userId, source: "creator" });
 
-    const { error } = await supabase
-      .from("referral_invites")
-      .insert({ creator_id: creator.id, referred_user_id: userId, source: "creator" });
-
-    if (error) return null;
-    return { creatorSlug };
+      if (!error) return { creatorSlug };
+    }
   }
 
   return null;

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { callMistralJson } from "@/lib/ai/mistral";
+import { lenientString } from "@/lib/ai/lenient-string";
 import type { PlanDay, Recommendation } from "@/types/database.types";
 
 interface GeneratePlanInput {
@@ -31,12 +32,13 @@ export async function generateDatingPlan(input: GeneratePlanInput): Promise<{ da
 }
 
 async function generateWithMistral(input: GeneratePlanInput): Promise<PlanDay[]> {
-  // description cap kept generous — a too-tight max here silently discarded
-  // a real generated plan in favor of the static template fallback (found
-  // via Vercel logs) whenever Mistral's French phrasing ran a bit long.
+  // title/description truncate instead of rejecting when Mistral's French
+  // phrasing runs long (see lenient-string.ts) — a plain .max() here used
+  // to silently discard a real generated plan in favor of the static
+  // template fallback (found via Vercel logs) over one long day.
   const schema = z.object({
     days: z
-      .array(z.object({ day: z.number().int().min(1).max(7), title: z.string().max(80), description: z.string().max(350) }))
+      .array(z.object({ day: z.number().int().min(1).max(7), title: lenientString(80), description: lenientString(350) }))
       .length(7),
   });
 

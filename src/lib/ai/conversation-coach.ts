@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { callMistral, callMistralJson, withVisionModelFallback } from "@/lib/ai/mistral";
+import { lenientString } from "@/lib/ai/lenient-string";
 import type { ConversationSuggestion, CoachMode } from "@/types/database.types";
 
 const MODE_PROMPT: Record<Exclude<CoachMode, "auto">, string> = {
@@ -210,14 +211,15 @@ async function callMistralForSuggestions(
   // single `explanation` came back short/missing — same for the exact-3
   // requirement whenever Mistral returned 2. Accept 1-3 real suggestions
   // and a missing/short explanation (defaulted below) instead of discarding
-  // valid replies and falling back to canned templates.
+  // valid replies and falling back to canned templates. tone/message
+  // truncate instead of rejecting on overflow (see lenient-string.ts).
   const schema = z.object({
     suggestions: z
       .array(
         z.object({
-          tone: z.string().min(1).max(40),
-          message: z.string().min(3).max(300),
-          explanation: z.string().max(300).optional(),
+          tone: lenientString(40),
+          message: lenientString(300, 3),
+          explanation: lenientString(300).optional(),
         })
       )
       .min(1),

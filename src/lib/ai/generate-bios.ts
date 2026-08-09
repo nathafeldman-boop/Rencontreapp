@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { callMistralJson } from "@/lib/ai/mistral";
+import { lenientString } from "@/lib/ai/lenient-string";
 import { HINGE_PROMPT_OPTIONS, type ProfilePrompt } from "@/lib/profile-prompts";
 import type { BioStyle } from "@/types/database.types";
 
@@ -69,7 +70,10 @@ export async function generateBios(input: GenerateBiosInput): Promise<{ bios: st
 }
 
 async function generateWithMistral({ sourceBio, style, datingApp, contextSummary }: GenerateBiosInput): Promise<string[]> {
-  const schema = z.object({ bios: z.array(z.string().min(10).max(300)).length(5) });
+  // Truncate instead of reject on an overlong bio (see lenient-string.ts),
+  // and tolerate 3-5 bios instead of requiring exactly 5 — a single overlong
+  // or missing bio used to throw out all 5 otherwise-good ones.
+  const schema = z.object({ bios: z.array(lenientString(300, 10)).min(3).max(5) });
 
   const response = await callMistralJson<unknown>({
     model: "mistral-large-latest",
@@ -137,10 +141,11 @@ async function generatePromptAnswersWithMistral({
 }: GeneratePromptAnswersInput): Promise<ProfilePrompt[]> {
   // min(2) rather than a hard length(3) — an otherwise-good response with
   // 2 solid answers shouldn't be thrown away over a missing third (same
-  // reasoning as the conversation coach's suggestions schema).
+  // reasoning as the conversation coach's suggestions schema). `answer`
+  // truncates instead of rejecting on overflow (see lenient-string.ts).
   const schema = z.object({
     answers: z
-      .array(z.object({ prompt: z.string().min(1), answer: z.string().min(3).max(150) }))
+      .array(z.object({ prompt: z.string().min(1), answer: lenientString(150, 3) }))
       .min(2)
       .max(3),
   });
