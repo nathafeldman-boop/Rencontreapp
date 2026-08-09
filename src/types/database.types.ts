@@ -91,6 +91,8 @@ export interface Database {
           photos: string[];
           dating_app: DatingApp;
           photos_optimized: boolean;
+          /** Hinge-style prompt/answer cards — see migration 0013 and lib/profile-prompts.ts. Null unless the user has gone through the Hinge prompts flow. */
+          prompts: { prompt: string; answer: string }[] | null;
           created_at: string;
           updated_at: string;
         };

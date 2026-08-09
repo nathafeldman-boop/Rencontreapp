@@ -7,6 +7,8 @@ import { ArrowRight, Camera, Sparkles } from "lucide-react";
 import { BioGeneratorView } from "@/components/dashboard/bio/bio-generator-view";
 import { PhotoOptimizerView } from "@/components/dashboard/photos/photo-optimizer-view";
 import { ChipButton } from "@/components/onboarding/chip-button";
+import type { ProfilePrompt } from "@/lib/profile-prompts";
+import type { DatingApp } from "@/types/database.types";
 
 interface OptimizerPhoto {
   path: string;
@@ -29,12 +31,16 @@ export function OptimizeView({
   currentBio,
   bioScore,
   bioProblem,
+  datingApp,
+  currentPrompts,
   photos,
   hasAnalysis,
 }: {
   currentBio: string;
   bioScore?: number;
   bioProblem?: string;
+  datingApp?: DatingApp;
+  currentPrompts?: ProfilePrompt[] | null;
   photos: OptimizerPhoto[];
   hasAnalysis: boolean;
 }) {
@@ -54,7 +60,13 @@ export function OptimizeView({
       </div>
 
       {tab === "bio" ? (
-        <BioGeneratorView currentBio={currentBio} bioScore={bioScore} bioProblem={bioProblem} />
+        <BioGeneratorView
+          currentBio={currentBio}
+          bioScore={bioScore}
+          bioProblem={bioProblem}
+          datingApp={datingApp}
+          currentPrompts={currentPrompts}
+        />
       ) : (
         <PhotoOptimizerView initialPhotos={photos} hasAnalysis={hasAnalysis} />
       )}

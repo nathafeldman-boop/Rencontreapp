@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { callMistralJson } from "@/lib/ai/mistral";
+import { HINGE_PROMPT_OPTIONS, type ProfilePrompt } from "@/lib/profile-prompts";
 import type { BioStyle } from "@/types/database.types";
 
 const STYLE_PROMPT: Record<BioStyle, string> = {
@@ -99,4 +100,82 @@ async function generateWithMistral({ sourceBio, style, datingApp, contextSummary
   });
 
   return schema.parse(response).bios;
+}
+
+const PROMPT_FALLBACK: ProfilePrompt[] = [
+  { prompt: "Un fait peu connu sur moi…", answer: "Je peux réciter le générique d'une série entière par cœur, ne me lance pas là-dessus." },
+  { prompt: "Mon rencard idéal…", answer: "Un truc simple où on peut vraiment parler — brunch, balade, peu importe tant que la conversation coule." },
+  { prompt: "Je cherche quelqu'un qui…", answer: "Sait rire de tout, même de lui-même, et qui n'a pas peur de proposer un vrai rendez-vous." },
+];
+
+interface GeneratePromptAnswersInput {
+  sourceBio: string;
+  datingApp: string;
+  contextSummary?: string;
+}
+
+/**
+ * Hinge-specific: generates 3 prompt+answer cards instead of a free-text
+ * bio. Reuses the same fallback-on-failure pattern as generateBios.
+ */
+export async function generatePromptAnswers(
+  input: GeneratePromptAnswersInput
+): Promise<{ answers: ProfilePrompt[]; isSimulated: boolean }> {
+  try {
+    const answers = await generatePromptAnswersWithMistral(input);
+    return { answers, isSimulated: false };
+  } catch (err) {
+    console.error("[generatePromptAnswers] Falling back to templates:", err);
+    return { answers: PROMPT_FALLBACK, isSimulated: true };
+  }
+}
+
+async function generatePromptAnswersWithMistral({
+  sourceBio,
+  datingApp,
+  contextSummary,
+}: GeneratePromptAnswersInput): Promise<ProfilePrompt[]> {
+  // min(2) rather than a hard length(3) — an otherwise-good response with
+  // 2 solid answers shouldn't be thrown away over a missing third (same
+  // reasoning as the conversation coach's suggestions schema).
+  const schema = z.object({
+    answers: z
+      .array(z.object({ prompt: z.string().min(1), answer: z.string().min(3).max(150) }))
+      .min(2)
+      .max(3),
+  });
+
+  const response = await callMistralJson<unknown>({
+    model: "mistral-large-latest",
+    temperature: 0.9,
+    messages: [
+      {
+        role: "system",
+        content:
+          `You write ${datingApp} dating profile prompt answers, in the exact style of Hinge's prompt/answer ` +
+          "format (this person's app uses prompts instead of a single free-text bio). Pick exactly 3 prompts " +
+          "from this list that best fit the person (vary them — don't pick 3 similar ones): " +
+          `${HINGE_PROMPT_OPTIONS.join(" | ")}. ` +
+          "Write one short, specific, punchy answer per prompt (under 150 characters each) — never generic, " +
+          "never a full sentence restating the prompt. If the user's context mentions a specific problem " +
+          "(e.g. conversations dying, not enough matches), let it inform tone but never state it outright. " +
+          'Respond with ONLY JSON: { "answers": [{ "prompt": one of the prompts above verbatim, "answer" }] } ' +
+          "(exactly 3 items). Every prompt and answer must be written in French (français), never in English, " +
+          "regardless of what language these instructions are written in.",
+      },
+      {
+        role: "user",
+        content: [
+          contextSummary && `What Flirtcraft already knows about this person:\n${contextSummary}`,
+          sourceBio
+            ? `This person's current bio/notes (use any real, specific details, ignore the free-text format): "${sourceBio}"`
+            : "This person hasn't shared much about themselves yet — keep answers broadly appealing but not generic.",
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
+      },
+    ],
+  });
+
+  return schema.parse(response).answers;
 }

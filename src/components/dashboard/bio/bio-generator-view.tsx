@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChipButton } from "@/components/onboarding/chip-button";
 import { FeedbackWidget } from "@/components/feedback/feedback-widget";
+import { HingePromptsView } from "@/components/dashboard/bio/hinge-prompts-view";
 import { useClipboardCopy } from "@/hooks/use-clipboard-copy";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
-import type { BioStyle } from "@/types/database.types";
+import type { ProfilePrompt } from "@/lib/profile-prompts";
+import type { BioStyle, DatingApp } from "@/types/database.types";
 
 /** How long to wait before refreshing again to pick up the background Mistral rescore (see /api/profile PATCH). */
 const RESCORE_REFRESH_DELAY_MS = 12_000;
@@ -29,11 +31,16 @@ export function BioGeneratorView({
   currentBio,
   bioScore,
   bioProblem,
+  datingApp,
+  currentPrompts,
 }: {
   currentBio: string;
   /** Optional — only known once an analysis has run. Shown alongside the current bio when present. */
   bioScore?: number;
   bioProblem?: string;
+  /** When "hinge", shows the prompt/answer generator above the classic single-bio flow (Hinge has no free-text bio in the real app). */
+  datingApp?: DatingApp;
+  currentPrompts?: ProfilePrompt[] | null;
 }) {
   const router = useRouter();
   const [style, setStyle] = useState<BioStyle>("confident");
@@ -128,6 +135,8 @@ export function BioGeneratorView({
 
   return (
     <div className="flex flex-col gap-6">
+      {datingApp === "hinge" && <HingePromptsView currentPrompts={currentPrompts ?? null} />}
+
       {currentBio && (
         <Card>
           <CardContent className="flex flex-col gap-3 p-4">

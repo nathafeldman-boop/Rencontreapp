@@ -12,7 +12,7 @@ export default async function BioGeneratorPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("bio")
+    .select("bio, dating_app, prompts")
     .eq("user_id", user?.id ?? "")
     .order("created_at", { ascending: false })
     .limit(1)
@@ -30,7 +30,11 @@ export default async function BioGeneratorPage() {
         <p className="mt-1 text-sm text-muted-foreground">Choisis un style, obtiens 5 bios construites à partir de ton vrai profil.</p>
       </div>
 
-      <BioGeneratorView currentBio={profile?.bio ?? ""} />
+      <BioGeneratorView
+        currentBio={profile?.bio ?? ""}
+        datingApp={profile?.dating_app}
+        currentPrompts={profile?.prompts}
+      />
     </div>
   );
 }

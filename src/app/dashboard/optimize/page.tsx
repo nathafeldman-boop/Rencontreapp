@@ -12,7 +12,7 @@ export default async function OptimizePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, bio")
+    .select("id, bio, dating_app, prompts")
     .eq("user_id", user?.id ?? "")
     .order("created_at", { ascending: false })
     .limit(1)
@@ -60,6 +60,8 @@ export default async function OptimizePage() {
         currentBio={profile?.bio ?? ""}
         bioScore={latestAnalysis?.bio_score ?? undefined}
         bioProblem={bioRecommendation ? stripProblemPrefix(bioRecommendation.title) : undefined}
+        datingApp={profile?.dating_app}
+        currentPrompts={profile?.prompts}
         photos={photos}
         hasAnalysis={Boolean(latestAnalysis)}
       />

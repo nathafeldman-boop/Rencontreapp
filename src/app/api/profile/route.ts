@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { profileSchema } from "@/lib/validations/profile";
 import { rescoreProfile } from "@/lib/ai/rescore-profile";
+import { flattenPromptsToBio } from "@/lib/profile-prompts";
 import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
 
 // Gives the background rescore (see PATCH) enough wall-clock time to
@@ -55,9 +56,11 @@ const patchSchema = z
      * below), since paths are also used to build signed URLs.
      */
     photos: z.array(z.string().min(1)).min(1).max(9).optional(),
+    /** Hinge-style prompt/answer cards (see lib/profile-prompts.ts) — flattened into `bio` below so scoring/context stay unchanged. */
+    prompts: z.array(z.object({ prompt: z.string().min(1).max(120), answer: z.string().min(1).max(200) })).min(1).max(3).optional(),
   })
-  .refine((data) => data.bio !== undefined || data.photos !== undefined, {
-    message: "Provide `bio` and/or `photos`.",
+  .refine((data) => data.bio !== undefined || data.photos !== undefined || data.prompts !== undefined, {
+    message: "Provide `bio`, `photos`, and/or `prompts`.",
   });
 
 /**
@@ -97,8 +100,20 @@ export async function PATCH(request: NextRequest) {
     return apiError("No profile found.", 422);
   }
 
-  const update: { bio?: string; photos?: string[]; photos_optimized?: boolean } = {};
+  const update: {
+    bio?: string;
+    photos?: string[];
+    photos_optimized?: boolean;
+    prompts?: { prompt: string; answer: string }[];
+  } = {};
   if (parsed.data.bio !== undefined) update.bio = parsed.data.bio;
+
+  if (parsed.data.prompts !== undefined) {
+    update.prompts = parsed.data.prompts;
+    // Keep `bio` in sync so scoring/conversation-coach context/etc. never
+    // need to know prompts exist — they just read `profiles.bio` as always.
+    update.bio = flattenPromptsToBio(parsed.data.prompts);
+  }
 
   if (parsed.data.photos !== undefined) {
     const ownsAllPaths = parsed.data.photos.every((path) => path.startsWith(`${user.id}/`));

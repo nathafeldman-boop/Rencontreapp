@@ -49,7 +49,7 @@ export default async function MyProfilePage() {
     supabase.from("users").select("age, gender, country").eq("id", user?.id ?? "").maybeSingle(),
     supabase
       .from("profiles")
-      .select("bio, photos, dating_app")
+      .select("bio, photos, dating_app, prompts")
       .eq("user_id", user?.id ?? "")
       .order("created_at", { ascending: false })
       .limit(1)
@@ -130,11 +130,22 @@ export default async function MyProfilePage() {
             {profile.dating_app && <Badge variant="secondary">{DATING_APP_LABEL[profile.dating_app] ?? profile.dating_app}</Badge>}
           </div>
 
-          {profile.bio && (
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bio</p>
-              <p className="mt-1 text-sm">{profile.bio}</p>
+          {profile.prompts && profile.prompts.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {profile.prompts.map((p, i) => (
+                <div key={i}>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{p.prompt}</p>
+                  <p className="mt-1 text-sm">{p.answer}</p>
+                </div>
+              ))}
             </div>
+          ) : (
+            profile.bio && (
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bio</p>
+                <p className="mt-1 whitespace-pre-line text-sm">{profile.bio}</p>
+              </div>
+            )
           )}
         </CardContent>
       </Card>
