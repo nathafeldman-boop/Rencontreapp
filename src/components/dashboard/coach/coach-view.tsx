@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useClipboardCopy } from "@/hooks/use-clipboard-copy";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { resizeImageToDataUrl } from "@/lib/utils/resize-image";
 import type { CoachMode, ConversationSuggestion } from "@/types/database.types";
 
 const TONE_VARIANT = { funny: "accent", flirty: "default", natural: "secondary", confident: "default" } as const;
@@ -21,7 +22,10 @@ const MODES: { value: CoachMode; label: string; emoji: string }[] = [
   { value: "confident", label: "Confiant", emoji: "💪" },
 ];
 
-const MAX_SCREENSHOT_BYTES = 4 * 1024 * 1024;
+// Sanity cap on the ORIGINAL file before resizing — the actual upload is
+// always downscaled first (see resize-image.ts), so this just guards
+// against something absurd, not the real payload-size constraint anymore.
+const MAX_SCREENSHOT_BYTES = 20 * 1024 * 1024;
 
 type Turn =
   | { id: string; role: "user"; text: string }
@@ -61,19 +65,14 @@ export function CoachView() {
     if (!file) return;
 
     if (file.size > MAX_SCREENSHOT_BYTES) {
-      setScreenshotError("Cette capture est trop lourde (max 4 Mo) — recadre-la ou fais une capture plus courte.");
+      setScreenshotError("Cette capture est trop lourde (max 20 Mo) — recadre-la ou fais une capture plus courte.");
       return;
     }
 
     setScreenshotError(null);
     setReadingScreenshot(true);
     try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-      });
+      const dataUrl = await resizeImageToDataUrl(file);
 
       const res = await fetch("/api/ai/conversation-coach/extract-screenshot", {
         method: "POST",

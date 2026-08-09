@@ -11,9 +11,13 @@ import { ChipButton } from "@/components/onboarding/chip-button";
 import { PLATFORM_OPTIONS } from "@/lib/validations/dating-stats";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { resizeImageToDataUrl } from "@/lib/utils/resize-image";
 import type { DatingPlatform } from "@/types/database.types";
 
-const MAX_SCREENSHOT_BYTES = 4 * 1024 * 1024;
+// Sanity cap on the ORIGINAL file before resizing — the actual upload is
+// always downscaled first (see resize-image.ts), so this just guards
+// against something absurd, not the real payload-size constraint anymore.
+const MAX_SCREENSHOT_BYTES = 20 * 1024 * 1024;
 
 const FIELDS = [
   { key: "matches", label: "Matchs" },
@@ -92,19 +96,14 @@ export function WeeklyStatsForm({ onSaved }: { onSaved: (row: WeeklyStatsSaved) 
     if (!file) return;
 
     if (file.size > MAX_SCREENSHOT_BYTES) {
-      setError("Cette capture est trop lourde (max 4 Mo) — recadre-la et réessaie.");
+      setError("Cette capture est trop lourde (max 20 Mo) — recadre-la et réessaie.");
       return;
     }
 
     setError(null);
     setReading(true);
     try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-      });
+      const dataUrl = await resizeImageToDataUrl(file);
 
       const res = await fetch("/api/ai/dating-stats/extract-screenshot", {
         method: "POST",
