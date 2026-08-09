@@ -12,7 +12,7 @@ export default async function AffiliatePage() {
 
   const { data: affiliate } = await supabase
     .from("affiliates")
-    .select("id, code, commission_rate")
+    .select("id, code, commission_rate, display_name")
     .eq("user_id", user?.id ?? "")
     .maybeSingle();
 
@@ -45,6 +45,7 @@ export default async function AffiliatePage() {
 
   return (
     <AffiliateView
+      displayName={affiliate.display_name}
       trackingUrl={`${clientEnv.NEXT_PUBLIC_SITE_URL}/aff/${affiliate.code}`}
       commissionRate={affiliate.commission_rate}
       clickCount={clickCount ?? 0}

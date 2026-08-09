@@ -33,6 +33,7 @@ function formatPercent(numerator: number, denominator: number) {
 }
 
 export function AffiliateView({
+  displayName,
   trackingUrl,
   commissionRate,
   clickCount,
@@ -42,6 +43,7 @@ export function AffiliateView({
   paidCents,
   commissions,
 }: {
+  displayName: string | null;
   trackingUrl: string;
   commissionRate: number;
   clickCount: number;
@@ -62,7 +64,9 @@ export function AffiliateView({
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Programme d&apos;affiliation</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {displayName ? `Salut ${displayName} 👋` : "Programme d'affiliation"}
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {Math.round(commissionRate * 100)}% de commission sur chaque vente que tu apportes.
         </p>

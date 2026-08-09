@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { AccessCodesPanel } from "@/components/admin/access-codes-panel";
-import { AffiliatesPanel, type AdminAffiliate } from "@/components/admin/affiliates-panel";
+import { AffiliatesPanel, type AdminAffiliate, type AdminAffiliateInvite } from "@/components/admin/affiliates-panel";
 
 const MONTHLY_PRICE = 7.99;
 
@@ -29,6 +29,7 @@ export default async function AdminDashboardPage() {
     { data: affiliateClicks },
     { data: affiliateReferrals },
     { data: affiliateCommissions },
+    { data: pendingInvites },
     onlineAdmins,
   ] = await Promise.all([
     admin.from("users").select("*", { count: "exact", head: true }),
@@ -45,11 +46,16 @@ export default async function AdminDashboardPage() {
       .order("created_at", { ascending: false }),
     admin
       .from("affiliates")
-      .select("id, user_id, code, commission_rate, active, created_at")
+      .select("id, user_id, code, commission_rate, active, display_name, created_at")
       .order("created_at", { ascending: false }),
     admin.from("affiliate_clicks").select("affiliate_id"),
     admin.from("affiliate_referrals").select("affiliate_id"),
     admin.from("affiliate_commissions").select("affiliate_id, commission_cents, status"),
+    admin
+      .from("affiliate_invites")
+      .select("id, token, label, commission_rate")
+      .is("used_at", null)
+      .order("created_at", { ascending: false }),
     listOnlineAdmins(),
   ]);
 
@@ -96,6 +102,7 @@ export default async function AdminDashboardPage() {
     id: a.id,
     code: a.code,
     email: emailByUserId.get(a.user_id) ?? "—",
+    displayName: a.display_name,
     commissionRate: a.commission_rate,
     active: a.active,
     clickCount: clicksByAffiliate.get(a.id) ?? 0,
@@ -103,6 +110,13 @@ export default async function AdminDashboardPage() {
     saleCount: salesByAffiliate.get(a.id) ?? 0,
     dueCents: dueByAffiliate.get(a.id) ?? 0,
     paidCents: paidByAffiliate.get(a.id) ?? 0,
+  }));
+
+  const adminInvites: AdminAffiliateInvite[] = (pendingInvites ?? []).map((i) => ({
+    id: i.id,
+    token: i.token,
+    label: i.label,
+    commissionRate: i.commission_rate,
   }));
 
   const subByUser = new Map((recentSubs ?? []).map((s) => [s.user_id, s.status]));
@@ -216,7 +230,7 @@ export default async function AdminDashboardPage() {
         </CardContent>
       </Card>
 
-      <AffiliatesPanel initialAffiliates={adminAffiliates} />
+      <AffiliatesPanel initialAffiliates={adminAffiliates} initialInvites={adminInvites} />
 
       <AccessCodesPanel initialCodes={accessCodes ?? []} />
     </div>

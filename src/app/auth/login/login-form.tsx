@@ -33,9 +33,12 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
     setError(null);
     setStatus("loading");
     const supabase = createClient();
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    if (redirectTo) callbackUrl.searchParams.set("redirect_to", redirectTo);
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: callbackUrl.toString() },
     });
     if (error) {
       setError(error.message);

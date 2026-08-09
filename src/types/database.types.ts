@@ -384,6 +384,7 @@ export interface Database {
           code: string;
           commission_rate: number;
           active: boolean;
+          display_name: string | null;
           created_at: string;
         };
         Insert: Partial<Omit<Database["public"]["Tables"]["affiliates"]["Row"], "id">> & {
@@ -391,6 +392,22 @@ export interface Database {
           code: string;
         };
         Update: Partial<Database["public"]["Tables"]["affiliates"]["Row"]>;
+        Relationships: [];
+      };
+      affiliate_invites: {
+        Row: {
+          id: string;
+          token: string;
+          label: string | null;
+          commission_rate: number;
+          used_at: string | null;
+          used_by_affiliate_id: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["affiliate_invites"]["Row"], "id">> & {
+          token: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["affiliate_invites"]["Row"]>;
         Relationships: [];
       };
       affiliate_clicks: {
