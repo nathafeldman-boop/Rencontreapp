@@ -175,7 +175,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
 
             <h1 className="mt-4 text-xl font-semibold tracking-tight">Entre ton code</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              On a envoyé un code à 6 chiffres à <span className="font-medium text-foreground">{email}</span>.
+              On a envoyé un code à <span className="font-medium text-foreground">{email}</span>.
             </p>
 
             <form onSubmit={handleVerifyCode} className="mt-6 flex flex-col gap-3">
@@ -186,13 +186,13 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 required
-                maxLength={6}
-                placeholder="123456"
+                maxLength={8}
+                placeholder="12345678"
                 className="text-center text-lg tracking-[0.3em]"
                 value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
               />
-              <Button type="submit" disabled={status === "loading" || code.length !== 6}>
+              <Button type="submit" disabled={status === "loading" || code.length < 6}>
                 {status === "loading" ? <Loader2 className="animate-spin" /> : null}
                 Valider le code
               </Button>

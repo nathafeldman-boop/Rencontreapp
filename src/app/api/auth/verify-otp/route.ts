@@ -9,13 +9,16 @@ import { AnalyticsEvent } from "@/lib/analytics/events";
 
 const bodySchema = z.object({
   email: z.string().email(),
-  token: z.string().length(6),
+  // Supabase's actual generated code has run 8 digits in prod, not the 6
+  // Supabase's own docs describe — accept 6-8 rather than hard-reject
+  // whatever length it decides to send.
+  token: z.string().min(6).max(8),
   redirectTo: z.string().optional(),
 });
 
 /**
- * Verifies the 6-digit code sent by `signInWithOtp` and establishes the
- * session server-side (so the cookie lands correctly), then runs the same
+ * Verifies the code sent by `signInWithOtp` and establishes the session
+ * server-side (so the cookie lands correctly), then runs the same
  * new-signup side effects as the Google OAuth callback.
  */
 export async function POST(request: NextRequest) {
