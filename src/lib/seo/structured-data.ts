@@ -6,7 +6,7 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: SITE_NAME,
     url: SITE_URL,
-    description: "Analyse et coaching de profil de rencontre par IA.",
+    description: "Analyse et coaching de profil de rencontre par ton coach.",
   };
 }
 
@@ -18,7 +18,7 @@ export function softwareApplicationJsonLd() {
     applicationCategory: "LifestyleApplication",
     operatingSystem: "Web",
     description:
-      "Analyse de profil de rencontre par IA, optimisation photo, génération de bio et coaching de conversation pour Tinder, Hinge et Bumble.",
+      "Analyse de profil de rencontre par ton coach, optimisation photo, génération de bio et coaching de conversation pour Tinder, Hinge et Bumble.",
     offers: {
       "@type": "Offer",
       price: "7.99",

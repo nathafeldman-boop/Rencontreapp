@@ -5,7 +5,7 @@ import { clientEnv } from "@/lib/env";
 export const SITE_NAME = "Flirtcraft";
 export const SITE_URL = clientEnv.NEXT_PUBLIC_SITE_URL;
 export const SITE_DESCRIPTION =
-  "Envoie ton profil Tinder, Hinge ou Bumble et obtiens une analyse par IA avec des recommandations concrètes pour avoir plus de matchs.";
+  "Envoie ton profil Tinder, Hinge ou Bumble et obtiens une analyse par ton coach avec des recommandations concrètes pour avoir plus de matchs.";
 
 /**
  * Shared metadata builder so every page gets consistent OpenGraph/Twitter

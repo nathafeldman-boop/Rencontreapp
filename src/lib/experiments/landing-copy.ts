@@ -22,25 +22,25 @@ export interface LandingCopy {
  */
 export const LANDING_COPY: Record<LandingVariant, LandingCopy> = {
   v1: {
-    badge: "Analyse IA gratuite en 60 secondes",
+    badge: "Analyse gratuite en 60 secondes, par ton coach",
     headlineBefore: "Obtiens plus de ",
     headlineHighlight: "matchs",
-    headlineAfter: " grâce à l'IA",
+    headlineAfter: " grâce à ton coach",
     subheadline:
       "Envoie ton profil de rencontre et découvre exactement ce qui t'empêche d'avoir plus de matchs — sur Tinder, Hinge ou Bumble.",
     ctaLabel: "Analyser mon profil gratuitement",
   },
   v2: {
-    badge: "Analyse IA gratuite en 60 secondes",
+    badge: "Analyse gratuite en 60 secondes, par ton coach",
     headlineBefore: "Découvre pourquoi tu n'as ",
     headlineHighlight: "aucun match",
     headlineAfter: "",
     subheadline:
-      "Tes photos, ta bio et tes conversations sont notées par l'IA — vois exactement ce qui te coûte des matchs avant de swiper une journée de plus pour rien.",
+      "Tes photos, ta bio et tes conversations sont notées par ton coach — vois exactement ce qui te coûte des matchs avant de swiper une journée de plus pour rien.",
     ctaLabel: "Montre-moi ce qui cloche",
   },
   v3: {
-    badge: "Analyse IA gratuite en 60 secondes",
+    badge: "Analyse gratuite en 60 secondes, par ton coach",
     headlineBefore: "Ton profil de rencontre te ",
     headlineHighlight: "freine",
     headlineAfter: "",
