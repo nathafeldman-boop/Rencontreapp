@@ -541,13 +541,13 @@ export interface Database {
       activity_events: {
         Row: {
           id: string;
-          user_id: string;
+          user_id: string | null;
+          anon_id: string | null;
           event: string;
           properties: Record<string, unknown>;
           occurred_at: string;
         };
         Insert: Partial<Omit<Database["public"]["Tables"]["activity_events"]["Row"], "id">> & {
-          user_id: string;
           event: string;
         };
         Update: Partial<Database["public"]["Tables"]["activity_events"]["Row"]>;

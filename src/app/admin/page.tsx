@@ -3,13 +3,21 @@ import { ArrowRight, CircleDollarSign, Sparkles, TrendingUp, Users } from "lucid
 
 import { requireAdminSession, listOnlineAdmins } from "@/lib/admin/session";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getDashboardActivityStats } from "@/lib/admin/dashboard-stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Sparkline } from "@/components/admin/sparkline";
+import { TrendBadge } from "@/components/admin/trend-badge";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { AccessCodesPanel } from "@/components/admin/access-codes-panel";
 import { AffiliatesPanel, type AdminAffiliate, type AdminAffiliateInvite } from "@/components/admin/affiliates-panel";
+import type { DailyPoint } from "@/lib/admin/dashboard-stats";
 
 const MONTHLY_PRICE = 7.99;
+
+const VISITORS_COLOR = "oklch(0.62 0.16 250)";
+const SIGNUPS_COLOR = "oklch(0.6 0.2 300)";
+const PURCHASES_COLOR = "oklch(0.64 0.17 150)";
 
 export default async function AdminDashboardPage() {
   const session = await requireAdminSession();
@@ -21,8 +29,6 @@ export default async function AdminDashboardPage() {
     { count: totalAnalyses },
     { count: realAnalyses },
     { count: activeSubs },
-    { data: onboardingUserIds },
-    { data: analysisUserIds },
     { data: recentUsers },
     { data: accessCodes },
     { data: affiliates },
@@ -31,14 +37,13 @@ export default async function AdminDashboardPage() {
     { data: affiliateCommissions },
     { data: pendingInvites },
     onlineAdmins,
+    activity,
   ] = await Promise.all([
     admin.from("users").select("*", { count: "exact", head: true }),
     admin.from("profiles").select("*", { count: "exact", head: true }),
     admin.from("analyses").select("*", { count: "exact", head: true }),
     admin.from("analyses").select("*", { count: "exact", head: true }).eq("is_simulated", false),
     admin.from("subscriptions").select("*", { count: "exact", head: true }).in("status", ["active", "trialing"]),
-    admin.from("onboarding_answers").select("user_id"),
-    admin.from("analyses").select("user_id"),
     admin.from("users").select("id, email, created_at").order("created_at", { ascending: false }).limit(20),
     admin
       .from("admin_access_codes")
@@ -57,10 +62,8 @@ export default async function AdminDashboardPage() {
       .is("used_at", null)
       .order("created_at", { ascending: false }),
     listOnlineAdmins(),
+    getDashboardActivityStats(admin),
   ]);
-
-  const startedOnboarding = new Set((onboardingUserIds ?? []).map((r) => r.user_id)).size;
-  const ranAnalysis = new Set((analysisUserIds ?? []).map((r) => r.user_id)).size;
 
   const recentUserIds = (recentUsers ?? []).map((u) => u.id);
   const [{ data: recentSubs }, { data: recentAnalyses }] =
@@ -126,15 +129,13 @@ export default async function AdminDashboardPage() {
   }
 
   const mrr = (activeSubs ?? 0) * MONTHLY_PRICE;
-
-  const FUNNEL = [
-    { label: "Inscrits", value: totalUsers ?? 0 },
-    { label: "Onboarding démarré", value: startedOnboarding },
-    { label: "Profil créé", value: totalProfiles ?? 0 },
-    { label: "Analyse lancée", value: ranAnalysis },
-    { label: "Abonnés actifs", value: activeSubs ?? 0 },
-  ];
-  const funnelMax = Math.max(1, ...FUNNEL.map((f) => f.value));
+  const premiumPct = totalUsers ? Math.round(((activeSubs ?? 0) / totalUsers) * 100) : 0;
+  const landingToSignupStep = activity.funnel[0];
+  const signupStep = activity.funnel[1];
+  const landingToSignupPct =
+    landingToSignupStep && landingToSignupStep.count > 0 && signupStep
+      ? Math.round((signupStep.count / landingToSignupStep.count) * 100)
+      : null;
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-10">
@@ -151,34 +152,128 @@ export default async function AdminDashboardPage() {
         <LogoutButton />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard icon={Users} label="Inscrits" value={totalUsers ?? 0} />
-        <StatCard icon={Sparkles} label="Analyses (IA réelle)" value={`${realAnalyses ?? 0} / ${totalAnalyses ?? 0}`} />
-        <StatCard icon={TrendingUp} label="Abonnés actifs" value={activeSubs ?? 0} />
-        <StatCard icon={CircleDollarSign} label="MRR estimé" value={`${mrr.toFixed(2)}€`} />
-      </div>
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Aujourd&apos;hui</h2>
+          <span className="text-xs text-muted-foreground">Recalculé à chaque chargement de page</span>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <TodayStatCard
+            label="Visiteurs"
+            sublabel="ont vu la landing"
+            value={activity.today.visitors}
+            series={activity.series.visitors}
+            color={VISITORS_COLOR}
+          />
+          <TodayStatCard
+            label="Nouveaux inscrits"
+            sublabel="ont créé un compte"
+            value={activity.today.signups}
+            series={activity.series.signups}
+            color={SIGNUPS_COLOR}
+          />
+          <TodayStatCard
+            label="Achats payants"
+            sublabel="nouveaux abonnements"
+            value={activity.today.purchases}
+            series={activity.series.purchases}
+            color={PURCHASES_COLOR}
+          />
+        </div>
+      </section>
+
+      <Card>
+        <CardContent className="flex items-center justify-between py-5">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Visiteurs — 7 derniers jours</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums">{activity.weekOverWeek.thisWeek}</p>
+            <p className="text-xs text-muted-foreground">était {activity.weekOverWeek.lastWeek} la semaine d&apos;avant</p>
+          </div>
+          <TrendBadge deltaPct={activity.weekOverWeek.deltaPct} />
+        </CardContent>
+      </Card>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Clients</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard icon={Users} label="Inscrits au total" value={totalUsers ?? 0} />
+          <StatCard icon={TrendingUp} label="Clients premium" value={`${activeSubs ?? 0} (${premiumPct}%)`} />
+          <StatCard icon={Sparkles} label="Analyses (IA réelle)" value={`${realAnalyses ?? 0} / ${totalAnalyses ?? 0}`} />
+          <StatCard icon={CircleDollarSign} label="MRR estimé" value={`${mrr.toFixed(2)}€`} />
+        </div>
+        <Card>
+          <CardContent className="flex flex-col gap-1 py-4 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Landing → inscription (30 derniers jours)</span>
+              <span className="font-medium">{landingToSignupPct !== null ? `${landingToSignupPct}%` : "—"}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              sur {landingToSignupStep?.count ?? 0} visiteurs distincts, {totalProfiles ?? 0} profils créés au total
+            </p>
+          </CardContent>
+        </Card>
+      </section>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Funnel</CardTitle>
+          <CardTitle className="text-base">Funnel — 30 derniers jours</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          {FUNNEL.map((step) => (
-            <div key={step.label}>
+          {activity.funnel.map((step) => (
+            <div key={step.event}>
               <div className="mb-1 flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{step.label}</span>
-                <span className="font-medium">{step.value}</span>
+                <span className="font-medium tabular-nums">
+                  {step.count} <span className="text-xs text-muted-foreground">({step.pctOfFirst}%)</span>
+                </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                <div
-                  className="h-full rounded-full bg-brand-gradient"
-                  style={{ width: `${(step.value / funnelMax) * 100}%` }}
-                />
+                <div className="h-full rounded-full bg-brand-gradient" style={{ width: `${step.pctOfFirst}%` }} />
               </div>
             </div>
           ))}
         </CardContent>
       </Card>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Rétention &amp; engagement</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <Card>
+            <CardContent className="flex flex-col gap-1 py-4">
+              <span className="text-2xl font-semibold tabular-nums">{activity.activeToday}</span>
+              <span className="text-xs text-muted-foreground">actifs aujourd&apos;hui</span>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex flex-col gap-1 py-4">
+              <span className="text-2xl font-semibold tabular-nums">{activity.activeThisWeek}</span>
+              <span className="text-xs text-muted-foreground">actifs cette semaine</span>
+            </CardContent>
+          </Card>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Utilisateurs actifs par jour</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Sparkline points={activity.dailyActiveUsers} color={VISITORS_COLOR} className="h-16 w-full" />
+            <p className="mt-2 text-xs text-muted-foreground">Courbe = 14 derniers jours</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Outils utilisés (30 derniers jours)</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+            {activity.toolUsage.map((tool) => (
+              <div key={tool.label}>
+                <p className="text-xl font-semibold tabular-nums">{tool.count}</p>
+                <p className="text-xs text-muted-foreground">{tool.label}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
 
       <Card>
         <CardHeader>
@@ -242,8 +337,33 @@ function StatCard({ icon: Icon, label, value }: { icon: typeof Users; label: str
     <Card>
       <CardContent className="flex flex-col gap-1 py-5">
         <Icon className="size-4 text-primary" />
-        <span className="text-xl font-semibold">{value}</span>
+        <span className="text-xl font-semibold tabular-nums">{value}</span>
         <span className="text-xs text-muted-foreground">{label}</span>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TodayStatCard({
+  label,
+  sublabel,
+  value,
+  series,
+  color,
+}: {
+  label: string;
+  sublabel: string;
+  value: number;
+  series: DailyPoint[];
+  color: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col gap-1 py-5">
+        <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+        <span className="text-3xl font-bold tabular-nums">{value}</span>
+        <span className="text-xs text-muted-foreground">{sublabel}</span>
+        <Sparkline points={series} color={color} className="mt-2 h-8 w-full" />
       </CardContent>
     </Card>
   );

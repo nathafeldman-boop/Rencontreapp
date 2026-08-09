@@ -4,7 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import { attributeReferralSignup } from "@/lib/referrals/attribute-signup";
 import { trackServer } from "@/lib/analytics/server";
 import { AnalyticsEvent } from "@/lib/analytics/events";
-import { LANDING_REFERRER_COOKIE, LANDING_UTM_COOKIE } from "@/lib/analytics/cookies";
+import { LANDING_REFERRER_COOKIE, LANDING_UTM_COOKIE, ANON_ID_COOKIE } from "@/lib/analytics/cookies";
 import { sendWelcomeEmail } from "@/lib/email/send";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -46,6 +46,17 @@ export async function handleNewSignup(request: NextRequest, user: User, method: 
       .from("users")
       .update({ signup_referrer: signupReferrer, signup_utm_source: signupUtmSource })
       .eq("id", user.id);
+  }
+
+  // Claim every pre-signup event (landing view, click-to-start, ...) fired
+  // under this browser's anonymous id — so the admin timeline shows the
+  // landing page visit as the first event, not just "compte créé".
+  const anonId = request.cookies.get(ANON_ID_COOKIE)?.value;
+  if (anonId) {
+    await createAdminClient()
+      .from("activity_events")
+      .update({ user_id: user.id, anon_id: null })
+      .eq("anon_id", anonId);
   }
 
   if (user.email) await sendWelcomeEmail(user.email);
