@@ -7,7 +7,7 @@ import { REFERRAL_COOKIE, CREATOR_COOKIE } from "@/lib/referrals/cookies";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days — matches /r/<code> and /creator/<slug>
 
 /**
- * Affiliate tracking link: `flirtcraft.app/aff/<code>`. Unlike `/r/<code>`
+ * Affiliate tracking link: `flirtcraft.fr/aff/<code>`. Unlike `/r/<code>`
  * (no DB lookup on click, by design), this one does look the code up and
  * logs a row in `affiliate_clicks` — the affiliate program's whole pitch is
  * "you can see your click count", so the click has to actually be counted.

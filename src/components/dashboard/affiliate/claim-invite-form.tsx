@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -27,6 +27,15 @@ export function ClaimInviteForm({ token, commissionRatePercent }: { token: strin
   const [codeTouched, setCodeTouched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Real host the visitor is actually on (flirtcraft.fr, a preview domain,
+  // localhost...) — never hardcode a domain here, it's wrong the moment the
+  // site moves or is tested anywhere else.
+  const [host, setHost] = useState("");
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHost(window.location.host);
+  }, []);
 
   function handleDisplayNameChange(value: string) {
     setDisplayName(value);
@@ -82,7 +91,7 @@ export function ClaimInviteForm({ token, commissionRatePercent }: { token: strin
           <div>
             <Label htmlFor="code">Ton lien de tracking</Label>
             <div className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
-              <span className="shrink-0">flirtcraft.app/aff/</span>
+              <span className="shrink-0">{host || "flirtcraft.fr"}/aff/</span>
               <Input
                 id="code"
                 required
