@@ -20,6 +20,9 @@ interface RouteLimit {
 }
 
 const ROUTE_LIMITS: RouteLimit[] = [
+  // Brute-force-sensitive: must stay ahead of the /api/ catch-all below
+  // (first match wins) so it isn't shadowed by the looser 30/min default.
+  { prefix: "/api/admin/login", limit: 5, windowMs: 60_000 },
   { prefix: "/api/stripe/checkout", limit: 5, windowMs: 60_000 },
   { prefix: "/api/onboarding", limit: 10, windowMs: 60_000 },
   { prefix: "/api/profile", limit: 15, windowMs: 60_000 },
