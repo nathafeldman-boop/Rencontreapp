@@ -11,6 +11,16 @@ function formatEuros(cents: number) {
   return (cents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
 }
 
+function todayIsoDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** The only price we actually know in code — the annual price lives in Stripe, not here, so it has no preset. */
+const PRESETS = [
+  { label: "Mensuel — 7,99€", amount: "7.99" },
+  { label: "Personnalisé", amount: "" },
+] as const;
+
 interface LtvCardProps {
   userId: string;
   initialTotalCents: number;
@@ -21,10 +31,19 @@ interface LtvCardProps {
 export function LtvCard({ userId, initialTotalCents, hasStripeCustomer }: LtvCardProps) {
   const [totalCents, setTotalCents] = useState(initialTotalCents);
   const [showForm, setShowForm] = useState(false);
-  const [amount, setAmount] = useState("");
+  const [preset, setPreset] = useState<string>(PRESETS[0].label);
+  const [amount, setAmount] = useState<string>(PRESETS[0].amount);
+  const [paidAt, setPaidAt] = useState(todayIsoDate());
+  const [affiliateCode, setAffiliateCode] = useState("");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function handlePresetChange(label: string) {
+    setPreset(label);
+    const found = PRESETS.find((p) => p.label === label);
+    if (found) setAmount(found.amount);
+  }
 
   async function record() {
     const euros = Number(amount.replace(",", "."));
@@ -41,7 +60,12 @@ export function LtvCard({ userId, initialTotalCents, hasStripeCustomer }: LtvCar
       const res = await fetch(`/api/admin/users/${userId}/manual-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amountCents, note: note.trim() || undefined }),
+        body: JSON.stringify({
+          amountCents,
+          note: note.trim() || undefined,
+          paidAt: new Date(`${paidAt}T12:00:00`).toISOString(),
+          affiliateCode: affiliateCode.trim() || undefined,
+        }),
       });
 
       if (!res.ok) {
@@ -50,7 +74,10 @@ export function LtvCard({ userId, initialTotalCents, hasStripeCustomer }: LtvCar
       }
 
       setTotalCents((prev) => prev + amountCents);
-      setAmount("");
+      setPreset(PRESETS[0].label);
+      setAmount(PRESETS[0].amount);
+      setPaidAt(todayIsoDate());
+      setAffiliateCode("");
       setNote("");
       setShowForm(false);
     } catch {
@@ -76,16 +103,39 @@ export function LtvCard({ userId, initialTotalCents, hasStripeCustomer }: LtvCar
 
         {showForm ? (
           <div className="flex flex-col gap-2 rounded-lg border border-border p-3">
+            <p className="text-xs text-muted-foreground">
+              Rattrapage manuel — pour un paiement réel qui n&apos;a jamais créé de ligne côté Stripe.
+            </p>
+            <select
+              value={preset}
+              onChange={(e) => handlePresetChange(e.target.value)}
+              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+            >
+              {PRESETS.map((p) => (
+                <option key={p.label} value={p.label}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
             <div className="flex gap-2">
               <Input
                 placeholder="Montant (€)"
                 inputMode="decimal"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  setPreset("Personnalisé");
+                }}
                 autoFocus
               />
-              <Input placeholder="Note (optionnel)" value={note} onChange={(e) => setNote(e.target.value)} />
+              <Input type="date" value={paidAt} onChange={(e) => setPaidAt(e.target.value)} max={todayIsoDate()} />
             </div>
+            <Input
+              placeholder="Slug affilié (optionnel)"
+              value={affiliateCode}
+              onChange={(e) => setAffiliateCode(e.target.value)}
+            />
+            <Input placeholder="Note (optionnel)" value={note} onChange={(e) => setNote(e.target.value)} />
             <div className="flex gap-2">
               <Button size="sm" onClick={record} disabled={loading}>
                 {loading ? <Loader2 className="animate-spin" /> : null}
