@@ -4,8 +4,12 @@ import { ArrowLeft } from "lucide-react";
 
 import { requireAdminSession } from "@/lib/admin/session";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getActivityEvents, computeLtv } from "@/lib/admin/activity";
+import { groupIntoSessions, classifyOrigin } from "@/lib/admin/activity-display";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { LtvCard } from "@/components/admin/ltv-card";
+import { ActivityTimeline } from "@/components/admin/activity-timeline";
 import type { Recommendation } from "@/types/database.types";
 
 interface AdminUserPageProps {
@@ -19,7 +23,7 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
 
   const { data: user } = await admin
     .from("users")
-    .select("id, email, age, gender, country, dating_goal, dating_apps_used, created_at")
+    .select("id, email, age, gender, country, dating_goal, dating_apps_used, signup_referrer, signup_utm_source, created_at")
     .eq("id", id)
     .maybeSingle();
 
@@ -35,6 +39,8 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
     { count: bioGenerationCount },
     { count: coachSessionCount },
     { count: simulatorSessionCount },
+    { data: authUser },
+    activityEvents,
   ] = await Promise.all([
     admin
       .from("subscriptions")
@@ -61,23 +67,66 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
       .select("*", { count: "exact", head: true })
       .eq("user_id", id)
       .not("ended_at", "is", null),
+    admin.auth.admin.getUserById(id),
+    getActivityEvents(admin, id),
   ]);
 
   const latest = analyses?.[0];
+  const ltv = await computeLtv(admin, id, subscription?.stripe_customer_id);
+  const sessions = groupIntoSessions(activityEvents);
+  const totalMinutes = sessions.reduce((sum, s) => sum + s.durationMinutes, 0);
+  const lastActivityAt = sessions[0]?.endedAt;
+
+  const referralCode = activityEvents.find((e) => e.event === "signup_completed")?.properties.referral_code as
+    | string
+    | undefined;
+  const creatorSlug = activityEvents.find((e) => e.event === "signup_completed")?.properties.creator_slug as
+    | string
+    | undefined;
+  const origin = classifyOrigin(user.signup_referrer, creatorSlug, referralCode ?? undefined);
+
+  const displayName =
+    (authUser?.user?.user_metadata?.full_name as string | undefined) ||
+    (authUser?.user?.user_metadata?.name as string | undefined) ||
+    user.email;
+
+  const isPremium = subscription?.status === "active" || subscription?.status === "trialing";
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-10">
       <Link href="/admin" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" />
-        Dashboard admin
+        Tableau de bord
       </Link>
 
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{user.email}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{displayName}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Inscrit le {new Date(user.created_at).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
+          {user.email} · inscrit le {new Date(user.created_at).toLocaleDateString("fr-FR", { dateStyle: "long" })} ·{" "}
+          {isPremium ? "Premium" : "Gratuit"}
         </p>
       </div>
+
+      <LtvCard userId={id} initialTotalCents={ltv.totalCents} hasStripeCustomer={ltv.hasStripeCustomer} />
+
+      <Card>
+        <CardContent className="flex flex-col gap-4 pt-6">
+          <p className="text-xs text-muted-foreground">
+            Tout ce qui suit vient de la navigation réellement enregistrée (aucun contenu de message ou de note
+            n&apos;est jamais lu ici — juste quelle action, où, et quand). Le suivi par compte a démarré avec cette
+            page : les visites antérieures à sa mise en ligne n&apos;apparaissent pas.
+          </p>
+          <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+            <Field label="Origine" value={origin} />
+            <Field
+              label="Dernière activité"
+              value={lastActivityAt ? new Date(lastActivityAt).toLocaleDateString("fr-FR", { dateStyle: "medium" }) : "—"}
+            />
+            <Field label="Sessions détectées" value={sessions.length} />
+            <Field label="Temps total" value={totalMinutes > 0 ? `≈ ${totalMinutes} min` : "—"} />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -98,16 +147,14 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
         </CardHeader>
         <CardContent className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">{subscription?.plan ?? "free"}</span>
-          <Badge variant={subscription?.status === "active" || subscription?.status === "trialing" ? "default" : "secondary"}>
-            {subscription?.status ?? "aucun"}
-          </Badge>
+          <Badge variant={isPremium ? "default" : "secondary"}>{subscription?.status ?? "aucun"}</Badge>
         </CardContent>
       </Card>
 
       {onboardingAnswers && onboardingAnswers.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Onboarding</CardTitle>
+            <CardTitle className="text-base">Profil &amp; intentions (questionnaire d&apos;accueil)</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2 text-sm">
             {onboardingAnswers.map((a) => (
@@ -149,7 +196,7 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
               <Field label="Conversation" value={`${latest.conversation_score ?? "—"}`} />
             </div>
             <p className="text-xs text-muted-foreground">
-              {latest.is_simulated ? "Fallback simulé (Mistral indisponible)" : "Analyse IA réelle"} ·{" "}
+              {latest.is_simulated ? "Fallback simulé (Mistral indisponible)" : "Analyse réelle"} ·{" "}
               {new Date(latest.created_at).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
             </p>
             {Array.isArray(latest.recommendations) && (latest.recommendations as Recommendation[]).length > 0 && (
@@ -183,7 +230,7 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Usage des outils IA</CardTitle>
+          <CardTitle className="text-base">Usage des outils</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-3 gap-4 text-sm">
           <Field label="Bios générées" value={bioGenerationCount ?? 0} />
@@ -191,6 +238,8 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
           <Field label="Simulations terminées" value={simulatorSessionCount ?? 0} />
         </CardContent>
       </Card>
+
+      <ActivityTimeline sessions={sessions} />
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
 import { isNewSignup, handleNewSignup } from "@/lib/auth/handle-new-signup";
+import { trackServer } from "@/lib/analytics/server";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 
 const bodySchema = z.object({
   email: z.string().email(),
@@ -31,6 +33,8 @@ export async function POST(request: NextRequest) {
 
   if (isNewSignup(data.user)) {
     await handleNewSignup(request, data.user, "email");
+  } else {
+    trackServer(data.user.id, AnalyticsEvent.LoggedIn, { method: "email" });
   }
 
   return apiSuccess({ redirectTo: redirectTo ?? "/onboarding" });

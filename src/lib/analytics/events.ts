@@ -13,6 +13,7 @@ export const AnalyticsEvent = {
   ClickStartAnalysis: "click_start_analysis",
   SignupStarted: "signup_started",
   SignupCompleted: "signup_completed",
+  LoggedIn: "logged_in",
 
   // ---- Activation ------------------------------------------------------------
   OnboardingStarted: "onboarding_started",
@@ -56,6 +57,7 @@ export interface AnalyticsEventProps {
   [AnalyticsEvent.ClickStartAnalysis]: { cta_location: string; variant?: string };
   [AnalyticsEvent.SignupStarted]: { method: "google" | "email" };
   [AnalyticsEvent.SignupCompleted]: { method: "google" | "email"; referral_code?: string; creator_slug?: string };
+  [AnalyticsEvent.LoggedIn]: { method: "google" | "email" };
 
   [AnalyticsEvent.OnboardingStarted]: Record<string, never>;
   [AnalyticsEvent.OnboardingCompleted]: { steps_completed: number };

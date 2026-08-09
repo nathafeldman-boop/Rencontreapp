@@ -66,6 +66,8 @@ export interface Database {
           dating_goal: DatingGoal | null;
           dating_apps_used: DatingApp[];
           daily_reminder_enabled: boolean | null;
+          signup_referrer: string | null;
+          signup_utm_source: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -461,6 +463,53 @@ export interface Database {
             columns: ["access_code_id"];
             isOneToOne: false;
             referencedRelation: "admin_access_codes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      activity_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          event: string;
+          properties: Record<string, unknown>;
+          occurred_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["activity_events"]["Row"], "id">> & {
+          user_id: string;
+          event: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["activity_events"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "activity_events_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      manual_payments: {
+        Row: {
+          id: string;
+          user_id: string;
+          amount_cents: number;
+          note: string | null;
+          paid_at: string;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["manual_payments"]["Row"], "id">> & {
+          user_id: string;
+          amount_cents: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["manual_payments"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "manual_payments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];

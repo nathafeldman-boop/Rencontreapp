@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { isNewSignup, handleNewSignup } from "@/lib/auth/handle-new-signup";
+import { trackServer } from "@/lib/analytics/server";
+import { AnalyticsEvent } from "@/lib/analytics/events";
 
 /**
  * Google OAuth callback. Supabase redirects here with a `code` query param
@@ -25,6 +27,8 @@ export async function GET(request: NextRequest) {
     if (!error && data.user) {
       if (isNewSignup(data.user)) {
         await handleNewSignup(request, data.user, "google");
+      } else {
+        trackServer(data.user.id, AnalyticsEvent.LoggedIn, { method: "google" });
       }
 
       return NextResponse.redirect(`${origin}${redirectTo}`);

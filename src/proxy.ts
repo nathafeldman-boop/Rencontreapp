@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 import { assignLandingVariant } from "@/lib/experiments/assign-variant";
 import { assignCreatorCookie } from "@/lib/referrals/assign-creator-cookie";
+import { assignLandingSourceCookie } from "@/lib/analytics/assign-landing-source-cookie";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export async function proxy(request: NextRequest) {
@@ -11,6 +12,7 @@ export async function proxy(request: NextRequest) {
   const response = await updateSession(request);
   assignLandingVariant(request, response);
   assignCreatorCookie(request, response);
+  assignLandingSourceCookie(request, response);
   return response;
 }
 
