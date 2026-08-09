@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 /**
- * Fetches the live count from /api/stats and animates up to it. Default
- * fallback is 0 (honest, not padded) — /api/stats is a same-origin call
- * that resolves in well under a second, so the "0" is barely visible
- * before the real number animates in.
+ * Fetches the live count from /api/stats (which already includes the
+ * founder-set baseline — see BASELINE_ANALYZED_PROFILES in
+ * app/api/stats/route.ts) and animates up to it. Fallback of 800 matches
+ * that baseline so a slow/failed fetch doesn't flash "0" before the real
+ * number loads.
  */
-export function AnimatedCounter({ fallback = 0 }: { fallback?: number }) {
+export function AnimatedCounter({ fallback = 800 }: { fallback?: number }) {
   const [target, setTarget] = useState(fallback);
   const motionValue = useMotionValue(0);
   const spring = useSpring(motionValue, { damping: 30, stiffness: 90 });

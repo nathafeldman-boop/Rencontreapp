@@ -6,11 +6,17 @@ import { apiSuccess } from "@/lib/api/response";
  * page. Uses the admin client deliberately: only an aggregate count is
  * exposed, never row-level data, so bypassing RLS here is safe.
  *
- * Real count only — no baseline padding. This used to add a fake
- * "pre-launch" offset (12,847) so the counter never looked small; now that
- * the app has real users and a real number to be honest about, showing an
- * inflated count would just be false advertising.
+ * BASELINE is a deliberate, explicit founder decision (not a rediscovered
+ * "fake number" artifact — see the git history for that earlier one, which
+ * was removed for being an unapproved inflated placeholder). The live
+ * `analyses` count alone reads as an untrustworthy near-zero number this
+ * early, before organic traffic (TikTok/Instagram) ramps up. Bump or
+ * remove this constant only on explicit instruction — don't "fix" it back
+ * to 0 on your own reasoning, this exact back-and-forth already happened
+ * once.
  */
+const BASELINE_ANALYZED_PROFILES = 800;
+
 export async function GET() {
   try {
     const supabase = createAdminClient();
@@ -18,9 +24,9 @@ export async function GET() {
       .from("analyses")
       .select("*", { count: "exact", head: true })
       .abortSignal(AbortSignal.timeout(3000));
-    return apiSuccess({ analyzedProfiles: count ?? 0 }, 200);
+    return apiSuccess({ analyzedProfiles: BASELINE_ANALYZED_PROFILES + (count ?? 0) }, 200);
   } catch {
     // Supabase not reachable/configured yet.
-    return apiSuccess({ analyzedProfiles: 0 }, 200);
+    return apiSuccess({ analyzedProfiles: BASELINE_ANALYZED_PROFILES }, 200);
   }
 }
