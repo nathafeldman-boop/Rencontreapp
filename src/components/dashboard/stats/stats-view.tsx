@@ -10,7 +10,7 @@ import { ChipButton } from "@/components/onboarding/chip-button";
 import { AddStatsForm } from "@/components/dashboard/stats/add-stats-form";
 import { MetricBarChart } from "@/components/dashboard/stats/metric-bar-chart";
 import { ConnectPlatforms } from "@/components/dashboard/stats/connect-platforms";
-import type { DatingPlatform } from "@/types/database.types";
+import type { DatingApp, DatingPlatform } from "@/types/database.types";
 
 export interface DatingStatRow {
   id: string;
@@ -52,7 +52,13 @@ const METRICS = [
   { key: "dates", label: "Dates", icon: Sparkles },
 ] as const;
 
-export function StatsView({ initialStats }: { initialStats: DatingStatRow[] }) {
+export function StatsView({
+  initialStats,
+  datingAppsUsed,
+}: {
+  initialStats: DatingStatRow[];
+  datingAppsUsed: DatingApp[];
+}) {
   const [stats, setStats] = useState(initialStats);
   const [period, setPeriod] = useState<Period>("30d");
   const [showForm, setShowForm] = useState(false);
@@ -142,7 +148,7 @@ export function StatsView({ initialStats }: { initialStats: DatingStatRow[] }) {
 
       {showForm && <AddStatsForm onSaved={handleSaved} />}
 
-      <ConnectPlatforms />
+      <ConnectPlatforms datingAppsUsed={datingAppsUsed} />
     </div>
   );
 }

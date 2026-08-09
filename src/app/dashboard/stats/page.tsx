@@ -10,11 +10,14 @@ export default async function StatsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data } = await supabase
-    .from("dating_stats")
-    .select("id, platform, period_start, period_end, likes, matches, conversations, replies, dates, created_at")
-    .eq("user_id", user?.id ?? "")
-    .order("period_start", { ascending: false });
+  const [{ data }, { data: userRow }] = await Promise.all([
+    supabase
+      .from("dating_stats")
+      .select("id, platform, period_start, period_end, likes, matches, conversations, replies, dates, created_at")
+      .eq("user_id", user?.id ?? "")
+      .order("period_start", { ascending: false }),
+    supabase.from("users").select("dating_apps_used").eq("id", user?.id ?? "").maybeSingle(),
+  ]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -32,7 +35,7 @@ export default async function StatsPage() {
         </Link>
       </div>
 
-      <StatsView initialStats={(data ?? []) as DatingStatRow[]} />
+      <StatsView initialStats={(data ?? []) as DatingStatRow[]} datingAppsUsed={userRow?.dating_apps_used ?? []} />
     </div>
   );
 }

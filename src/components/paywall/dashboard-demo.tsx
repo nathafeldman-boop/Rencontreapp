@@ -14,20 +14,21 @@ const SUGGESTIONS = [
   { tone: "Flirt", message: "Ça dépend, tu es libre pour me le montrer ?" },
 ];
 
-const PLATFORMS = ["Tinder", "Meetic"];
+const PROGRESSION_POINTS = [64, 69, 74, 81];
 
 /**
  * Honest preview of the actual premium dashboard — everything shown here
- * exists in the real product (AI hub, coach suggestions, the platforms
- * list). "Bientôt disponible" stays on the platform rows since no
- * integration is actually live — see src/lib/dating-platforms/.
+ * exists in the real product (AI hub, coach suggestions, the score
+ * progression view). No fake "coming soon" platform connector — Tinder,
+ * Hinge and Bumble have no public API and Flirtcraft doesn't pretend
+ * otherwise (see /dashboard/progression, ConnectPlatforms).
  */
 export function DashboardDemo() {
   return (
     <PhoneMockupCarousel
       title="Voici FlirtCraft une fois abonné"
       subtitle="Le dashboard, ton coach et tes conversations — en vrai, pas une maquette."
-      scenes={[<AiHubScene key="ai" />, <CoachScene key="coach" />, <ConnectScene key="connect" />]}
+      scenes={[<AiHubScene key="ai" />, <CoachScene key="coach" />, <ProgressionScene key="progression" />]}
     />
   );
 }
@@ -86,24 +87,22 @@ function CoachScene() {
   );
 }
 
-function ConnectScene() {
+function ProgressionScene() {
   return (
-    <div className="flex h-full flex-col justify-center gap-2.5">
-      <p className="text-xs font-semibold text-muted-foreground">Connecter mes applications</p>
-      {PLATFORMS.map((platform, i) => (
-        <motion.div
-          key={platform}
-          initial={{ opacity: 0, x: -8 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 + i * 0.2, duration: 0.3 }}
-          className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2.5"
-        >
-          <span className="text-[11px] font-medium">{platform}</span>
-          <span className="rounded-full bg-secondary px-2 py-0.5 text-[8px] text-secondary-foreground">
-            Bientôt disponible
-          </span>
-        </motion.div>
-      ))}
+    <div className="flex h-full flex-col justify-center gap-3">
+      <p className="text-xs font-semibold text-muted-foreground">Ta progression</p>
+      <div className="flex h-16 items-end gap-1.5">
+        {PROGRESSION_POINTS.map((score, i) => (
+          <motion.div
+            key={i}
+            className="flex-1 rounded-t bg-brand-gradient"
+            initial={{ height: 0 }}
+            animate={{ height: `${score}%` }}
+            transition={{ delay: 0.15 + i * 0.15, duration: 0.4 }}
+          />
+        ))}
+      </div>
+      <p className="text-[10px] text-muted-foreground">+17 points en 3 semaines</p>
     </div>
   );
 }

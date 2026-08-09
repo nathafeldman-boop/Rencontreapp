@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 
 /**
  * Shown once, the first time a user has `daily_reminder_enabled === null`
- * (not yet asked). Meetic/Tinder aren't connected via API yet (see
- * lib/dating-platforms), so stats stay manual — this closes that gap by
- * nudging people back daily to log them and check the AI after a match.
+ * (not yet asked). Tinder/Hinge/Bumble/Meetic have no public API and never
+ * will be connected — stats stay manual by design (see
+ * /dashboard/progression), so this closes that gap by nudging people back
+ * daily to log them and check in with their coach after a match.
  */
 export function DailyReminderPrompt() {
   const [status, setStatus] = useState<"idle" | "loading" | "answered">("idle");
