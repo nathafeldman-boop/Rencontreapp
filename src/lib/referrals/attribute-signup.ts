@@ -6,6 +6,7 @@ import { trackServer } from "@/lib/analytics/server";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { REWARD_THRESHOLDS } from "@/lib/referrals/rewards";
 import { REFERRAL_COOKIE, CREATOR_COOKIE } from "@/lib/referrals/cookies";
+import { AFFILIATE_COOKIE } from "@/lib/affiliates/cookies";
 import { sendReferralRewardEmail } from "@/lib/email/send";
 import type { Database } from "@/types/database.types";
 
@@ -14,13 +15,17 @@ export { REFERRAL_COOKIE, CREATOR_COOKIE };
 interface AttributionResult {
   referralCode?: string;
   creatorSlug?: string;
+  affiliateCode?: string;
 }
 
 /**
  * Called once, from `auth/callback`, right after a brand-new session is
- * established. Reads the `mai_ref` / `mai_creator` cookies set by
- * `/r/[code]` or `/creator/[slug]`, records the attribution, and grants
- * referrer rewards if a threshold was just crossed.
+ * established. Reads the `mai_aff` / `mai_ref` / `mai_creator` cookies set
+ * by `/aff/[code]`, `/r/[code]`, or `/creator/[slug]`, records the
+ * attribution, and grants referrer rewards if a threshold was just crossed.
+ * Affiliate attribution is checked first — it's the one that pays out real
+ * commission, so it takes priority if a visitor somehow carries more than
+ * one attribution cookie.
  *
  * Uses the admin client deliberately: this is a trusted server-only flow
  * driven entirely by the verified new session, not by client input, so the
@@ -31,12 +36,32 @@ export async function attributeReferralSignup(
   request: NextRequest,
   userId: string
 ): Promise<AttributionResult | null> {
+  const affiliateCode = request.cookies.get(AFFILIATE_COOKIE)?.value;
   const referralCode = request.cookies.get(REFERRAL_COOKIE)?.value;
   const creatorSlug = request.cookies.get(CREATOR_COOKIE)?.value;
 
-  if (!referralCode && !creatorSlug) return null;
+  if (!affiliateCode && !referralCode && !creatorSlug) return null;
 
   const supabase = createAdminClient();
+
+  if (affiliateCode) {
+    const { data: affiliate } = await supabase
+      .from("affiliates")
+      .select("id")
+      .eq("code", affiliateCode)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (!affiliate) return null;
+
+    const { error } = await supabase
+      .from("affiliate_referrals")
+      .insert({ affiliate_id: affiliate.id, referred_user_id: userId });
+
+    if (error) return null; // already attributed (unique violation) or other failure
+
+    return { affiliateCode };
+  }
 
   if (referralCode) {
     const { data: referral } = await supabase

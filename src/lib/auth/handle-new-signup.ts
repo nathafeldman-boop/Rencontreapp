@@ -34,6 +34,7 @@ export async function handleNewSignup(request: NextRequest, user: User, method: 
     method,
     referral_code: attribution?.referralCode,
     creator_slug: attribution?.creatorSlug,
+    affiliate_code: attribution?.affiliateCode,
   });
 
   // First-touch marketing attribution (see assign-landing-source-cookie.ts)

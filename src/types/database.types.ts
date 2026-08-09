@@ -32,6 +32,8 @@ export type BioStyle = "funny" | "mysterious" | "confident" | "romantic" | "prem
 
 export type CoachMode = "auto" | "flirt" | "funny" | "natural" | "confident";
 
+export type AffiliateCommissionStatus = "due" | "paid" | "void";
+
 export interface ConversationSuggestion {
   tone: "funny" | "flirty" | "natural" | "confident";
   message: string;
@@ -373,6 +375,69 @@ export interface Database {
           expires_at: string;
         };
         Update: Partial<Database["public"]["Tables"]["referral_rewards"]["Row"]>;
+        Relationships: [];
+      };
+      affiliates: {
+        Row: {
+          id: string;
+          user_id: string;
+          code: string;
+          commission_rate: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["affiliates"]["Row"], "id">> & {
+          user_id: string;
+          code: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["affiliates"]["Row"]>;
+        Relationships: [];
+      };
+      affiliate_clicks: {
+        Row: {
+          id: string;
+          affiliate_id: string;
+          occurred_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["affiliate_clicks"]["Row"], "id">> & {
+          affiliate_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["affiliate_clicks"]["Row"]>;
+        Relationships: [];
+      };
+      affiliate_referrals: {
+        Row: {
+          id: string;
+          affiliate_id: string;
+          referred_user_id: string;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["affiliate_referrals"]["Row"], "id">> & {
+          affiliate_id: string;
+          referred_user_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["affiliate_referrals"]["Row"]>;
+        Relationships: [];
+      };
+      affiliate_commissions: {
+        Row: {
+          id: string;
+          affiliate_id: string;
+          referred_user_id: string;
+          stripe_checkout_session_id: string;
+          amount_cents: number;
+          commission_cents: number;
+          status: AffiliateCommissionStatus;
+          created_at: string;
+        };
+        Insert: Partial<Omit<Database["public"]["Tables"]["affiliate_commissions"]["Row"], "id">> & {
+          affiliate_id: string;
+          referred_user_id: string;
+          stripe_checkout_session_id: string;
+          amount_cents: number;
+          commission_cents: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["affiliate_commissions"]["Row"]>;
         Relationships: [];
       };
       feedback: {

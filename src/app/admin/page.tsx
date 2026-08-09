@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { AccessCodesPanel } from "@/components/admin/access-codes-panel";
+import { AffiliatesPanel, type AdminAffiliate } from "@/components/admin/affiliates-panel";
 
 const MONTHLY_PRICE = 7.99;
 
@@ -24,6 +25,10 @@ export default async function AdminDashboardPage() {
     { data: analysisUserIds },
     { data: recentUsers },
     { data: accessCodes },
+    { data: affiliates },
+    { data: affiliateClicks },
+    { data: affiliateReferrals },
+    { data: affiliateCommissions },
     onlineAdmins,
   ] = await Promise.all([
     admin.from("users").select("*", { count: "exact", head: true }),
@@ -38,6 +43,13 @@ export default async function AdminDashboardPage() {
       .from("admin_access_codes")
       .select("id, code, label, is_active, last_used_at")
       .order("created_at", { ascending: false }),
+    admin
+      .from("affiliates")
+      .select("id, user_id, code, commission_rate, active, created_at")
+      .order("created_at", { ascending: false }),
+    admin.from("affiliate_clicks").select("affiliate_id"),
+    admin.from("affiliate_referrals").select("affiliate_id"),
+    admin.from("affiliate_commissions").select("affiliate_id, commission_cents, status"),
     listOnlineAdmins(),
   ]);
 
@@ -56,6 +68,42 @@ export default async function AdminDashboardPage() {
             .order("created_at", { ascending: false }),
         ])
       : [{ data: [] }, { data: [] }];
+
+  const affiliateUserIds = (affiliates ?? []).map((a) => a.user_id);
+  const { data: affiliateUsers } =
+    affiliateUserIds.length > 0
+      ? await admin.from("users").select("id, email").in("id", affiliateUserIds)
+      : { data: [] };
+  const emailByUserId = new Map((affiliateUsers ?? []).map((u) => [u.id, u.email]));
+
+  const clicksByAffiliate = new Map<string, number>();
+  for (const c of affiliateClicks ?? []) clicksByAffiliate.set(c.affiliate_id, (clicksByAffiliate.get(c.affiliate_id) ?? 0) + 1);
+
+  const signupsByAffiliate = new Map<string, number>();
+  for (const r of affiliateReferrals ?? [])
+    signupsByAffiliate.set(r.affiliate_id, (signupsByAffiliate.get(r.affiliate_id) ?? 0) + 1);
+
+  const salesByAffiliate = new Map<string, number>();
+  const dueByAffiliate = new Map<string, number>();
+  const paidByAffiliate = new Map<string, number>();
+  for (const c of affiliateCommissions ?? []) {
+    salesByAffiliate.set(c.affiliate_id, (salesByAffiliate.get(c.affiliate_id) ?? 0) + 1);
+    if (c.status === "due") dueByAffiliate.set(c.affiliate_id, (dueByAffiliate.get(c.affiliate_id) ?? 0) + c.commission_cents);
+    if (c.status === "paid") paidByAffiliate.set(c.affiliate_id, (paidByAffiliate.get(c.affiliate_id) ?? 0) + c.commission_cents);
+  }
+
+  const adminAffiliates: AdminAffiliate[] = (affiliates ?? []).map((a) => ({
+    id: a.id,
+    code: a.code,
+    email: emailByUserId.get(a.user_id) ?? "—",
+    commissionRate: a.commission_rate,
+    active: a.active,
+    clickCount: clicksByAffiliate.get(a.id) ?? 0,
+    signupCount: signupsByAffiliate.get(a.id) ?? 0,
+    saleCount: salesByAffiliate.get(a.id) ?? 0,
+    dueCents: dueByAffiliate.get(a.id) ?? 0,
+    paidCents: paidByAffiliate.get(a.id) ?? 0,
+  }));
 
   const subByUser = new Map((recentSubs ?? []).map((s) => [s.user_id, s.status]));
   const latestScoreByUser = new Map<string, number>();
@@ -167,6 +215,8 @@ export default async function AdminDashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      <AffiliatesPanel initialAffiliates={adminAffiliates} />
 
       <AccessCodesPanel initialCodes={accessCodes ?? []} />
     </div>

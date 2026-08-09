@@ -4,6 +4,7 @@ import type Stripe from "stripe";
 import { getStripeClient } from "@/lib/stripe/client";
 import { serverEnv } from "@/lib/env";
 import { syncSubscriptionFromStripe } from "@/lib/stripe/sync-subscription";
+import { recordAffiliateCommissionIfApplicable } from "@/lib/affiliates/record-commission";
 import { trackServer } from "@/lib/analytics/server";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { planIdFromPriceId } from "@/lib/stripe/plans";
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
             typeof session.subscription === "string" ? session.subscription : session.subscription.id;
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           await syncSubscriptionFromStripe(subscription, userId);
+          await recordAffiliateCommissionIfApplicable(userId, session);
 
           const priceId = subscription.items.data[0]?.price.id;
           trackServer(userId, AnalyticsEvent.SubscriptionCreated, {

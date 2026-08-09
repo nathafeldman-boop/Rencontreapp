@@ -45,6 +45,7 @@ export const AnalyticsEvent = {
   ReferralSignup: "referral_signup",
   ReferralRewardGranted: "referral_reward_granted",
   ScoreShared: "score_shared",
+  AffiliateLinkCopied: "affiliate_link_copied",
 
   // ---- Satisfaction --------------------------------------------------------
   FeedbackSubmitted: "feedback_submitted",
@@ -56,7 +57,12 @@ export interface AnalyticsEventProps {
   [AnalyticsEvent.LandingView]: { source?: string; variant: string };
   [AnalyticsEvent.ClickStartAnalysis]: { cta_location: string; variant?: string };
   [AnalyticsEvent.SignupStarted]: { method: "google" | "email" };
-  [AnalyticsEvent.SignupCompleted]: { method: "google" | "email"; referral_code?: string; creator_slug?: string };
+  [AnalyticsEvent.SignupCompleted]: {
+    method: "google" | "email";
+    referral_code?: string;
+    creator_slug?: string;
+    affiliate_code?: string;
+  };
   [AnalyticsEvent.LoggedIn]: { method: "google" | "email" };
 
   [AnalyticsEvent.OnboardingStarted]: Record<string, never>;
@@ -85,6 +91,7 @@ export interface AnalyticsEventProps {
   [AnalyticsEvent.ReferralSignup]: { referral_code: string };
   [AnalyticsEvent.ReferralRewardGranted]: { reward_days: number; invite_count: number };
   [AnalyticsEvent.ScoreShared]: { overall_score: number; method: "share_sheet" | "download" };
+  [AnalyticsEvent.AffiliateLinkCopied]: Record<string, never>;
 
   [AnalyticsEvent.FeedbackSubmitted]: { category: "bug" | "feature" | "general"; helpful?: boolean };
 }
