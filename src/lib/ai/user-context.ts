@@ -29,6 +29,22 @@ export const ONBOARDING_QUESTIONS = {
 } as const;
 
 /**
+ * Display-only French labels for the values above — the English strings
+ * themselves stay as-is, they're the actual stored `question` value in
+ * `onboarding_answers` and are matched against verbatim all over this
+ * file, `rescore-profile.ts`, and `api/onboarding/route.ts`. Renaming
+ * those would mean migrating every existing row. This map exists purely
+ * so admin screens can show a French label instead of the raw English key.
+ */
+export const ONBOARDING_QUESTION_LABELS_FR: Record<string, string> = {
+  [ONBOARDING_QUESTIONS.objective]: "Objectif principal",
+  [ONBOARDING_QUESTIONS.weeklyMatches]: "Matchs par semaine",
+  [ONBOARDING_QUESTIONS.biggestProblem]: "Plus gros problème actuel",
+  [ONBOARDING_QUESTIONS.confidence]: "Confiance dans son profil",
+  [ONBOARDING_QUESTIONS.hobbies]: "Hobbys / centres d'intérêt",
+};
+
+/**
  * Single place that assembles "what does Flirtcraft already know about this
  * user" — onboarding answers, profile, and latest scores. Every AI tool
  * (bio generator, conversation coach, match simulator, dating plan,

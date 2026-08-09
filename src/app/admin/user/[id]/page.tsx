@@ -6,6 +6,7 @@ import { requireAdminSession } from "@/lib/admin/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getActivityEvents, computeLtv } from "@/lib/admin/activity";
 import { groupIntoSessions, classifyOrigin } from "@/lib/admin/activity-display";
+import { ONBOARDING_QUESTION_LABELS_FR } from "@/lib/ai/user-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LtvCard } from "@/components/admin/ltv-card";
@@ -47,7 +48,7 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
       .select("plan, status, current_period_end, stripe_customer_id")
       .eq("user_id", id)
       .maybeSingle(),
-    admin.from("onboarding_answers").select("question, answer").eq("user_id", id),
+    admin.from("onboarding_answers").select("question, answer, created_at").eq("user_id", id).order("created_at", { ascending: true }),
     admin
       .from("profiles")
       .select("bio, photos, dating_app, created_at")
@@ -157,12 +158,18 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
             <CardTitle className="text-base">Profil &amp; intentions (questionnaire d&apos;accueil)</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2 text-sm">
-            {onboardingAnswers.map((a) => (
-              <div key={a.question} className="flex items-center justify-between gap-4">
-                <span className="text-muted-foreground">{a.question}</span>
-                <span className="font-medium">{a.answer}</span>
-              </div>
-            ))}
+            {
+              // Onboarding can be re-submitted (test accounts, retries) and
+              // inserts new rows rather than upserting — dedupe to the most
+              // recent answer per question (rows arrive ordered by
+              // created_at ascending, so a later entry always overwrites).
+              Array.from(new Map(onboardingAnswers.map((a) => [a.question, a])).values()).map((a) => (
+                <div key={a.question} className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">{ONBOARDING_QUESTION_LABELS_FR[a.question] ?? a.question}</span>
+                  <span className="font-medium">{a.answer}</span>
+                </div>
+              ))
+            }
           </CardContent>
         </Card>
       )}
