@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Loader2, Mail } from "lucide-react";
+import { ArrowLeft, Clock, ExternalLink, Loader2, Mail, TriangleAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,13 @@ import { GoogleIcon } from "@/components/shared/google-icon";
 import { createClient } from "@/lib/supabase/client";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { androidEscapeUrl, detectInAppBrowser, detectMobilePlatform, type InAppBrowserApp } from "@/lib/utils/in-app-browser";
+
+const APP_LABEL: Record<Exclude<InAppBrowserApp, null>, string> = {
+  tiktok: "TikTok",
+  instagram: "Instagram",
+  facebook: "Facebook",
+};
 
 /**
  * Single choke point for signup — every CTA on the site routes here
@@ -28,6 +35,21 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const [step, setStep] = useState<"email" | "code">("email");
   const [status, setStatus] = useState<"idle" | "loading">("idle");
   const [error, setError] = useState<string | null>(null);
+
+  // TikTok/Instagram in-app browsers routinely break "Continuer avec
+  // Google" (Google blocks sign-in inside recognized embedded webviews) —
+  // detect it so we can point people at the email code instead of letting
+  // them hit a dead end with no explanation. Defaults to "not detected" so
+  // the first client render matches the static server HTML.
+  const [inAppApp, setInAppApp] = useState<InAppBrowserApp>(null);
+  const [isAndroid, setIsAndroid] = useState(false);
+
+  useEffect(() => {
+    const userAgent = navigator.userAgent;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of a browser-only value, no server equivalent to sync against
+    setInAppApp(detectInAppBrowser(userAgent));
+    setIsAndroid(detectMobilePlatform(userAgent) === "android");
+  }, []);
 
   async function handleGoogleSignIn() {
     setError(null);
@@ -125,6 +147,28 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
             <p className="mt-1 text-sm text-muted-foreground">
               Gratuit. Ton analyse démarre juste après.
             </p>
+
+            {inAppApp && (
+              <div className="mt-4 flex flex-col gap-2 rounded-xl bg-secondary px-4 py-3 text-sm">
+                <div className="flex items-start gap-2">
+                  <TriangleAlert className="mt-0.5 size-4 shrink-0 text-amber-500" />
+                  <p className="text-muted-foreground">
+                    Tu es dans le navigateur intégré de {APP_LABEL[inAppApp]} — la connexion Google peut ne pas
+                    fonctionner ici.{" "}
+                    {isAndroid ? "Ouvre ce lien dans ton navigateur, ou utilise le code par email ci-dessous." : "Utilise plutôt le code par email ci-dessous, ou tape sur ⋯ en haut à droite puis « Ouvrir dans Safari »."}
+                  </p>
+                </div>
+                {isAndroid && (
+                  <a
+                    href={androidEscapeUrl(typeof window !== "undefined" ? window.location.href : "")}
+                    className="flex items-center justify-center gap-1.5 rounded-lg bg-background px-3 py-2 text-sm font-medium"
+                  >
+                    <ExternalLink className="size-3.5" />
+                    Ouvrir dans le navigateur
+                  </a>
+                )}
+              </div>
+            )}
 
             <Button
               variant="outline"
