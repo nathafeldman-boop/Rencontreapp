@@ -25,6 +25,15 @@ export function Footer() {
           © {new Date().getFullYear()} {SITE_NAME}. Tous droits réservés.
         </p>
         <nav className="flex items-center gap-4">
+          <Link href="/questions" className="hover:text-foreground">
+            Questions
+          </Link>
+          <Link href="/blog" className="hover:text-foreground">
+            Blog
+          </Link>
+          <Link href="/a-propos" className="hover:text-foreground">
+            À propos
+          </Link>
           <Link href="/mentions-legales" className="hover:text-foreground">
             Mentions légales
           </Link>
