@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Camera, ScanFace, Sparkles, TrendingUp } from "lucide-react";
+import { AlertCircle, Camera, RefreshCcw, ScanFace, Sparkles, TrendingUp } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
@@ -19,27 +21,46 @@ const STEPS = [
 const TOTAL_DURATION_MS = 13_000;
 const STEP_DURATION_MS = TOTAL_DURATION_MS / STEPS.length;
 
+interface AnalysisResult {
+  analysisId: string | null;
+  failed: boolean;
+  errorMessage?: string;
+}
+
 export default function AnalyzePage() {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
-  const resultRef = useRef<{ analysisId: string | null; failed: boolean } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const resultRef = useRef<AnalysisResult | null>(null);
 
-  useEffect(() => {
+  function runAnalysis() {
+    setError(null);
+    setProgress(0);
+    setActiveStep(0);
+    resultRef.current = null;
     let cancelled = false;
     track(AnalyticsEvent.AnalysisStarted, {});
 
     fetch("/api/analyze", { method: "POST" })
       .then(async (res) => {
-        if (!res.ok) throw new Error("analysis failed");
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          throw new Error(body?.error || "L'analyse a échoué.");
+        }
         const { data } = await res.json();
         return data.analysis_id as string;
       })
       .then((analysisId) => {
         if (!cancelled) resultRef.current = { analysisId, failed: false };
       })
-      .catch(() => {
-        if (!cancelled) resultRef.current = { analysisId: null, failed: true };
+      .catch((err) => {
+        if (!cancelled)
+          resultRef.current = {
+            analysisId: null,
+            failed: true,
+            errorMessage: err instanceof Error ? err.message : "L'analyse a échoué.",
+          };
       });
 
     const start = Date.now();
@@ -54,20 +75,22 @@ export default function AnalyzePage() {
       clearInterval(tick);
       setProgress(100);
 
-      const finalize = () => {
-        const result = resultRef.current;
+      const finalize = (attempt = 0) => {
         if (cancelled) return;
+        const result = resultRef.current;
         if (result?.analysisId) {
           router.push(`/results?id=${result.analysisId}`);
         } else if (result?.failed) {
-          router.push("/results?demo=1");
+          // A real failure — show it, never a fake score standing in for a
+          // real one (see BUG history: this used to silently redirect to
+          // /results?demo=1, which showed generic numbers a user could
+          // easily mistake for their actual analysis).
+          setError(result.errorMessage ?? "L'analyse a échoué.");
+        } else if (attempt < 5) {
+          // API still in flight — give it a little more room before giving up.
+          setTimeout(() => finalize(attempt + 1), 1000);
         } else {
-          // API still in flight — give it a little more room, then fall back.
-          setTimeout(() => {
-            if (cancelled) return;
-            const late = resultRef.current;
-            router.push(late?.analysisId ? `/results?id=${late.analysisId}` : "/results?demo=1");
-          }, 2000);
+          setError("L'analyse prend plus de temps que prévu — réessaie dans un instant.");
         }
       };
 
@@ -79,7 +102,34 @@ export default function AnalyzePage() {
       clearInterval(tick);
       clearTimeout(finish);
     };
-  }, [router]);
+  }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- runAnalysis resets state so it can also be called from the manual "Réessayer" button, not just on mount; on mount those resets are no-ops against the initial values.
+    return runAnalysis();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runAnalysis is stable enough for a one-shot-on-mount + manual-retry pattern; re-running it on every render identity change would restart the progress animation.
+  }, []);
+
+  if (error) {
+    return (
+      <main className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+        <div className="flex size-16 items-center justify-center rounded-full bg-destructive/10">
+          <AlertCircle className="size-7 text-destructive" />
+        </div>
+        <h1 className="mt-6 text-xl font-semibold">L&apos;analyse n&apos;a pas pu se terminer</h1>
+        <p className="mt-2 max-w-xs text-sm text-muted-foreground">{error}</p>
+        <div className="mt-6 flex flex-col items-center gap-3">
+          <Button onClick={() => runAnalysis()}>
+            <RefreshCcw />
+            Réessayer
+          </Button>
+          <Link href="/onboarding" className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
+            Revenir à l&apos;envoi du profil
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
