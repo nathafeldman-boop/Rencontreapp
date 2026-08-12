@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Lock, ArrowRight } from "lucide-react";
+import { Lock, ArrowRight, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,9 +62,13 @@ export function ResultsView({ data }: { data: ResultsData }) {
       data-dating-app={themedDatingApp(data.datingApp)}
     >
       {data.isDemo && (
-        <p className="mb-6 rounded-lg bg-secondary px-4 py-2 text-center text-xs text-muted-foreground">
-          Aperçu de démo — connecte-toi et complète l&apos;onboarding pour ton vrai score.
-        </p>
+        <div className="mb-6 flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          <Info className="mt-0.5 size-4 shrink-0 text-primary" />
+          <p>
+            <span className="font-medium">Exemple générique, pas ton résultat.</span> Envoie ton profil pour
+            obtenir ton vrai score — les chiffres ci-dessous ne parlent pas de toi.
+          </p>
+        </div>
       )}
 
       <div className="flex flex-col items-center text-center">

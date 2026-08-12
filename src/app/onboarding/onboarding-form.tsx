@@ -31,6 +31,8 @@ const DATING_APPS: { value: DatingApp; label: string }[] = [
 ];
 
 const STEP_COUNT = 8;
+/** Must match profileSchema's bio max in lib/validations/profile.ts. */
+const BIO_MAX_LENGTH = 3000;
 
 interface FormState {
   age: string;
@@ -378,10 +380,14 @@ export function OnboardingForm() {
                   <textarea
                     id="bio"
                     rows={4}
+                    maxLength={BIO_MAX_LENGTH}
                     className="mt-1.5 w-full rounded-lg border border-input bg-transparent px-4 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     value={form.bio}
                     onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
                   />
+                  <p className="mt-1 text-right text-xs text-muted-foreground">
+                    {form.bio.length}/{BIO_MAX_LENGTH}
+                  </p>
                 </div>
                 <div>
                   <Label>Photos</Label>

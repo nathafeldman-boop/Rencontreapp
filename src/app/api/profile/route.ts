@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
 const patchSchema = z
   .object({
-    bio: z.string().min(1).max(1000).optional(),
+    bio: z.string().min(1).max(3000).optional(),
     /**
      * Full desired `profiles.photos` list — from the Optimisation page's
      * drag-and-drop/arrow reorder, deleting a photo, or adding a newly
