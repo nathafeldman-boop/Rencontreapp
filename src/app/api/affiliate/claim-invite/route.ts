@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return apiError("Unauthorized", 401);
+  if (!user) return apiError("Connecte-toi pour continuer.", 401);
 
   const json = await request.json().catch(() => ({}));
   const parsed = bodySchema.safeParse(json);
@@ -62,8 +62,11 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    const message = error.code === "23505" ? "Ce nom de lien est déjà pris — choisis-en un autre." : error.message;
-    return apiError(message, 400);
+    if (error.code === "23505") {
+      return apiError("Ce nom de lien est déjà pris — choisis-en un autre.", 400);
+    }
+    console.error("[api/affiliate/claim-invite] insert failed", error);
+    return apiError("Une erreur est survenue — réessaie.", 400);
   }
 
   await admin

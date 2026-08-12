@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const json = await request.json().catch(() => null);
@@ -40,7 +40,12 @@ export async function POST(request: NextRequest) {
     .eq("id", user.id);
 
   if (userError) {
-    return apiError(userError.message, 500);
+    // Raw Postgres error messages are English/technical — never shown to
+    // the user verbatim (see onboarding-form.tsx's error handler, which
+    // does display `body.error` directly). Log it, return a generic
+    // French message instead.
+    console.error("[api/onboarding] users update failed", userError);
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   const { error: answersError } = await supabase.from("onboarding_answers").insert([
@@ -60,7 +65,8 @@ export async function POST(request: NextRequest) {
   ]);
 
   if (answersError) {
-    return apiError(answersError.message, 500);
+    console.error("[api/onboarding] answers insert failed", answersError);
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   return apiSuccess({ completed: true });

@@ -12,7 +12,7 @@ export async function POST() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const credits = await checkCredits(supabase, "bio_generator");

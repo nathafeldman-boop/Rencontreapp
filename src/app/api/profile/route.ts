@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const json = await request.json().catch(() => null);
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("[api/profile POST] insert failed", { message: error.message, code: error.code });
-    return apiError(error.message, 500);
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   return apiSuccess({ profile_id: data.id }, 201);
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
 const patchSchema = z
   .object({
-    bio: z.string().min(1).max(3000).optional(),
+    bio: z.string().min(1).max(3000, "Ta bio est trop longue (3000 caractères maximum).").optional(),
     /**
      * Full desired `profiles.photos` list — from the Optimisation page's
      * drag-and-drop/arrow reorder, deleting a photo, or adding a newly
@@ -63,12 +63,25 @@ const patchSchema = z
      * path belongs to the caller (see the `${user.id}/` prefix check
      * below), since paths are also used to build signed URLs.
      */
-    photos: z.array(z.string().min(1)).min(1).max(9).optional(),
+    photos: z
+      .array(z.string().min(1))
+      .min(1, "Garde au moins une photo.")
+      .max(9, "9 photos maximum.")
+      .optional(),
     /** Hinge-style prompt/answer cards (see lib/profile-prompts.ts) — flattened into `bio` below so scoring/context stay unchanged. */
-    prompts: z.array(z.object({ prompt: z.string().min(1).max(120), answer: z.string().min(1).max(200) })).min(1).max(3).optional(),
+    prompts: z
+      .array(
+        z.object({
+          prompt: z.string().min(1).max(120, "Ce prompt est trop long."),
+          answer: z.string().min(1).max(200, "Cette réponse est trop longue (200 caractères maximum)."),
+        })
+      )
+      .min(1, "Ajoute au moins un prompt.")
+      .max(3, "3 prompts maximum.")
+      .optional(),
   })
   .refine((data) => data.bio !== undefined || data.photos !== undefined || data.prompts !== undefined, {
-    message: "Provide `bio`, `photos`, and/or `prompts`.",
+    message: "Envoie au moins une bio, des photos, ou des prompts à mettre à jour.",
   });
 
 /**
@@ -87,7 +100,7 @@ export async function PATCH(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const json = await request.json().catch(() => null);
@@ -105,7 +118,7 @@ export async function PATCH(request: NextRequest) {
     .maybeSingle();
 
   if (!profile) {
-    return apiError("No profile found.", 422);
+    return apiError("Aucun profil trouvé.", 422);
   }
 
   const update: {
@@ -126,7 +139,7 @@ export async function PATCH(request: NextRequest) {
   if (parsed.data.photos !== undefined) {
     const ownsAllPaths = parsed.data.photos.every((path) => path.startsWith(`${user.id}/`));
     if (!ownsAllPaths) {
-      return apiError("photos must only reference this account's own uploads.", 422);
+      return apiError("Ces photos ne t'appartiennent pas.", 422);
     }
     update.photos = parsed.data.photos;
     update.photos_optimized = true;
@@ -135,7 +148,8 @@ export async function PATCH(request: NextRequest) {
   const { error } = await supabase.from("profiles").update(update).eq("id", profile.id);
 
   if (error) {
-    return apiError(error.message, 500);
+    console.error("[api/profile PATCH] update failed", { message: error.message, code: error.code });
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   const rescoreInput = {

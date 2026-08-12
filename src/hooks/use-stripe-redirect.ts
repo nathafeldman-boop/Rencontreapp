@@ -30,9 +30,9 @@ export function useStripeRedirect() {
           return;
         }
 
-        setError(options?.errorMessage ?? "Something went wrong — try again.");
+        setError(options?.errorMessage ?? "Une erreur est survenue — réessaie.");
       } catch {
-        setError(options?.errorMessage ?? "Something went wrong — check your connection and try again.");
+        setError(options?.errorMessage ?? "Une erreur est survenue — vérifie ta connexion et réessaie.");
       } finally {
         // On success we're navigating away via window.location.assign, so this
         // extra setLoading(false) is harmless — it just never gets seen.

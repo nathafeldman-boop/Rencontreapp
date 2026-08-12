@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const json = await request.json().catch(() => null);
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (fetchError || !session) {
-      return apiError("Simulator session not found.", 404);
+      return apiError("Session de simulateur introuvable.", 404);
     }
 
     const messages = [...session.messages, userMessage];
@@ -62,19 +62,20 @@ export async function POST(request: NextRequest) {
       .eq("id", sessionId);
 
     if (updateError) {
-      return apiError(updateError.message, 500);
+      console.error("[api/ai/match-simulator/message] update failed", updateError);
+      return apiError("Une erreur est survenue — réessaie.", 500);
     }
 
     return apiSuccess({ sessionId, reply, isSimulated });
   }
 
   if (!persona) {
-    return apiError("`persona` is required to start a new session.", 422);
+    return apiError("Le type de match est requis pour démarrer une session.", 422);
   }
 
   const credits = await checkCredits(supabase, "match_simulator");
   if (!credits.allowed) {
-    return apiError("You've used all your AI credits for this month.", 429);
+    return apiError("Tu as utilisé tous tes crédits coaching pour ce mois-ci.", 429);
   }
 
   const messages = [userMessage];
@@ -88,7 +89,8 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (insertError) {
-    return apiError(insertError.message, 500);
+    console.error("[api/ai/match-simulator/message] insert failed", insertError);
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   await consumeCredits(supabase, user.id, "match_simulator");

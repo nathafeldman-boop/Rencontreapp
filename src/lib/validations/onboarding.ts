@@ -25,29 +25,33 @@ const objectiveValues = OBJECTIVE_OPTIONS.map((o) => o.value) as [string, ...str
 const weeklyMatchesValues = WEEKLY_MATCHES_OPTIONS.map((o) => o.value) as [string, ...string[]];
 const biggestProblemValues = BIGGEST_PROBLEM_OPTIONS.map((o) => o.value) as [string, ...string[]];
 
+// Custom French messages throughout — these can reach the user verbatim
+// (see onboarding-form.tsx's error handling around each step submit),
+// and Zod's default messages are English/technical, not something to
+// show a French-only product's users.
 export const onboardingSubmissionSchema = z.object({
   // Step 1 — "Let's personalize your analysis"
-  age: z.number().int().min(18).max(100),
-  gender: z.enum(["male", "female", "non_binary", "other"]),
-  location: z.string().min(1).max(100),
+  age: z.number("Indique ton âge.").int().min(18, "Tu dois avoir au moins 18 ans.").max(100, "Âge invalide."),
+  gender: z.enum(["male", "female", "non_binary", "other"], "Choisis un genre."),
+  location: z.string().min(1, "Indique ta localisation.").max(100, "Localisation trop longue."),
 
   // Step 2 — dating app
-  dating_app: z.enum(["tinder", "hinge", "bumble", "other"]),
+  dating_app: z.enum(["tinder", "hinge", "bumble", "other"], "Choisis une application de rencontre."),
 
   // Step 3 — objective
-  objective: z.enum(objectiveValues),
+  objective: z.enum(objectiveValues, "Choisis un objectif."),
 
   // Step 4 — current weekly matches
-  weekly_matches: z.enum(weeklyMatchesValues),
+  weekly_matches: z.enum(weeklyMatchesValues, "Choisis une réponse."),
 
   // Step 5 — biggest problem
-  biggest_problem: z.enum(biggestProblemValues),
+  biggest_problem: z.enum(biggestProblemValues, "Choisis une réponse."),
 
   // Step 6 — confidence slider
   confidence: z.number().int().min(1).max(10),
 
   // Step 7 — hobbies/lifestyle, so the AI tools can personalize beyond dating-app mechanics
-  hobbies: z.string().min(1).max(300),
+  hobbies: z.string().min(1, "Dis-nous en un peu plus sur toi.").max(300, "300 caractères maximum."),
 });
 
 export type OnboardingSubmission = z.infer<typeof onboardingSubmissionSchema>;

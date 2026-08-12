@@ -10,7 +10,7 @@ export async function GET() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const [{ count: inviteCount }, { data: rewards }] = await Promise.all([

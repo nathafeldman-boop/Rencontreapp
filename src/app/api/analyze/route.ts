@@ -22,7 +22,7 @@ export async function POST() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour lancer une analyse.", 401);
   }
 
   const subscription = await getActiveSubscription(supabase);
@@ -30,7 +30,7 @@ export async function POST() {
   if (subscription) {
     const credits = await checkCredits(supabase, "profile_analysis");
     if (!credits.allowed) {
-      return apiError("You've used all your AI credits for this month.", 429);
+      return apiError("Tu as utilisé tous tes crédits coaching pour ce mois-ci.", 429);
     }
   }
 
@@ -43,11 +43,17 @@ export async function POST() {
     .maybeSingle();
 
   if (profileError) {
-    return apiError(profileError.message, 500);
+    // Surfaced verbatim to the user via /analyze's error screen — Postgres/
+    // Supabase error messages are technical and in English, but this branch
+    // (a genuine DB failure) is rare enough that a generic French fallback
+    // beats leaking that text, unlike the two branches below which are
+    // common enough to deserve a specific, actionable French message.
+    console.error("[api/analyze] profile lookup failed", profileError);
+    return apiError("Une erreur est survenue — réessaie dans un instant.", 500);
   }
 
   if (!profile) {
-    return apiError("No profile found — complete onboarding and upload your photos first.", 422);
+    return apiError("Aucun profil trouvé — complète l'inscription et envoie tes photos d'abord.", 422);
   }
 
   const result = await rescoreProfile(supabase, user.id, {
@@ -58,7 +64,7 @@ export async function POST() {
   });
 
   if (!result) {
-    return apiError("Unable to analyze this profile — check that photos are uploaded.", 422);
+    return apiError("Impossible d'analyser ce profil — vérifie que tes photos sont bien envoyées.", 422);
   }
 
   if (subscription) {

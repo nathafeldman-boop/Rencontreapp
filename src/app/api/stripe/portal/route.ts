@@ -15,7 +15,7 @@ export async function POST() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const { data: subscription } = await supabase
@@ -25,7 +25,7 @@ export async function POST() {
     .maybeSingle();
 
   if (!subscription?.stripe_customer_id) {
-    return apiError("No billing account yet — subscribe first.", 404);
+    return apiError("Aucun compte de facturation — abonne-toi d'abord.", 404);
   }
 
   // Some accounts have a non-Stripe placeholder in stripe_customer_id (e.g.

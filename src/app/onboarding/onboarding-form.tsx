@@ -33,6 +33,8 @@ const DATING_APPS: { value: DatingApp; label: string }[] = [
 const STEP_COUNT = 8;
 /** Must match profileSchema's bio max in lib/validations/profile.ts. */
 const BIO_MAX_LENGTH = 3000;
+/** Must match onboardingSubmissionSchema's hobbies max in lib/validations/onboarding.ts. */
+const HOBBIES_MAX_LENGTH = 300;
 
 interface FormState {
   age: string;
@@ -266,6 +268,7 @@ export function OnboardingForm() {
                     id="location"
                     className="mt-1.5"
                     placeholder="Ville, pays"
+                    maxLength={100}
                     value={form.location}
                     onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
                   />
@@ -360,11 +363,15 @@ export function OnboardingForm() {
                 </p>
                 <textarea
                   rows={4}
+                  maxLength={HOBBIES_MAX_LENGTH}
                   placeholder="Ex : escalade le week-end, je bosse dans le marketing, fan de cuisine thaï, je voyage dès que je peux..."
                   className="w-full rounded-lg border border-input bg-transparent px-4 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   value={form.hobbies}
                   onChange={(e) => setForm((f) => ({ ...f, hobbies: e.target.value }))}
                 />
+                <p className="-mt-2 text-right text-xs text-muted-foreground">
+                  {form.hobbies.length}/{HOBBIES_MAX_LENGTH}
+                </p>
               </div>
             )}
 

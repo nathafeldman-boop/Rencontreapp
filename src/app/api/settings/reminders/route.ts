@@ -16,7 +16,7 @@ export async function PATCH(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const json = await request.json().catch(() => null);
@@ -31,7 +31,8 @@ export async function PATCH(request: NextRequest) {
     .eq("id", user.id);
 
   if (error) {
-    return apiError(error.message, 500);
+    console.error("[api/settings/reminders] update failed", error);
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   return apiSuccess({ enabled: parsed.data.enabled });

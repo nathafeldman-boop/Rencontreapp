@@ -15,12 +15,12 @@ export async function POST() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const credits = await checkCredits(supabase, "dating_plan");
   if (!credits.allowed) {
-    return apiError("You've used all your AI credits for this month.", 429);
+    return apiError("Tu as utilisé tous tes crédits coaching pour ce mois-ci.", 429);
   }
 
   const { data: latest } = await supabase
@@ -31,7 +31,7 @@ export async function POST() {
     .maybeSingle();
 
   if (!latest) {
-    return apiError("Run a profile analysis first.", 422);
+    return apiError("Lance d'abord une analyse de profil.", 422);
   }
 
   const context = await getUserContext(supabase, user.id);
@@ -54,7 +54,8 @@ export async function POST() {
   );
 
   if (error) {
-    return apiError(error.message, 500);
+    console.error("[api/ai/dating-plan POST] upsert failed", error);
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   await consumeCredits(supabase, user.id, "dating_plan");
@@ -72,7 +73,7 @@ export async function PATCH(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const json = await request.json().catch(() => null);
@@ -84,7 +85,7 @@ export async function PATCH(request: NextRequest) {
   const { data: plan } = await supabase.from("dating_plans").select("days").eq("user_id", user.id).maybeSingle();
 
   if (!plan) {
-    return apiError("No plan found — generate one first.", 422);
+    return apiError("Aucun plan trouvé — génère-en un d'abord.", 422);
   }
 
   const days = plan.days.map((d) => (d.day === parsed.data.day ? { ...d, done: parsed.data.done } : d));
@@ -92,7 +93,8 @@ export async function PATCH(request: NextRequest) {
   const { error } = await supabase.from("dating_plans").update({ days }).eq("user_id", user.id);
 
   if (error) {
-    return apiError(error.message, 500);
+    console.error("[api/ai/dating-plan PATCH] update failed", error);
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   return apiSuccess({ days });

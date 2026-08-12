@@ -16,7 +16,7 @@ export async function POST() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const { data: profile } = await supabase
@@ -28,7 +28,7 @@ export async function POST() {
     .maybeSingle();
 
   if (!profile) {
-    return apiError("No profile found.", 422);
+    return apiError("Aucun profil trouvé.", 422);
   }
 
   const { data: latestAnalysis } = await supabase
@@ -40,7 +40,7 @@ export async function POST() {
     .maybeSingle();
 
   if (!latestAnalysis) {
-    return apiError("No analysis found for this profile yet.", 422);
+    return apiError("Aucune analyse trouvée pour ce profil pour le moment.", 422);
   }
 
   const { data: photoAnalyses, error: fetchError } = await supabase
@@ -49,11 +49,12 @@ export async function POST() {
     .eq("analysis_id", latestAnalysis.id);
 
   if (fetchError) {
-    return apiError(fetchError.message, 500);
+    console.error("[api/photos/optimize] fetch failed", fetchError);
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   if (!photoAnalyses || photoAnalyses.length === 0) {
-    return apiError("No photo scores to optimize from yet.", 422);
+    return apiError("Aucun score de photo disponible pour le moment.", 422);
   }
 
   const scoredPaths = new Set(photoAnalyses.map((p) => p.photo_path));
@@ -69,7 +70,8 @@ export async function POST() {
     .eq("id", profile.id);
 
   if (updateError) {
-    return apiError(updateError.message, 500);
+    console.error("[api/photos/optimize] update failed", updateError);
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   return apiSuccess({ photos: orderedPaths });

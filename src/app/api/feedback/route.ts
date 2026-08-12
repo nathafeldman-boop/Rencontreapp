@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const json = await request.json().catch(() => null);
@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    return apiError("Couldn't save your feedback — try again.", 500);
+    console.error("[api/feedback] insert failed", error);
+    return apiError("Impossible d'enregistrer ton avis — réessaie.", 500);
   }
 
   trackServer(user.id, AnalyticsEvent.FeedbackSubmitted, {

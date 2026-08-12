@@ -7,7 +7,7 @@ export function apiError(message: string, status = 400) {
 
 export function apiValidationError(error: ZodError) {
   return NextResponse.json(
-    { error: "Validation failed", issues: error.issues },
+    { error: "Données invalides.", issues: error.issues },
     { status: 422 }
   );
 }

@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user || !user.email) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const json = await request.json().catch(() => ({}));
@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
   const priceId = plan?.getPriceId();
 
   if (!plan || !priceId) {
-    return apiError(`Plan "${parsed.data.plan}" isn't configured yet.`, 422);
+    console.error(`[api/stripe/checkout] plan "${parsed.data.plan}" isn't configured`);
+    return apiError("Cette formule n'est pas encore disponible.", 422);
   }
 
   const stripe = getStripeClient();
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (!session.url) {
-    return apiError("Couldn't start checkout — try again.", 502);
+    return apiError("Impossible de démarrer le paiement — réessaie.", 502);
   }
 
   return apiSuccess({ url: session.url });

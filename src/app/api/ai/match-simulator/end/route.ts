@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const json = await request.json().catch(() => null);
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     .maybeSingle();
 
   if (fetchError || !session) {
-    return apiError("Simulator session not found.", 404);
+    return apiError("Session de simulateur introuvable.", 404);
   }
 
   const context = await getUserContext(supabase, user.id);
@@ -44,7 +44,8 @@ export async function POST(request: NextRequest) {
     .eq("id", session.id);
 
   if (updateError) {
-    return apiError(updateError.message, 500);
+    console.error("[api/ai/match-simulator/end] update failed", updateError);
+    return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
   return apiSuccess({ score, strengths, weaknesses, whatYouCouldHaveDone, bestPossibleReply, isSimulated });

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return apiError("Connecte-toi pour continuer.", 401);
   }
 
   const json = await request.json().catch(() => null);
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
   const credits = await checkCredits(supabase, "bio_generator");
   if (!credits.allowed) {
-    return apiError("You've used all your AI credits for this month.", 429);
+    return apiError("Tu as utilisé tous tes crédits coaching pour ce mois-ci.", 429);
   }
 
   const [{ data: profile }, context] = await Promise.all([
