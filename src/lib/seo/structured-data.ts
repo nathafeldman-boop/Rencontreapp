@@ -6,6 +6,7 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: SITE_NAME,
     url: SITE_URL,
+    logo: `${SITE_URL}/icon.png`,
     description: "Analyse et coaching de profil de rencontre par ton coach.",
   };
 }
@@ -23,11 +24,6 @@ export function softwareApplicationJsonLd() {
       "@type": "Offer",
       price: "7.99",
       priceCurrency: "EUR",
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "250",
     },
   };
 }
