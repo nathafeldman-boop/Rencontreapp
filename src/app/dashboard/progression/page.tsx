@@ -148,15 +148,19 @@ export default async function ProgressionPage() {
         {SUB_SCORES.map((sub) => {
           const points = realAnalyses.map((a) => ({ date: a.created_at, score: a[sub.key] ?? 0 }));
           const subDelta = realAnalyses.length > 1 ? points[points.length - 1].score - points[0].score : null;
+          const currentScore = points[points.length - 1].score;
           return (
             <Card key={sub.key}>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">{sub.label}</CardTitle>
+                <div className="flex items-baseline justify-between">
+                  <div className="flex items-baseline gap-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{sub.label}</CardTitle>
+                    <span className="text-lg font-semibold tracking-tight">{currentScore}</span>
+                  </div>
                   {subDelta !== null && (
                     <span className={`text-xs font-medium ${subDelta >= 0 ? "text-primary" : "text-destructive"}`}>
                       {subDelta >= 0 ? "+" : ""}
-                      {subDelta}
+                      {subDelta} depuis le début
                     </span>
                   )}
                 </div>
