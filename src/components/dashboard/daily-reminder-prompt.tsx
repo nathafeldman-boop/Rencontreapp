@@ -57,9 +57,9 @@ export function DailyReminderPrompt() {
           <div>
             <p className="text-sm font-medium">Un rappel quotidien ?</p>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Tant que Tinder/Meetic ne sont pas connectés, on t&apos;envoie un email chaque jour pour mettre à
-              jour tes matchs et conversations — et te rappeler de venir demander à ton coach quoi répondre si tu
-              as un nouveau match.
+              Tinder et Meetic ne permettent pas de connexion automatique, donc on t&apos;envoie un email chaque
+              jour pour te rappeler de mettre à jour tes matchs et conversations toi-même — et de venir demander
+              à ton coach quoi répondre si tu as un nouveau match.
             </p>
           </div>
         </div>
