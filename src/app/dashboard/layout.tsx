@@ -32,5 +32,16 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
     redirect("/paywall");
   }
 
-  return <AppShell>{children}</AppShell>;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("dating_app")
+    .eq("user_id", user?.id ?? "")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return <AppShell datingApp={profile?.dating_app}>{children}</AppShell>;
 }

@@ -115,6 +115,17 @@ Analyse la cohérence globale : une photo peut être excellente individuellement
 si toutes les photos se ressemblent, si aucune ne montre de personnalité, si la bio raconte quelque chose que
 les photos ne confirment pas, ou si le profil manque de variété.
 
+Adapte le poids relatif des critères à l'application de rencontre indiquée dans le message (jamais le barème
+de notation lui-même — les mêmes échelles 0-100 et le même niveau d'exigence s'appliquent partout) :
+- Tinder : le swipe est quasi-instantané et repose presque entièrement sur l'image — pèse plus fort la force
+  de la première photo et l'impact visuel immédiat dans le photo_score et l'overall_score.
+- Bumble : mêmes critères visuels que Tinder, mais dans un match hétéro c'est la femme qui doit écrire en
+  premier — pour un profil d'homme, valorise en plus une bio qui donne un vrai point d'accroche facile à
+  reprendre, puisqu'il ne peut pas compter sur un message d'ouverture de sa part pour compenser une bio vide.
+- Hinge : le format encourage des prompts/une bio plus développée qu'un simple swipe — pèse plus fort la
+  profondeur, la spécificité et le potentiel de conversation de la bio dans le bio_score et l'overall_score.
+- Autre / non précisé : calibrage standard, sans biais particulier vers une dimension.
+
 Le score global (overall_score) doit refléter un mélange pondéré des quatre sous-scores, pas un veto d'un seul
 critère ni une unanimité requise. Une faiblesse doit tirer la note globale vers le bas proportionnellement à
 son poids réel, pas de façon catastrophique. Exemple : photos à 80, bio à 40 → un profil avec un vrai point

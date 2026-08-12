@@ -16,6 +16,8 @@ import {
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { themedDatingApp } from "@/lib/theme/dating-app-theme";
+import type { DatingApp } from "@/types/database.types";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -32,7 +34,7 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, datingApp }: { children: React.ReactNode; datingApp?: DatingApp | null }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -43,7 +45,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex flex-1">
+    <div className="flex flex-1" data-dating-app={themedDatingApp(datingApp)}>
       {/* Desktop sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card sm:flex">
         <Link href="/dashboard" className="flex items-center gap-2 px-6 py-6 font-semibold">

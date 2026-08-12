@@ -30,7 +30,7 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const [{ data: analysis }, { data: problemAnswer }] = await Promise.all([
+    const [{ data: analysis }, { data: problemAnswer }, { data: profile }] = await Promise.all([
       supabase
         .from("analyses")
         .select(
@@ -44,6 +44,15 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
             .select("answer")
             .eq("user_id", user.id)
             .eq("question", "What's your biggest problem right now?")
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      user
+        ? supabase
+            .from("profiles")
+            .select("dating_app")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
             .maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
@@ -61,6 +70,7 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
         isDemo: false,
         isSimulated: analysis.is_simulated,
         biggestProblem: problemAnswer?.answer,
+        datingApp: profile?.dating_app,
       };
       return <ResultsView data={data} />;
     }

@@ -34,7 +34,16 @@ export default async function PaywallPage({ searchParams }: PaywallPageProps) {
         .limit(1)
         .maybeSingle();
 
-  const { data: analysis } = await analysisQuery;
+  const [{ data: analysis }, { data: profile }] = await Promise.all([
+    analysisQuery,
+    supabase
+      .from("profiles")
+      .select("dating_app")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   if (!analysis) {
     return <PaywallView data={DEMO_DATA} />;
@@ -44,6 +53,7 @@ export default async function PaywallPage({ searchParams }: PaywallPageProps) {
     isDemo: false,
     firstName: getDisplayFirstName(user),
     overall: analysis.overall_score,
+    datingApp: profile?.dating_app,
   };
 
   return <PaywallView data={data} />;

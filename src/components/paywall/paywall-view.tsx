@@ -13,11 +13,14 @@ import { useStripeRedirect } from "@/hooks/use-stripe-redirect";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils";
+import { themedDatingApp } from "@/lib/theme/dating-app-theme";
+import type { DatingApp } from "@/types/database.types";
 
 export interface PaywallData {
   isDemo: boolean;
   firstName: string | null;
   overall: number;
+  datingApp?: DatingApp | null;
 }
 
 const PLAN_ID = "premium_monthly";
@@ -65,7 +68,7 @@ export function PaywallView({ data }: { data: PaywallData }) {
   }
 
   return (
-    <main className="flex flex-1 flex-col pb-24 sm:pb-0">
+    <main className="flex flex-1 flex-col pb-24 sm:pb-0" data-dating-app={themedDatingApp(data.datingApp)}>
       {/* Hero: score, headline and primary CTA, all above the fold */}
       <section className="px-6 pt-10 pb-8 text-center">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>

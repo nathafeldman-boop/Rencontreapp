@@ -13,6 +13,8 @@ import { ShareScoreCard } from "@/components/dashboard/share-score-card";
 import { FeedbackWidget } from "@/components/feedback/feedback-widget";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { themedDatingApp } from "@/lib/theme/dating-app-theme";
+import type { DatingApp } from "@/types/database.types";
 
 export interface ResultsData {
   id?: string;
@@ -26,6 +28,7 @@ export interface ResultsData {
   isDemo: boolean;
   isSimulated: boolean;
   biggestProblem?: string;
+  datingApp?: DatingApp | null;
 }
 
 const SUB_SCORE_LABELS = { photo: "Photos", bio: "Bio", attractiveness: "Attractivité", conversation: "Conversation" };
@@ -54,7 +57,10 @@ export function ResultsView({ data }: { data: ResultsData }) {
   )[0];
 
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">
+    <main
+      className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12"
+      data-dating-app={themedDatingApp(data.datingApp)}
+    >
       {data.isDemo && (
         <p className="mb-6 rounded-lg bg-secondary px-4 py-2 text-center text-xs text-muted-foreground">
           Aperçu de démo — connecte-toi et complète l&apos;onboarding pour ton vrai score.

@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { ChipButton } from "@/components/onboarding/chip-button";
 import { ConfidenceSlider } from "@/components/onboarding/confidence-slider";
 import { PhotoDropzone, MIN_PHOTOS } from "@/components/onboarding/photo-dropzone";
+import { themedDatingApp } from "@/lib/theme/dating-app-theme";
 import { createClient } from "@/lib/supabase/client";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
@@ -213,7 +214,10 @@ export function OnboardingForm() {
   const isBusy = submittingAnswers || submittingProfile;
 
   return (
-    <main className="flex flex-1 flex-col items-center px-6 py-12">
+    <main
+      className="flex flex-1 flex-col items-center px-6 py-12"
+      data-dating-app={themedDatingApp(form.dating_app || undefined)}
+    >
       <div className="w-full max-w-md">
         <Progress value={(step / STEP_COUNT) * 100} />
         <p className="mt-2 text-xs text-muted-foreground">
