@@ -33,6 +33,11 @@ const DEMO_RESULTS: ResultsData = {
       title: "Plus gros potentiel",
       detail: "Ajoute une photo qui te montre en train de faire quelque chose de précis (sport, hobby) — ça donne un sujet de conversation concret et prouve que ta première photo n'est pas un coup de chance.",
     },
+    {
+      category: "bio",
+      title: "Version optimisée de ta bio",
+      detail: "Passionné de rando le week-end, en pleine reconversion vers le dev — je cherche quelqu'un pour découvrir les meilleurs brunchs de la ville. Tu as un spot à me conseiller ?",
+    },
   ],
   isDemo: true,
   isSimulated: true,
