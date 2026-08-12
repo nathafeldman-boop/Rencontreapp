@@ -9,13 +9,17 @@ import { Badge } from "@/components/ui/badge";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 
-const FREE_FEATURES = ["Dating Score en moins d'une minute", "2 conseils personnalisés gratuits", "Aucune carte bancaire requise"];
+const FREE_FEATURES = [
+  "Dating Score complet en moins d'une minute (photos, bio, attractivité, conversation)",
+  "Toutes les recommandations de ton analyse",
+  "Aucune carte bancaire requise",
+];
 
 const PREMIUM_FEATURES = [
-  "Analyse complète : photos, bio, attractivité, conversation",
   "Photo Optimizer & Bio Generator illimités",
   "Coach de conversation (4 modes)",
   "Simulateur de match & plan d'amélioration personnalisé",
+  "Suivi de ta progression dans le temps",
 ];
 
 const TRUST_BADGES = [

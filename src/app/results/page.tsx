@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ResultsView, type ResultsData } from "@/components/results/results-view";
+import type { Recommendation } from "@/types/database.types";
 
 const DEMO_RESULTS: ResultsData = {
   overall: 62,
@@ -11,7 +12,28 @@ const DEMO_RESULTS: ResultsData = {
     "Ta première photo est ton plus gros point faible — elle te coûte des swipes avant même que quelqu'un lise ta bio.",
     "Ta bio est générique — elle ne donne rien de précis auquel les gens peuvent répondre.",
   ],
-  lockedCount: 5,
+  recommendations: [
+    {
+      category: "photos",
+      title: "Problème n°1 : ta photo principale ne te met pas en valeur",
+      detail: "Elle est prise de trop loin et mal éclairée (Photos : 58/100) — remplace-la par une photo nette, en lumière naturelle, où ton visage est clairement visible.",
+    },
+    {
+      category: "bio",
+      title: "Problème n°2 : ta bio ne donne rien à quoi répondre",
+      detail: "Elle reste générique (Bio : 71/100) — ajoute un détail précis et un peu inhabituel sur toi pour donner une vraie accroche de conversation.",
+    },
+    {
+      category: "conversation",
+      title: "Gain rapide",
+      detail: "Termine ta bio par une question légère — ça transforme ton profil en amorce de conversation plutôt qu'en simple description.",
+    },
+    {
+      category: "photos",
+      title: "Plus gros potentiel",
+      detail: "Ajoute une photo qui te montre en train de faire quelque chose de précis (sport, hobby) — ça donne un sujet de conversation concret et prouve que ta première photo n'est pas un coup de chance.",
+    },
+  ],
   isDemo: true,
   isSimulated: true,
   biggestProblem: "aucun match",
@@ -66,7 +88,7 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
         attractiveness: analysis.attractiveness_score ?? 0,
         conversation: analysis.conversation_score ?? 0,
         freeInsights: analysis.free_insights,
-        lockedCount: Array.isArray(analysis.recommendations) ? analysis.recommendations.length : 5,
+        recommendations: Array.isArray(analysis.recommendations) ? (analysis.recommendations as Recommendation[]) : [],
         isDemo: false,
         isSimulated: analysis.is_simulated,
         biggestProblem: problemAnswer?.answer,

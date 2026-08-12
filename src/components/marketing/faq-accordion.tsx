@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 const FAQ_ITEMS = [
   {
     q: "Est-ce vraiment gratuit pour commencer ?",
-    a: "Oui — ton Dating Score et 2 conseils personnalisés sont gratuits, sans carte bancaire. Premium débloque l'analyse complète et les outils de ton coach.",
+    a: "Oui — ton Dating Score complet et toutes les recommandations de ton analyse sont gratuits, sans carte bancaire. Premium te donne les outils pour appliquer ces changements vite, t'entraîner, et suivre ta progression.",
   },
   {
     q: "Combien de temps ça prend ?",

@@ -41,9 +41,9 @@ const MONTHLY_TOOLS = [
 ];
 
 const COMPARISON_ROWS: { label: string; free: string | boolean; premium: string | boolean }[] = [
-  { label: "Aperçu du Dating Score", free: true, premium: true },
-  { label: "Détail complet du score (photo, bio, attractivité, conversation)", free: false, premium: true },
-  { label: "Recommandations personnalisées", free: "2 conseils gratuits", premium: "Illimité" },
+  { label: "Dating Score complet (photo, bio, attractivité, conversation)", free: true, premium: true },
+  { label: "Toutes les recommandations de l'analyse", free: true, premium: true },
+  { label: "Nouvelles analyses & suivi de la progression", free: "Une analyse", premium: "Illimité" },
   { label: "Photo Optimizer", free: false, premium: true },
   { label: "Bio Generator", free: false, premium: true },
   { label: "Coach de conversation (4 modes)", free: false, premium: true },

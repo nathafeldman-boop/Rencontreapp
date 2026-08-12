@@ -27,13 +27,13 @@ const PLAN_ID = "premium_monthly";
 const PRICE = "7,99€";
 
 function scoreHeadline(overall: number): string {
-  if (overall < 50) return "Ton profil a plusieurs points qui peuvent fortement être améliorés.";
-  if (overall < 75) return "Ton profil a une bonne base. Il reste quelques changements importants pour le rendre beaucoup plus efficace.";
-  return "Ton profil est déjà solide. FlirtCraft peut maintenant t'aider à optimiser les détails qui font la différence.";
+  if (overall < 50) return "Tu sais maintenant précisément quoi changer. Premium t'aide à le faire vite et à t'entraîner avant que ça compte.";
+  if (overall < 75) return "Tu as ta feuille de route. Premium t'aide à l'appliquer beaucoup plus vite, et à suivre si ça marche vraiment.";
+  return "Ton profil est déjà solide. Premium t'aide à peaufiner les détails et à t'entraîner pour les conversations qui suivent.";
 }
 
 function potentialLabel(overall: number): string {
-  if (overall < 50) return "Potentiel à débloquer";
+  if (overall < 50) return "Belle marge de progression";
   if (overall < 75) return "Marge de progression";
   return "Détails à peaufiner";
 }
@@ -93,7 +93,7 @@ export function PaywallView({ data }: { data: PaywallData }) {
           transition={{ delay: 0.25, duration: 0.35 }}
           className="mt-7 text-2xl font-semibold tracking-tight sm:text-3xl"
         >
-          {data.firstName ? `${data.firstName}, ton profil peut faire mieux.` : "Ton profil peut faire mieux."}
+          {data.firstName ? `${data.firstName}, passe à l'action.` : "Tu sais quoi changer. Passe à l'action."}
         </motion.h1>
 
         <motion.p
@@ -114,7 +114,7 @@ export function PaywallView({ data }: { data: PaywallData }) {
         >
           <Button size="lg" className="w-full" disabled={loading} onClick={handleSubscribe}>
             {loading ? <Loader2 className="animate-spin" /> : null}
-            Débloquer mon analyse complète
+            Passer à l&apos;action avec mon coach
             <ArrowRight />
           </Button>
           <p className="text-xs text-muted-foreground">{PRICE} / mois · Sans engagement</p>
@@ -155,7 +155,7 @@ function StickyMobileCta({
     >
       <Button size="lg" className="w-full" disabled={loading} onClick={onClick}>
         {loading ? <Loader2 className="animate-spin" /> : null}
-        Débloquer Boost — {PRICE}/mois
+        Devenir Premium — {PRICE}/mois
       </Button>
     </div>
   );
