@@ -187,10 +187,19 @@ export function OnboardingForm() {
 
       if (!profileRes.ok) {
         const body = await profileRes.json().catch(() => null);
+        const issueDetail = Array.isArray(body?.issues)
+          ? body.issues
+              .map((issue: { path?: (string | number)[]; message?: string }) =>
+                `${issue.path?.join(".") || "champ"} : ${issue.message}`
+              )
+              .join(" · ")
+          : null;
         throw new Error(
-          body?.error
-            ? `Impossible d'enregistrer ton profil : ${body.error}`
-            : "Impossible d'enregistrer ton profil — réessaie."
+          issueDetail
+            ? `Impossible d'enregistrer ton profil : ${issueDetail}`
+            : body?.error
+              ? `Impossible d'enregistrer ton profil : ${body.error}`
+              : "Impossible d'enregistrer ton profil — réessaie."
         );
       }
 

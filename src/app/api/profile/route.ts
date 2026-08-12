@@ -27,6 +27,13 @@ export async function POST(request: NextRequest) {
   const parsed = profileSchema.safeParse(json);
 
   if (!parsed.success) {
+    // Surfaced in Vercel runtime logs so a "Validation failed" report can be
+    // diagnosed from the exact payload/issues instead of guessing from a
+    // user screenshot — see api/onboarding/route.ts for the same pattern.
+    console.error("[api/profile POST] validation failed", {
+      body: json,
+      issues: parsed.error.issues,
+    });
     return apiValidationError(parsed.error);
   }
 
@@ -39,6 +46,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
+    console.error("[api/profile POST] insert failed", { message: error.message, code: error.code });
     return apiError(error.message, 500);
   }
 
