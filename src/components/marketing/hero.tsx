@@ -65,6 +65,12 @@ export function Hero() {
         style={{ backgroundImage: `url("${GRAIN_URI}")` }}
       />
 
+      {/* Bottom fade — melts the photo into the page background instead of a hard crop line */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-28 bg-gradient-to-b from-transparent to-background sm:h-40"
+      />
+
       <div className="mx-auto flex max-w-xl flex-col items-center text-center">
         <motion.div initial="hidden" animate="show" variants={fadeUp} transition={{ duration: 0.45 }}>
           <Badge variant="accent" className="mb-6">
