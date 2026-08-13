@@ -131,9 +131,16 @@ export async function PATCH(request: NextRequest) {
 
   if (parsed.data.prompts !== undefined) {
     update.prompts = parsed.data.prompts;
-    // Keep `bio` in sync so scoring/conversation-coach context/etc. never
-    // need to know prompts exist — they just read `profiles.bio` as always.
-    update.bio = flattenPromptsToBio(parsed.data.prompts);
+    // Only Hinge's prompts REPLACE the bio (that app has no free-text bio at
+    // all — see rescore-profile.ts). For Tinder (Fun Facts) and Bumble
+    // (Teasers), prompts are supplementary to a real bio the user already
+    // wrote — flattening them in here would silently overwrite it with just
+    // the prompt answers, the same class of bug as the Hinge bio-generator
+    // fix, just in reverse. Their prompts are saved for display only; they
+    // don't feed scoring yet.
+    if (profile.dating_app === "hinge") {
+      update.bio = flattenPromptsToBio(parsed.data.prompts);
+    }
   }
 
   if (parsed.data.photos !== undefined) {

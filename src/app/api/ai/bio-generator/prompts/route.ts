@@ -4,7 +4,7 @@ import { checkCredits, consumeCredits } from "@/lib/ai/credits";
 import { getUserContext, summarizeUserContext } from "@/lib/ai/user-context";
 import { apiError, apiSuccess } from "@/lib/api/response";
 
-/** Hinge-specific sibling of /api/ai/bio-generator: 3 prompt+answer cards instead of a free-text bio. Same credit cost/feature ("bio_generator") — it's the same product action, just a different output shape. */
+/** Sibling of /api/ai/bio-generator: generates prompt/answer cards in the person's app's real format (Hinge Accroches, Tinder Fun Facts, Bumble Teasers) instead of/alongside a free-text bio. Same credit cost/feature ("bio_generator") — it's the same product action, just a different output shape. */
 export async function POST() {
   const supabase = await createClient();
   const {
@@ -33,7 +33,7 @@ export async function POST() {
 
   const { answers, isSimulated } = await generatePromptAnswers({
     sourceBio: profile?.bio ?? "",
-    datingApp: profile?.dating_app ?? "hinge",
+    datingApp: profile?.dating_app ?? "tinder",
     contextSummary: summarizeUserContext(context),
   });
 

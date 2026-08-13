@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChipButton } from "@/components/onboarding/chip-button";
 import { FeedbackWidget } from "@/components/feedback/feedback-widget";
-import { HingePromptsView } from "@/components/dashboard/bio/hinge-prompts-view";
+import { SecondaryPromptsView } from "@/components/dashboard/bio/secondary-prompts-view";
 import { useClipboardCopy } from "@/hooks/use-clipboard-copy";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
@@ -27,6 +27,12 @@ const STYLES: { value: BioStyle; label: string }[] = [
   { value: "premium", label: "Premium" },
 ];
 
+/** Matches each app's real wording for its free-text bio field, so the tool feels like the app it's for. */
+const PRIMARY_BIO_LABEL: Partial<Record<DatingApp, string>> = {
+  tinder: "bios Tinder",
+  bumble: "descriptions Bumble",
+};
+
 export function BioGeneratorView({
   currentBio,
   bioScore,
@@ -38,7 +44,7 @@ export function BioGeneratorView({
   /** Optional — only known once an analysis has run. Shown alongside the current bio when present. */
   bioScore?: number;
   bioProblem?: string;
-  /** When "hinge", shows the prompt/answer generator above the classic single-bio flow (Hinge has no free-text bio in the real app). */
+  /** Drives which prompt/answer format shows (Hinge Accroches, Tinder Fun Facts, Bumble Teasers) and whether the classic bio generator applies (Hinge has no free-text bio in the real app). */
   datingApp?: DatingApp;
   currentPrompts?: ProfilePrompt[] | null;
 }) {
@@ -142,7 +148,7 @@ export function BioGeneratorView({
 
   return (
     <div className="flex flex-col gap-6">
-      {datingApp === "hinge" && <HingePromptsView currentPrompts={currentPrompts ?? null} />}
+      {datingApp === "hinge" && <SecondaryPromptsView datingApp={datingApp} currentPrompts={currentPrompts ?? null} />}
 
       {currentBio && (
         <Card>
@@ -223,7 +229,7 @@ export function BioGeneratorView({
 
           <Button onClick={generate} disabled={loading} className="w-fit">
             {loading ? <Loader2 className="animate-spin" /> : <Sparkles />}
-            {bios.length > 0 ? "Régénérer" : "Générer 5 bios"}
+            {bios.length > 0 ? "Régénérer" : `Générer 5 ${(datingApp && PRIMARY_BIO_LABEL[datingApp]) ?? "bios"}`}
           </Button>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
@@ -270,6 +276,10 @@ export function BioGeneratorView({
 
               <FeedbackWidget context="bio_generator" prompt="Ces bios t'ont-elles aidé ?" />
             </div>
+          )}
+
+          {(datingApp === "tinder" || datingApp === "bumble") && (
+            <SecondaryPromptsView datingApp={datingApp} currentPrompts={currentPrompts ?? null} />
           )}
         </>
       )}

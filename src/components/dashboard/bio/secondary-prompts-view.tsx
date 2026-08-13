@@ -7,19 +7,28 @@ import { Check, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FeedbackWidget } from "@/components/feedback/feedback-widget";
-import type { ProfilePrompt } from "@/lib/profile-prompts";
+import { SECONDARY_PROMPT_FORMATS, type ProfilePrompt } from "@/lib/profile-prompts";
+import type { DatingApp } from "@/types/database.types";
 
 /** How long to wait before refreshing again to pick up the background Mistral rescore (see /api/profile PATCH). */
 const RESCORE_REFRESH_DELAY_MS = 12_000;
 
 /**
- * Hinge-specific: 3 prompt+answer cards instead of a free-text bio.
- * Purely additive next to BioGeneratorView — saving here flattens the
- * prompts into `profiles.bio` too (see /api/profile PATCH), so scoring
- * and every other reader of `bio` keeps working unchanged.
+ * Generates prompt/answer cards in the person's app's real format — Hinge's
+ * required Accroches (replaces the free-text bio entirely), Tinder's
+ * optional Fun Facts, or Bumble's optional Teasers (both sit alongside a
+ * real bio). Renders nothing for "other"/unset, since there's no known
+ * convention to match there.
  */
-export function HingePromptsView({ currentPrompts }: { currentPrompts: ProfilePrompt[] | null }) {
+export function SecondaryPromptsView({
+  datingApp,
+  currentPrompts,
+}: {
+  datingApp: DatingApp | null | undefined;
+  currentPrompts: ProfilePrompt[] | null;
+}) {
   const router = useRouter();
+  const format = datingApp ? SECONDARY_PROMPT_FORMATS[datingApp] : undefined;
   const [prompts, setPrompts] = useState<ProfilePrompt[]>(currentPrompts ?? []);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -70,29 +79,33 @@ export function HingePromptsView({ currentPrompts }: { currentPrompts: ProfilePr
       if (res.ok) {
         setSaved(true);
         router.refresh();
-        setRescoring(true);
-        setTimeout(() => {
-          router.refresh();
-          setRescoring(false);
-        }, RESCORE_REFRESH_DELAY_MS);
+        // Only Hinge's prompts feed the rescore (they replace the bio) —
+        // Tinder/Bumble prompts are saved but don't change the score.
+        if (format?.replacesBio) {
+          setRescoring(true);
+          setTimeout(() => {
+            router.refresh();
+            setRescoring(false);
+          }, RESCORE_REFRESH_DELAY_MS);
+        }
       }
     } finally {
       setSaving(false);
     }
   }
 
+  if (!format) return null;
+
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-border p-4">
       <div>
-        <p className="text-sm font-medium">Prompts façon Hinge</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          3 mini-réponses au lieu d&apos;une bio unique — le format utilisé par Hinge.
-        </p>
+        <p className="text-sm font-medium">{format.label}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{format.helperText}</p>
       </div>
 
       <Button onClick={generate} disabled={loading} className="w-fit">
         {loading ? <Loader2 className="animate-spin" /> : <Sparkles />}
-        {prompts.length > 0 ? "Régénérer" : "Générer mes 3 prompts"}
+        {prompts.length > 0 ? "Régénérer" : `Générer mes ${format.label.toLowerCase()}`}
       </Button>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -125,7 +138,7 @@ export function HingePromptsView({ currentPrompts }: { currentPrompts: ProfilePr
             </Button>
           </div>
 
-          <FeedbackWidget context="bio_generator" prompt="Ces prompts t'ont-ils aidé ?" />
+          <FeedbackWidget context="bio_generator" prompt="Ça t'a aidé ?" />
         </div>
       )}
     </div>

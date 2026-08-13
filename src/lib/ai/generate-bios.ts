@@ -2,8 +2,8 @@ import { z } from "zod";
 
 import { callMistralJson } from "@/lib/ai/mistral";
 import { lenientString } from "@/lib/ai/lenient-string";
-import { HINGE_PROMPT_OPTIONS, type ProfilePrompt } from "@/lib/profile-prompts";
-import type { BioStyle } from "@/types/database.types";
+import { SECONDARY_PROMPT_FORMATS, type ProfilePrompt } from "@/lib/profile-prompts";
+import type { BioStyle, DatingApp } from "@/types/database.types";
 
 const STYLE_PROMPT: Record<BioStyle, string> = {
   funny: "playful and genuinely funny, with a light self-deprecating joke",
@@ -114,13 +114,15 @@ const PROMPT_FALLBACK: ProfilePrompt[] = [
 
 interface GeneratePromptAnswersInput {
   sourceBio: string;
-  datingApp: string;
+  datingApp: DatingApp;
   contextSummary?: string;
 }
 
 /**
- * Hinge-specific: generates 3 prompt+answer cards instead of a free-text
- * bio. Reuses the same fallback-on-failure pattern as generateBios.
+ * Generates prompt/answer cards in the exact format of the person's app —
+ * Hinge's required "Accroches" (replaces the bio), Tinder's optional "Fun
+ * Facts", or Bumble's optional "Teasers" (both sit alongside a real bio).
+ * Reuses the same fallback-on-failure pattern as generateBios.
  */
 export async function generatePromptAnswers(
   input: GeneratePromptAnswersInput
@@ -130,7 +132,7 @@ export async function generatePromptAnswers(
     return { answers, isSimulated: false };
   } catch (err) {
     console.error("[generatePromptAnswers] Falling back to templates:", err);
-    return { answers: PROMPT_FALLBACK, isSimulated: true };
+    return { answers: PROMPT_FALLBACK.slice(0, SECONDARY_PROMPT_FORMATS[input.datingApp]?.count ?? 3), isSimulated: true };
   }
 }
 
@@ -139,15 +141,19 @@ async function generatePromptAnswersWithMistral({
   datingApp,
   contextSummary,
 }: GeneratePromptAnswersInput): Promise<ProfilePrompt[]> {
-  // min(2) rather than a hard length(3) — an otherwise-good response with
-  // 2 solid answers shouldn't be thrown away over a missing third (same
+  // Unknown/"other" apps have no real prompt convention — fall back to
+  // Tinder's (optional, doesn't touch the bio), the safer default.
+  const format = SECONDARY_PROMPT_FORMATS[datingApp] ?? SECONDARY_PROMPT_FORMATS.tinder!;
+
+  // min(2) rather than a hard length match — an otherwise-good response
+  // with one fewer answer than the target shouldn't be thrown away (same
   // reasoning as the conversation coach's suggestions schema). `answer`
   // truncates instead of rejecting on overflow (see lenient-string.ts).
   const schema = z.object({
     answers: z
       .array(z.object({ prompt: z.string().min(1), answer: lenientString(150, 3) }))
-      .min(2)
-      .max(3),
+      .min(Math.min(2, format.count))
+      .max(format.count),
   });
 
   const response = await callMistralJson<unknown>({
@@ -157,16 +163,16 @@ async function generatePromptAnswersWithMistral({
       {
         role: "system",
         content:
-          `You write ${datingApp} dating profile prompt answers, in the exact style of Hinge's prompt/answer ` +
-          "format (this person's app uses prompts instead of a single free-text bio). Pick exactly 3 prompts " +
-          "from this list that best fit the person (vary them — don't pick 3 similar ones): " +
-          `${HINGE_PROMPT_OPTIONS.join(" | ")}. ` +
+          `You write ${datingApp} dating profile "${format.label}" prompt answers — this app's real ` +
+          `prompt/answer card format (${format.replacesBio ? "used instead of a free-text bio" : "shown alongside this person's free-text bio"}). ` +
+          `Pick exactly ${format.count} prompts from this list that best fit the person (vary them — don't pick similar ones): ` +
+          `${format.optionsBank.join(" | ")}. ` +
           "Write one short, specific, punchy answer per prompt (under 150 characters each) — never generic, " +
           "never a full sentence restating the prompt. If the user's context mentions a specific problem " +
           "(e.g. conversations dying, not enough matches), let it inform tone but never state it outright. " +
           'Respond with ONLY JSON: { "answers": [{ "prompt": one of the prompts above verbatim, "answer" }] } ' +
-          "(exactly 3 items). Every prompt and answer must be written in French (français), never in English, " +
-          "regardless of what language these instructions are written in.",
+          `(exactly ${format.count} items). Every prompt and answer must be written in French (français), never in ` +
+          "English, regardless of what language these instructions are written in.",
       },
       {
         role: "user",
