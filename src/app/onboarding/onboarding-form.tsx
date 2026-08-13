@@ -31,6 +31,11 @@ const DATING_APPS: { value: DatingApp; label: string }[] = [
 ];
 
 const STEP_COUNT = 8;
+/** Matches each app's real wording for its free-text bio field (see also bio-generator-view.tsx's PRIMARY_BIO_LABEL). */
+const BIO_STEP_LABEL: Partial<Record<DatingApp, string>> = {
+  tinder: "Ta Bio Tinder actuelle",
+  bumble: "Ta Description Bumble actuelle",
+};
 /** Must match profileSchema's bio max in lib/validations/profile.ts. */
 const BIO_MAX_LENGTH = 3000;
 /** Must match onboardingSubmissionSchema's hobbies max in lib/validations/onboarding.ts. */
@@ -383,7 +388,9 @@ export function OnboardingForm() {
                   seront les résultats.
                 </p>
                 <div>
-                  <Label htmlFor="bio">Ta bio actuelle</Label>
+                  <Label htmlFor="bio">
+                    {(form.dating_app && BIO_STEP_LABEL[form.dating_app]) ?? "Ta bio actuelle"}
+                  </Label>
                   <textarea
                     id="bio"
                     rows={4}
