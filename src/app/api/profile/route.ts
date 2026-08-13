@@ -165,7 +165,11 @@ export async function PATCH(request: NextRequest) {
     // response is already sent, so it shouldn't depend on request cookies.
     const admin = createAdminClient();
     try {
-      await rescoreProfile(admin, userId, rescoreInput);
+      // Never let a silent background rescore overwrite a real score with a
+      // fabricated fallback (see rescoreProfile) — the user isn't watching
+      // this happen, so a Mistral hiccup should just leave their last real
+      // analysis in place rather than quietly swap in fake numbers.
+      await rescoreProfile(admin, userId, rescoreInput, { allowSimulatedFallback: false });
     } catch (err) {
       console.error("[api/profile PATCH] background rescore failed:", err);
     }

@@ -24,8 +24,10 @@ export interface RescoreResult {
 export async function rescoreProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
-  profile: { id: string; bio: string | null; photos: string[]; dating_app: string }
+  profile: { id: string; bio: string | null; photos: string[]; dating_app: string },
+  options: { allowSimulatedFallback?: boolean } = {}
 ): Promise<RescoreResult | null> {
+  const { allowSimulatedFallback = true } = options;
   if (!profile.photos || profile.photos.length === 0) return null;
 
   const { data: answers } = await supabase
@@ -53,6 +55,17 @@ export async function rescoreProfile(
     },
   });
 
+  // A silent background rescore (photo reorder/delete, bio edit — see
+  // /api/profile PATCH) should never overwrite a user's real score with a
+  // fabricated one just because Mistral hiccuped (rate limit, timeout, bad
+  // JSON — all observed in prod). Bail out and leave their last real
+  // analysis in place; the user never even sees this failed. The initial
+  // /analyze flow (allowSimulatedFallback stays true there) still needs a
+  // result to show, so it persists the simulated fallback — but /results
+  // then labels it honestly via `is_simulated` instead of presenting
+  // fabricated numbers as a real result.
+  if (result.isSimulated && !allowSimulatedFallback) return null;
+
   // Auto-remove any "photo" Mistral confirms isn't a real photo of a person
   // (app screenshot, meme, graphic, document, etc.) — never on a simulated
   // fallback result, which can't actually see the image and defaults every
@@ -68,7 +81,7 @@ export async function rescoreProfile(
       // Recompute against only the real photos so the stored score/photo_analyses
       // match what's actually left on the profile, instead of persisting a score
       // that was dragged down by a screenshot that's already gone.
-      return rescoreProfile(supabase, userId, { ...profile, photos: keptPaths });
+      return rescoreProfile(supabase, userId, { ...profile, photos: keptPaths }, options);
     }
   }
 

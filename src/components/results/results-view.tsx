@@ -86,6 +86,9 @@ const BAND_BAR_CLASS: Record<ReturnType<typeof scoreBand>, string> = {
 
 export function ResultsView({ data }: { data: ResultsData }) {
   const { copiedKey, copy } = useClipboardCopy();
+  // Neither a fake demo nor a Mistral-outage fallback should be shareable or
+  // solicit feedback as if it were a genuine result.
+  const isFabricated = data.isDemo || data.isSimulated;
 
   useEffect(() => {
     track(AnalyticsEvent.AnalysisCompleted, { overall_score: data.overall, is_simulated: data.isSimulated });
@@ -136,6 +139,17 @@ export function ResultsView({ data }: { data: ResultsData }) {
         </div>
       )}
 
+      {!data.isDemo && data.isSimulated && (
+        <div className="mb-6 flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          <Info className="mt-0.5 size-4 shrink-0 text-primary" />
+          <p>
+            <span className="font-medium">On n&apos;a pas pu analyser tes vraies photos et ta bio cette fois</span> —
+            problème technique temporaire. Les chiffres ci-dessous sont génériques, pas basés sur ton profil.
+            Relance une analyse dans quelques instants pour ton vrai score.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col items-center text-center">
         <ScoreReveal value={data.overall} />
 
@@ -159,7 +173,7 @@ export function ResultsView({ data }: { data: ResultsData }) {
             : `Voici exactement pourquoi tu n'as pas plus de matchs.`}
         </motion.p>
 
-        {!data.isDemo && (
+        {!isFabricated && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9, duration: 0.4 }} className="mt-4">
             <ShareScoreCard overallScore={data.overall} photoScore={data.photo} bioScore={data.bio} conversationScore={data.conversation} />
           </motion.div>
@@ -343,7 +357,7 @@ export function ResultsView({ data }: { data: ResultsData }) {
         </Button>
       </motion.div>
 
-      {!data.isDemo && (
+      {!isFabricated && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.95, duration: 0.4 }} className="mt-6">
           <FeedbackWidget context="results" />
         </motion.div>
