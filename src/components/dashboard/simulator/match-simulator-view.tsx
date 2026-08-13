@@ -55,6 +55,15 @@ export function MatchSimulatorView() {
     setMessages((prev) => [...prev, optimistic]);
     setDraft("");
 
+    // On any failure below, undo the optimistic push and give the exact text
+    // back to the input — otherwise it vanishes with nothing to retry (and
+    // before the first successful reply, "setup" stage doesn't even render
+    // `messages`, so a failed opener disappeared with zero trace).
+    function rollback() {
+      setMessages((prev) => prev.filter((m) => m !== optimistic));
+      setDraft(optimistic.content);
+    }
+
     try {
       const persona: MatchPersona = { gender, personality };
       const res = await fetch("/api/ai/match-simulator/message", {
@@ -64,6 +73,7 @@ export function MatchSimulatorView() {
       });
 
       if (!res.ok) {
+        rollback();
         setError(res.status === 429 ? "Tu as utilisé tous tes crédits coaching pour ce mois-ci." : "Une erreur est survenue.");
         return;
       }
@@ -73,6 +83,7 @@ export function MatchSimulatorView() {
       setMessages((prev) => [...prev, { role: "match", content: data.reply }]);
       setStage("chatting");
     } catch {
+      rollback();
       setError("Une erreur est survenue — vérifie ta connexion et réessaie.");
     } finally {
       setSending(false);

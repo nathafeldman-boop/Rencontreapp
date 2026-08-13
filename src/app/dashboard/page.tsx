@@ -70,6 +70,11 @@ export default async function DashboardPage() {
     .select(
       "overall_score, photo_score, bio_score, attractiveness_score, conversation_score, recommendations, created_at"
     )
+    .eq("user_id", user?.id ?? "")
+    // Never show a fabricated Mistral-outage fallback as the user's real
+    // Dating Score, delta, badges or history — same reasoning as
+    // /dashboard/progression, which already filters this out.
+    .eq("is_simulated", false)
     .order("created_at", { ascending: false })
     .limit(10);
 

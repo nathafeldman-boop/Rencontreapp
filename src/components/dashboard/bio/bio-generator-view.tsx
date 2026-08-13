@@ -121,15 +121,22 @@ export function BioGeneratorView({
   }
 
   async function applyBio(bio: string, index: number) {
-    const res = await fetch("/api/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ bio }),
-    });
-    if (res.ok) {
+    setError(null);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bio }),
+      });
+      if (!res.ok) {
+        setError("Impossible d'appliquer cette bio — réessaie.");
+        return;
+      }
       setSavedIndex(index);
       track(AnalyticsEvent.BioApplied, { style });
       triggerBackgroundRescoreRefresh();
+    } catch {
+      setError("Impossible d'appliquer cette bio — vérifie ta connexion et réessaie.");
     }
   }
 

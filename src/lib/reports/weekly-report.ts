@@ -61,6 +61,10 @@ export async function getWeeklyReport(
     .from("analyses")
     .select("id, overall_score, created_at")
     .eq("user_id", userId)
+    // Same reasoning as /dashboard/progression: a simulated (Mistral-outage
+    // fallback) analysis is fabricated, not a real score, so it must never
+    // feed the weekly report's "your score" / delta / best-photo numbers.
+    .eq("is_simulated", false)
     .order("created_at", { ascending: false })
     .limit(30);
 

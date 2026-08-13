@@ -41,12 +41,23 @@ export function PlanView({ initialDays }: { initialDays: PlanDay[] | null }) {
   }
 
   async function toggleDay(day: PlanDay) {
+    setError(null);
     setDays((prev) => prev?.map((d) => (d.day === day.day ? { ...d, done: !d.done } : d)) ?? prev);
-    await fetch("/api/ai/dating-plan", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ day: day.day, done: !day.done }),
-    });
+
+    try {
+      const res = await fetch("/api/ai/dating-plan", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ day: day.day, done: !day.done }),
+      });
+      if (!res.ok) throw new Error("toggle failed");
+    } catch {
+      // Roll back the optimistic flip — otherwise the checkbox stays checked
+      // (or unchecked) forever while the server-side plan disagrees, with no
+      // indication anything went wrong until the next full page load.
+      setDays((prev) => prev?.map((d) => (d.day === day.day ? { ...d, done: day.done } : d)) ?? prev);
+      setError("Impossible d'enregistrer — réessaie.");
+    }
   }
 
   if (!days) {
