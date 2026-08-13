@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -35,37 +36,27 @@ export function Hero() {
 
   return (
     <section className="relative isolate overflow-hidden px-6 pt-20 pb-16 sm:pt-28">
-      {/* Base wash — a static, extremely soft tint, not pure white */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,oklch(0.965_0.015_320)_0%,oklch(0.99_0_0)_60%)]"
-      />
-
-      {/* Ambient drifting light — soft, edgeless, no visible shapes */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div
-          className="animate-hero-drift-1 absolute -top-16 right-[6%] size-[380px] rounded-full sm:size-[560px]"
-          style={{
-            background: "radial-gradient(circle, oklch(0.86 0.09 15 / 0.55) 0%, oklch(0.86 0.09 15 / 0) 70%)",
-            filter: "blur(60px)",
-          }}
-        />
-        <div
-          className="animate-hero-drift-2 absolute -bottom-24 -left-10 size-[340px] rounded-full sm:size-[520px]"
-          style={{
-            background: "radial-gradient(circle, oklch(0.85 0.07 320 / 0.5) 0%, oklch(0.85 0.07 320 / 0) 70%)",
-            filter: "blur(60px)",
-          }}
-        />
-        {/* Extra depth layer — desktop only, keeps mobile lighter/cheaper */}
-        <div
-          className="animate-hero-drift-3 absolute top-1/3 left-1/2 hidden size-[480px] -translate-x-1/2 rounded-full sm:block"
-          style={{
-            background: "radial-gradient(circle, oklch(0.9 0.05 350 / 0.4) 0%, oklch(0.9 0.05 350 / 0) 72%)",
-            filter: "blur(70px)",
-          }}
+      {/* The hook's backdrop — a real sky, not a faked gradient */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-30">
+        <Image
+          src="/marketing/hero-sky.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[50%_20%]"
         />
       </div>
+
+      {/* Legibility scrim — opaque over the text column, letting the sky show through at the edges */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-20"
+        style={{
+          background:
+            "radial-gradient(65% 78% at 50% 35%, oklch(0.99 0 0 / 0.95) 0%, oklch(0.99 0 0 / 0.88) 45%, oklch(0.99 0 0 / 0.6) 75%, oklch(0.99 0 0 / 0.3) 100%)",
+        }}
+      />
 
       {/* Grain — static, ~2.5% opacity, breaks up the "perfect digital surface" look */}
       <div
