@@ -66,6 +66,20 @@ export function dailyReminderEmail(siteUrl: string) {
   );
 }
 
+export function relaunchFixedEmail(siteUrl: string) {
+  return baseLayout(
+    `<p style="margin:0 0 4px;font-size:17px;font-weight:600;">Ton avis compte 🙏</p>
+     <p style="margin:0 0 12px;color:#6b7280;">On a vu que ton expérience sur le Photo Optimizer n'était pas top —
+     le score d'une même photo pouvait changer plusieurs fois de suite sans raison, juste en réorganisant tes
+     photos. On a trouvé le problème et corrigé : le score ne se recalcule plus qu'une fois, une fois que tu as
+     fini de choisir ton ordre.</p>
+     <p style="margin:0 0 12px;color:#6b7280;">Ce n'est pas un simple message — c'est réellement corrigé. On voulait
+     te le dire et te proposer de retenter, avec toute l'attention que ça mérite cette fois.</p>
+     ${button("Retourner sur mon profil", `${siteUrl}/dashboard/photos`)}`,
+    "On a corrigé ce qui n'allait pas — reviens y jeter un œil."
+  );
+}
+
 export function weeklyReportEmail(siteUrl: string, report: WeeklyReport) {
   const deltaLine =
     report.scoreDelta === null

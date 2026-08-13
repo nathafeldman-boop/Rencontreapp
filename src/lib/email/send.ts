@@ -1,5 +1,5 @@
 import { sendEmail } from "@/lib/email/resend";
-import { welcomeEmail, referralRewardEmail, weeklyReportEmail, dailyReminderEmail } from "@/lib/email/templates";
+import { welcomeEmail, referralRewardEmail, weeklyReportEmail, dailyReminderEmail, relaunchFixedEmail } from "@/lib/email/templates";
 import { clientEnv } from "@/lib/env";
 import type { WeeklyReport } from "@/lib/reports/weekly-report";
 
@@ -32,5 +32,13 @@ export function sendDailyReminderEmail(to: string) {
     to,
     subject: "Ton rappel quotidien Flirtcraft 📊",
     html: dailyReminderEmail(clientEnv.NEXT_PUBLIC_SITE_URL),
+  });
+}
+
+export function sendRelaunchFixedEmail(to: string) {
+  return sendEmail({
+    to,
+    subject: "On a corrigé ce que tu nous as signalé",
+    html: relaunchFixedEmail(clientEnv.NEXT_PUBLIC_SITE_URL),
   });
 }
