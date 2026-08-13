@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,6 +38,16 @@ const MIN_PHOTOS_TO_KEEP = 1;
 /** How long to wait before refreshing again to pick up the background Mistral rescore (see /api/profile PATCH). */
 const RESCORE_REFRESH_DELAY_MS = 12_000;
 
+/**
+ * Debounce for reorder actions (drag or arrow clicks) before triggering a
+ * rescore. Each PATCH kicks off an independent, non-deterministic Mistral
+ * vision call — without this, clicking up/down a few times in a row (or one
+ * drag with a few intermediate drops) fired one full rescore per click, so
+ * the same untouched photo could land on a completely different score every
+ * few seconds. Reordering settles for a moment before we persist once.
+ */
+const REORDER_DEBOUNCE_MS = 1500;
+
 const ROLE_ORDER = { primary: 0, secondary: 1, remove: 2 } as const;
 const ROLE_LABEL = { primary: "Photo principale", secondary: "Secondaire", remove: "À envisager de retirer" } as const;
 
@@ -59,6 +69,13 @@ export function PhotoOptimizerView({
   const [rescoring, setRescoring] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deletingPath, setDeletingPath] = useState<string | null>(null);
+  const reorderTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (reorderTimeoutRef.current) clearTimeout(reorderTimeoutRef.current);
+    };
+  }, []);
 
   // Re-syncs with the freshly rescored per-photo data once router.refresh()
   // pulls it from the server — our own optimistic edits above only touch
@@ -102,7 +119,13 @@ export function PhotoOptimizerView({
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
     setPhotos(next);
-    persistPhotos(next);
+
+    // Debounced: only persist (and trigger a Mistral rescore) once reordering
+    // settles, not once per click/drop — see REORDER_DEBOUNCE_MS above.
+    if (reorderTimeoutRef.current) clearTimeout(reorderTimeoutRef.current);
+    reorderTimeoutRef.current = setTimeout(() => {
+      persistPhotos(next);
+    }, REORDER_DEBOUNCE_MS);
   }
 
   function handleDrop(dropIndex: number) {
