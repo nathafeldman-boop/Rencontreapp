@@ -11,14 +11,31 @@ import { createAdminClient } from "@/lib/supabase/admin";
 /**
  * Heuristic for "this account was just created" vs. "an existing user
  * logged back in through the same magic-link/OTP/OAuth flow": on a brand
- * new account, `created_at` and `last_sign_in_at` land within the same
- * request; on a returning login they're far apart.
+ * new account, `created_at` and `last_sign_in_at` land close together; on a
+ * returning login they're far apart.
+ *
+ * Was 5 seconds, which only fits Google OAuth's near-instant round trip.
+ * For email OTP, `auth.users` (and the `public.users` row a DB trigger
+ * creates from it — see migration 0001) is created the moment
+ * `signInWithOtp` is called, but `last_sign_in_at` isn't set until the user
+ * actually types the code in from their inbox — routinely 10-60+ seconds
+ * later for a real human, sometimes several minutes. Confirmed in prod: a
+ * genuine first-time signup with a 32s gap was silently misclassified as a
+ * returning login, which skipped referral/affiliate attribution, the
+ * welcome email, claiming pre-signup landing events, and the
+ * `signup_completed` event the admin dashboard's "nouveaux inscrits" count
+ * depends on — most signups to date were undercounted this way (3
+ * `signup_completed` events recorded against 11 real users). 10 minutes
+ * comfortably covers slow OTP entry while staying far short of any
+ * realistic gap before a genuine next login.
  */
+const NEW_SIGNUP_WINDOW_MS = 10 * 60 * 1000;
+
 export function isNewSignup(user: User): boolean {
   return (
     !!user.last_sign_in_at &&
     !!user.created_at &&
-    Math.abs(new Date(user.last_sign_in_at).getTime() - new Date(user.created_at).getTime()) < 5000
+    Math.abs(new Date(user.last_sign_in_at).getTime() - new Date(user.created_at).getTime()) < NEW_SIGNUP_WINDOW_MS
   );
 }
 
