@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { AnimatedCounter } from "@/components/marketing/animated-counter";
 import { track } from "@/lib/analytics/track";
 import { AnalyticsEvent } from "@/lib/analytics/events";
@@ -72,17 +71,11 @@ export function Hero() {
       />
 
       <div className="mx-auto flex max-w-xl flex-col items-center text-center">
-        <motion.div initial="hidden" animate="show" variants={fadeUp} transition={{ duration: 0.45 }}>
-          <Badge variant="accent" className="mb-6">
-            Analyse gratuite en 60 secondes, par ton coach
-          </Badge>
-        </motion.div>
-
         <motion.h1
           initial="hidden"
           animate="show"
           variants={fadeUp}
-          transition={{ duration: 0.45, delay: 0.05 }}
+          transition={{ duration: 0.45 }}
           className="text-balance text-3xl leading-[1.15] font-semibold tracking-tight min-[390px]:text-4xl sm:text-5xl"
         >
           Ton profil te fait-il <span className="text-brand-gradient">perdre des matchs</span> ?
