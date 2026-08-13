@@ -72,7 +72,11 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
     getActivityEvents(admin, id),
   ]);
 
-  const latest = analyses?.[0];
+  // Prefer the latest real analysis for the headline card — a Mistral-outage
+  // fallback happening to be the newest row shouldn't present fabricated
+  // scores as this user's current state. Falls back to whatever exists if
+  // every analysis on record is simulated.
+  const latest = analyses?.find((a) => !a.is_simulated) ?? analyses?.[0];
   const ltv = await computeLtv(admin, id, subscription?.stripe_customer_id);
   const sessions = groupIntoSessions(activityEvents);
   const totalMinutes = sessions.reduce((sum, s) => sum + s.durationMinutes, 0);
@@ -227,8 +231,17 @@ export default async function AdminUserPage({ params }: AdminUserPageProps) {
           <CardContent className="flex flex-col gap-1.5 text-sm">
             {analyses.map((a, i) => (
               <div key={i} className="flex items-center justify-between text-muted-foreground">
-                <span>{new Date(a.created_at).toLocaleDateString("fr-FR")}</span>
-                <span className="font-medium text-foreground">{a.overall_score}/100</span>
+                <span className="flex items-center gap-1.5">
+                  {new Date(a.created_at).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" })}
+                  {a.is_simulated && (
+                    <Badge variant="secondary" className="text-[10px]">
+                      Fallback simulé
+                    </Badge>
+                  )}
+                </span>
+                <span className={`font-medium ${a.is_simulated ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                  {a.overall_score}/100
+                </span>
               </div>
             ))}
           </CardContent>
