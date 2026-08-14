@@ -141,7 +141,12 @@ export function RegeneratePanel({
         Régénère ton analyse gratuitement — il te reste {remaining} régénération{remaining > 1 ? "s" : ""}.
       </p>
 
-      {editing ? (
+      {loading ? (
+        <div className="mt-3 flex items-center gap-2.5 rounded-lg bg-secondary/50 px-4 py-3 text-sm text-muted-foreground">
+          <Loader2 className="size-4 shrink-0 animate-spin" />
+          Régénération en cours — ça peut prendre jusqu&apos;à une minute, ne quitte pas cette page.
+        </div>
+      ) : editing ? (
         <div className="mt-3 flex flex-col gap-3">
           <textarea
             value={bioDraft}
@@ -149,7 +154,6 @@ export function RegeneratePanel({
             rows={4}
             maxLength={3000}
             placeholder="Ta bio…"
-            disabled={loading}
             className="w-full rounded-lg border border-input bg-transparent px-4 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
 
@@ -160,7 +164,7 @@ export function RegeneratePanel({
                 <button
                   type="button"
                   aria-label="Retirer cette photo"
-                  disabled={loading || photos.length <= MIN_PHOTOS_TO_KEEP}
+                  disabled={photos.length <= MIN_PHOTOS_TO_KEEP}
                   onClick={() => removePhoto(photo.path)}
                   className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-background/90 text-destructive disabled:opacity-30"
                 >
@@ -172,7 +176,7 @@ export function RegeneratePanel({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={loading || uploading}
+                disabled={uploading}
                 className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-input text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-50"
               >
                 {uploading ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
@@ -182,22 +186,22 @@ export function RegeneratePanel({
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAddPhoto} />
 
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => regenerate(true)} disabled={loading || uploading || !bioDraft.trim()}>
-              {loading ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
+            <Button size="sm" onClick={() => regenerate(true)} disabled={uploading || !bioDraft.trim()}>
+              <RefreshCw className="size-3.5" />
               Régénérer avec ces changements
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setEditing(false)} disabled={loading}>
+            <Button size="sm" variant="outline" onClick={() => setEditing(false)}>
               Annuler
             </Button>
           </div>
         </div>
       ) : (
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" onClick={() => regenerate(false)} disabled={loading}>
-            {loading ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
+          <Button size="sm" variant="outline" onClick={() => regenerate(false)}>
+            <RefreshCw className="size-3.5" />
             Régénérer entièrement
           </Button>
-          <Button size="sm" variant="outline" onClick={() => setEditing(true)} disabled={loading}>
+          <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
             <PenLine className="size-3.5" />
             Changer ma bio ou mes photos
           </Button>
