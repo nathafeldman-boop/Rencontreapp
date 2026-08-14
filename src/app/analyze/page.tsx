@@ -20,6 +20,16 @@ const STEPS = [
 
 const TOTAL_DURATION_MS = 13_000;
 const STEP_DURATION_MS = TOTAL_DURATION_MS / STEPS.length;
+/**
+ * Extra 1s polls after the 13s animation completes, before giving up and
+ * showing the error screen. A real analysis (photo download + Mistral,
+ * with its retry-on-timeout) can legitimately take up to ~55-58s end to
+ * end — this used to be 5 (18s total patience), which was shorter than a
+ * normal real run, not just a slow one. The "Réessayer" button was masking
+ * this: it wasn't actually broken, the client just gave up before the
+ * still-in-flight first request ever got a chance to finish.
+ */
+const MAX_EXTRA_POLL_ATTEMPTS = 60;
 
 interface AnalysisResult {
   analysisId: string | null;
@@ -32,12 +42,14 @@ export default function AnalyzePage() {
   const [progress, setProgress] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [waitingLonger, setWaitingLonger] = useState(false);
   const resultRef = useRef<AnalysisResult | null>(null);
 
   function runAnalysis() {
     setError(null);
     setProgress(0);
     setActiveStep(0);
+    setWaitingLonger(false);
     resultRef.current = null;
     let cancelled = false;
     track(AnalyticsEvent.AnalysisStarted, {});
@@ -74,6 +86,7 @@ export default function AnalyzePage() {
     const finish = setTimeout(() => {
       clearInterval(tick);
       setProgress(100);
+      setWaitingLonger(true);
 
       const finalize = (attempt = 0) => {
         if (cancelled) return;
@@ -86,7 +99,7 @@ export default function AnalyzePage() {
           // /results?demo=1, which showed generic numbers a user could
           // easily mistake for their actual analysis).
           setError(result.errorMessage ?? "L'analyse a échoué.");
-        } else if (attempt < 5) {
+        } else if (attempt < MAX_EXTRA_POLL_ATTEMPTS) {
           // API still in flight — give it a little more room before giving up.
           setTimeout(() => finalize(attempt + 1), 1000);
         } else {
@@ -166,6 +179,12 @@ export default function AnalyzePage() {
           </motion.li>
         ))}
       </ul>
+
+      {waitingLonger && (
+        <p className="mt-6 max-w-xs text-center text-sm text-muted-foreground">
+          Ton profil demande un peu plus d&apos;analyse que d&apos;habitude — ça arrive, ne quitte pas cette page.
+        </p>
+      )}
     </main>
   );
 }
