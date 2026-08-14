@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ResultsView, type ResultsData } from "@/components/results/results-view";
 import { getActiveSubscription } from "@/lib/subscriptions/get-active-subscription";
+import { signPhotoUrls } from "@/lib/supabase/signed-photo-urls";
 import { MAX_FREE_REGENERATIONS } from "@/lib/ai/free-regenerations";
 import type { Recommendation } from "@/types/database.types";
 
@@ -78,7 +79,7 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
       user
         ? supabase
             .from("profiles")
-            .select("id, bio, dating_app")
+            .select("id, bio, photos, dating_app")
             .eq("user_id", user.id)
             .order("created_at", { ascending: false })
             .limit(1)
@@ -92,13 +93,17 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
     // for the demo fallback below, and never counted against a paying
     // user, who has their own credit-gated re-analysis from the dashboard.
     let regenerationsRemaining: number | null = null;
+    let currentPhotos: { path: string; url: string }[] = [];
     if (profile && !subscription) {
-      const { count } = await supabase
-        .from("analyses")
-        .select("id", { count: "exact", head: true })
-        .eq("profile_id", profile.id);
+      const [{ count }, signedUrls] = await Promise.all([
+        supabase.from("analyses").select("id", { count: "exact", head: true }).eq("profile_id", profile.id),
+        signPhotoUrls(supabase, profile.photos ?? []),
+      ]);
       const regenerationsUsed = Math.max((count ?? 1) - 1, 0);
       regenerationsRemaining = Math.max(MAX_FREE_REGENERATIONS - regenerationsUsed, 0);
+      currentPhotos = (profile.photos ?? [])
+        .filter((path) => signedUrls[path])
+        .map((path) => ({ path, url: signedUrls[path] }));
     }
 
     if (analysis) {
@@ -116,6 +121,7 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
         biggestProblem: problemAnswer?.answer,
         datingApp: profile?.dating_app,
         currentBio: profile?.bio ?? null,
+        currentPhotos,
         regenerationsRemaining,
       };
       return <ResultsView data={data} />;

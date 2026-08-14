@@ -46,6 +46,7 @@ export interface ResultsData {
   biggestProblem?: string;
   datingApp?: DatingApp | null;
   currentBio?: string | null;
+  currentPhotos?: { path: string; url: string }[];
   /** null = regeneration doesn't apply here (demo, or already subscribed). */
   regenerationsRemaining?: number | null;
 }
@@ -361,7 +362,11 @@ export function ResultsView({ data }: { data: ResultsData }) {
         </Button>
 
         {typeof data.regenerationsRemaining === "number" && (
-          <RegeneratePanel currentBio={data.currentBio ?? ""} remaining={data.regenerationsRemaining} />
+          <RegeneratePanel
+            currentBio={data.currentBio ?? ""}
+            currentPhotos={data.currentPhotos ?? []}
+            remaining={data.regenerationsRemaining}
+          />
         )}
       </motion.div>
 

@@ -84,7 +84,11 @@ export interface AnalyticsEventProps {
 
   [AnalyticsEvent.DashboardViewed]: { has_active_plan: boolean };
   [AnalyticsEvent.AnalysisRepeated]: { overall_score: number };
-  [AnalyticsEvent.FreeRegenerationUsed]: { mode: "same" | "edited_bio"; overall_score: number; regenerations_remaining: number };
+  [AnalyticsEvent.FreeRegenerationUsed]: {
+    mode: "same" | "edited_bio" | "edited_photos" | "edited_bio_and_photos";
+    overall_score: number;
+    regenerations_remaining: number;
+  };
   [AnalyticsEvent.AiCoachUsed]: { conversation_score: number };
   [AnalyticsEvent.BioGenerated]: { style: string };
   [AnalyticsEvent.BioApplied]: { style: string };

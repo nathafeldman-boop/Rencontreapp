@@ -13,6 +13,11 @@ export const maxDuration = 60;
 
 const bodySchema = z.object({
   bio: z.string().max(3000, "Ta bio est trop longue (3000 caractères maximum).").optional(),
+  photos: z
+    .array(z.string().min(1))
+    .min(1, "Garde au moins une photo.")
+    .max(9, "9 photos maximum.")
+    .optional(),
 });
 
 /**
@@ -83,10 +88,24 @@ export async function POST(request: NextRequest) {
   }
 
   const editedBio = parsed.data.bio !== undefined && parsed.data.bio !== (profile.bio ?? "");
-  if (editedBio) {
-    const { error: updateError } = await supabase.from("profiles").update({ bio: parsed.data.bio }).eq("id", profile.id);
+
+  let editedPhotos = false;
+  if (parsed.data.photos !== undefined) {
+    const ownsAllPaths = parsed.data.photos.every((path) => path.startsWith(`${user.id}/`));
+    if (!ownsAllPaths) {
+      return apiError("Ces photos ne t'appartiennent pas.", 422);
+    }
+    editedPhotos = JSON.stringify(parsed.data.photos) !== JSON.stringify(profile.photos ?? []);
+  }
+
+  const update: { bio?: string; photos?: string[] } = {};
+  if (editedBio) update.bio = parsed.data.bio;
+  if (editedPhotos) update.photos = parsed.data.photos;
+
+  if (editedBio || editedPhotos) {
+    const { error: updateError } = await supabase.from("profiles").update(update).eq("id", profile.id);
     if (updateError) {
-      console.error("[api/analyze/regenerate] bio update failed", updateError);
+      console.error("[api/analyze/regenerate] profile update failed", updateError);
       return apiError("Une erreur est survenue — réessaie.", 500);
     }
   }
@@ -97,7 +116,7 @@ export async function POST(request: NextRequest) {
     {
       id: profile.id,
       bio: editedBio ? (parsed.data.bio ?? "") : profile.bio,
-      photos: profile.photos ?? [],
+      photos: editedPhotos ? (parsed.data.photos ?? []) : (profile.photos ?? []),
       dating_app: profile.dating_app,
     },
     { allowSimulatedFallback: true }
@@ -109,7 +128,7 @@ export async function POST(request: NextRequest) {
 
   const regenerationsRemaining = MAX_FREE_REGENERATIONS - (regenerationsUsed + 1);
   trackServer(user.id, AnalyticsEvent.FreeRegenerationUsed, {
-    mode: editedBio ? "edited_bio" : "same",
+    mode: editedBio && editedPhotos ? "edited_bio_and_photos" : editedBio ? "edited_bio" : editedPhotos ? "edited_photos" : "same",
     overall_score: result.overallScore,
     regenerations_remaining: regenerationsRemaining,
   });
