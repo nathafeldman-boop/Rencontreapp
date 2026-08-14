@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { Loader2, PenLine, Plus, RefreshCw, X } from "lucide-react";
 
@@ -129,7 +130,13 @@ export function RegeneratePanel({
   if (remaining <= 0) {
     return (
       <div className="mt-4 rounded-xl border border-border bg-secondary/30 p-4 text-center text-sm text-muted-foreground">
-        Tu as utilisé tes 3 régénérations gratuites pour ce profil.
+        <p>Tu as utilisé tes 3 régénérations gratuites pour ce profil.</p>
+        <p className="mt-2">
+          Tu t&apos;es trompé quelque part dans le questionnaire de départ (âge, appli, objectif…) ?{" "}
+          <Link href="/onboarding?restart=1" className="font-medium text-foreground underline underline-offset-4">
+            Tout recommencer
+          </Link>
+        </p>
       </div>
     );
   }
@@ -206,6 +213,15 @@ export function RegeneratePanel({
             Changer ma bio ou mes photos
           </Button>
         </div>
+      )}
+
+      {!loading && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Tu t&apos;es trompé quelque part dans le questionnaire de départ (âge, appli, objectif…) ?{" "}
+          <Link href="/onboarding?restart=1" className="underline underline-offset-4 hover:text-foreground">
+            Tout recommencer
+          </Link>
+        </p>
       )}
 
       {error && <p className="mt-2 text-sm text-destructive">{error}</p>}

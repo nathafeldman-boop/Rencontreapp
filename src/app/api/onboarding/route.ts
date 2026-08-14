@@ -48,20 +48,39 @@ export async function POST(request: NextRequest) {
     return apiError("Une erreur est survenue — réessaie.", 500);
   }
 
+  const questions = [
+    "What's your main objective?",
+    "How many matches do you get weekly?",
+    "What's your biggest problem right now?",
+    "How confident are you with your profile?",
+    "What are your hobbies/interests?",
+  ];
+
+  // Upsert, not insert: this route can now be replayed on purpose (a full
+  // "restart onboarding" from the free regenerate panel — see
+  // /onboarding?restart=1), and a blind insert would leave stale duplicate
+  // rows behind for these 5 questions, which several read paths assume are
+  // unique per (user_id, question) — e.g. results/page.tsx's `.maybeSingle()`
+  // lookup for "biggest problem" would start erroring instead of just
+  // picking one. Clearing and re-inserting is simpler than a per-row
+  // select-then-update loop and gives identical end state.
+  const { error: deleteError } = await supabase
+    .from("onboarding_answers")
+    .delete()
+    .eq("user_id", user.id)
+    .in("question", questions);
+
+  if (deleteError) {
+    console.error("[api/onboarding] answers cleanup failed", deleteError);
+    return apiError("Une erreur est survenue — réessaie.", 500);
+  }
+
   const { error: answersError } = await supabase.from("onboarding_answers").insert([
-    { user_id: user.id, question: "What's your main objective?", answer: objectiveLabel(objective) },
-    {
-      user_id: user.id,
-      question: "How many matches do you get weekly?",
-      answer: weeklyMatchesLabel(weekly_matches),
-    },
-    {
-      user_id: user.id,
-      question: "What's your biggest problem right now?",
-      answer: biggestProblemLabel(biggest_problem),
-    },
-    { user_id: user.id, question: "How confident are you with your profile?", answer: `${confidence}/10` },
-    { user_id: user.id, question: "What are your hobbies/interests?", answer: hobbies },
+    { user_id: user.id, question: questions[0], answer: objectiveLabel(objective) },
+    { user_id: user.id, question: questions[1], answer: weeklyMatchesLabel(weekly_matches) },
+    { user_id: user.id, question: questions[2], answer: biggestProblemLabel(biggest_problem) },
+    { user_id: user.id, question: questions[3], answer: `${confidence}/10` },
+    { user_id: user.id, question: questions[4], answer: hobbies },
   ]);
 
   if (answersError) {

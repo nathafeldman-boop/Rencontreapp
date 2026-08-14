@@ -39,6 +39,14 @@ export async function POST(request: NextRequest) {
 
   const { bio, dating_app, photo_paths } = parsed.data;
 
+  // A genuine new row on purpose, including when this is a "Tout
+  // recommencer" restart (see /onboarding?restart=1) for a user who already
+  // has a profile: every read of `profiles` throughout the app already
+  // takes the latest row per user (order by created_at desc), so a second
+  // row here is safe rather than a duplicate-data bug — and it's exactly
+  // what a real restart should do, since it also resets the free
+  // regeneration count (tied to profile_id) back to 3, matching a
+  // deliberate "start over" rather than counting against the regen cap.
   const { data, error } = await supabase
     .from("profiles")
     .insert({ user_id: user.id, bio, dating_app, photos: photo_paths })
