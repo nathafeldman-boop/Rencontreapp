@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Handshake,
   LayoutDashboard,
   LineChart,
   LogOut,
@@ -29,6 +31,8 @@ const NAV_ITEMS = [
   { href: "/settings", label: "Paramètres", icon: Settings },
 ];
 
+const AFFILIATE_NAV_ITEM = { href: "/affilie", label: "Affiliation", icon: Handshake };
+
 function isActive(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -37,6 +41,30 @@ function isActive(pathname: string, href: string) {
 export function AppShell({ children, datingApp }: { children: React.ReactNode; datingApp?: DatingApp | null }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isAffiliate, setIsAffiliate] = useState(false);
+
+  // No page anywhere links to /affilie — an affiliate's only way in was a
+  // one-off DM'd URL, which is exactly how one lost her way back to her own
+  // dashboard. This adds a permanent, always-reachable entry point for
+  // accounts that actually are affiliates; everyone else sees nothing new.
+  useEffect(() => {
+    let cancelled = false;
+    async function checkAffiliate() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("affiliates").select("id").eq("user_id", user.id).maybeSingle();
+      if (!cancelled && data) setIsAffiliate(true);
+    }
+    checkAffiliate();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const navItems = isAffiliate ? [...NAV_ITEMS, AFFILIATE_NAV_ITEM] : NAV_ITEMS;
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -53,7 +81,7 @@ export function AppShell({ children, datingApp }: { children: React.ReactNode; d
           Flirtcraft
         </Link>
         <nav className="flex flex-1 flex-col gap-1 px-3">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -100,7 +128,7 @@ export function AppShell({ children, datingApp }: { children: React.ReactNode; d
 
       {/* Mobile bottom tabs */}
       <nav className="fixed inset-x-0 bottom-0 z-20 flex justify-around border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
