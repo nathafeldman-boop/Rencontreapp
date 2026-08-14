@@ -238,10 +238,22 @@ async function analyzeWithMistral(input: AnalyzeProfileInput): Promise<ProfileAn
   // used by the conversation coach's screenshot extraction.
   const photoDataUrls = await Promise.all(input.photos.map((photo) => fetchPhotoAsDataUrl(photo.signedUrl)));
 
+  // Explicit (tighter than callMistral's own 30s default) so the worst case
+  // — one timeout + one retry — can never eat the whole request budget.
+  // /api/analyze's Vercel function has a hard 60s ceiling: if this call (and
+  // its retry) plus the photo downloads above ever add up to more than
+  // that, Vercel kills the function outright before analyzeProfile's own
+  // try/catch gets a chance to fall back to the simulated result — the user
+  // sees a raw "analysis failed" screen instead. 20s × 2 attempts (~41s
+  // with backoff) plus the photo downloads' own 15s timeout stays
+  // comfortably under 60s even in the worst case.
+  const VISION_TIMEOUT_MS = 20_000;
+
   const response = await withVisionModelFallback((model) =>
     callMistralJson<unknown>({
       model,
       temperature: 0.4,
+      timeoutMs: VISION_TIMEOUT_MS,
       messages: [
         { role: "system", content: ANALYSIS_ENGINE_SYSTEM_PROMPT },
         {

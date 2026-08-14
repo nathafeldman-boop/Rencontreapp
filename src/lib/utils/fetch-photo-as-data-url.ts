@@ -2,6 +2,15 @@ import sharp from "sharp";
 
 const MAX_DIMENSION = 1280;
 const JPEG_QUALITY = 82;
+// Was an unbounded fetch() — when Supabase Storage stalls instead of
+// erroring (observed in prod: SocketError/ETIMEDOUT/ECONNRESET against
+// Supabase around the same time as a wave of stuck /api/analyze requests),
+// this call could hang until Vercel's 60s function timeout killed the whole
+// request with a raw, uncaught error — bypassing analyzeProfile's try/catch
+// entirely, so the user got the generic "analysis failed" screen instead of
+// the graceful simulated-fallback result it's designed to fall back to on
+// any failure. Failing fast here lets that fallback actually kick in.
+const DOWNLOAD_TIMEOUT_MS = 15_000;
 
 /**
  * Downloads an image from `url` server-side and returns it as a resized,
@@ -19,7 +28,7 @@ const JPEG_QUALITY = 82;
  * request well under any reasonable payload limit.
  */
 export async function fetchPhotoAsDataUrl(url: string): Promise<string> {
-  const response = await fetch(url);
+  const response = await fetch(url, { signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS) });
   if (!response.ok) {
     throw new Error(`Failed to download photo (${response.status}): ${url}`);
   }
