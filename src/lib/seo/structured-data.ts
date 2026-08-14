@@ -40,6 +40,20 @@ export function faqJsonLd(items: { question: string; answer: string }[]) {
   };
 }
 
+/** `items` in order from the homepage down to the current page (excluded from `position: 1`, which is always "Accueil"). */
+export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [{ name: "Accueil", path: "/" }, ...items].map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: `${SITE_URL}${item.path}`,
+    })),
+  };
+}
+
 export function articleJsonLd({
   title,
   description,

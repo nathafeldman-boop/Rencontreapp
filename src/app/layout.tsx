@@ -23,6 +23,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${SITE_NAME} — Obtiens plus de matchs grâce à ton coach`, template: `%s — ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
+  alternates: { canonical: SITE_URL },
   openGraph: {
     title: `${SITE_NAME} — Obtiens plus de matchs grâce à ton coach`,
     description: SITE_DESCRIPTION,

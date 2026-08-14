@@ -7,7 +7,7 @@ import { AnimatedCounter } from "@/components/marketing/animated-counter";
 import { BeforeAfterSection } from "@/components/marketing/before-after";
 import { Testimonials } from "@/components/marketing/testimonials";
 import { JsonLd } from "@/components/seo/json-ld";
-import { faqJsonLd } from "@/lib/seo/structured-data";
+import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/structured-data";
 import type { AppReviewContent } from "@/lib/content/app-reviews";
 
 const STEPS = [
@@ -20,6 +20,7 @@ export function AppReviewLanding({ content }: { content: AppReviewContent }) {
   return (
     <main className="flex-1">
       <JsonLd data={faqJsonLd(content.faq)} />
+      <JsonLd data={breadcrumbJsonLd([{ name: `Analyse ${content.appName}`, path: `/${content.slug}` }])} />
 
       <section className="px-6 pt-20 pb-16 sm:pt-28">
         <div className="mx-auto flex max-w-xl flex-col items-center text-center">

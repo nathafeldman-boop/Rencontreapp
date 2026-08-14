@@ -10,7 +10,7 @@ export const metadata: Metadata = buildMetadata({
   title: content.title,
   description: content.metaDescription,
   path: "/tinder-profile-review",
-  keywords: ["tinder profile review", "tinder profile analysis", "improve tinder profile", "ai tinder coach"],
+  keywords: ["analyse profil tinder", "avis profil tinder", "améliorer profil tinder", "coach profil tinder"],
 });
 
 export default function TinderProfileReviewPage() {

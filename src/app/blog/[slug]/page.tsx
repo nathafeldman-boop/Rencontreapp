@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { JsonLd } from "@/components/seo/json-ld";
-import { articleJsonLd } from "@/lib/seo/structured-data";
+import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo/structured-data";
 import { BLOG_POSTS, getBlogPost } from "@/lib/content/blog-posts";
 import { buildMetadata } from "@/lib/seo/site";
 
@@ -44,6 +44,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           path: `/blog/${post.slug}`,
           datePublished: post.publishedAt,
         })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Blog", path: "/blog" },
+          { name: post.title, path: `/blog/${post.slug}` },
+        ])}
       />
 
       <Link href="/blog" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">

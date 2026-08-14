@@ -14,7 +14,7 @@ export interface BlogPost {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
-    slug: "how-to-get-more-tinder-matches",
+    slug: "avoir-plus-de-matchs-tinder",
     title: "Comment obtenir plus de matchs sur Tinder",
     excerpt:
       "Les matchs ne viennent pas de la chance — ils viennent d'un profil structuré pour convertir les swipes. Voici ce qui fait vraiment bouger le chiffre.",
@@ -52,7 +52,7 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
-    slug: "best-tinder-photos",
+    slug: "meilleures-photos-tinder",
     title: "Les meilleures photos Tinder à utiliser (et ce qu'il faut éviter)",
     excerpt:
       "Toutes les bonnes photos ne sont pas de bonnes photos Tinder. Voici ce qui fonctionne vraiment, photo par photo.",
@@ -87,7 +87,7 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
-    slug: "why-you-get-no-matches",
+    slug: "pourquoi-aucun-match-tinder",
     title: "Pourquoi tu n'as aucun match (alors que tu n'es pas moche)",
     excerpt:
       "L'attractivité explique moins l'écart de matchs que ce que les gens pensent. Voici ce qui cloche généralement en réalité.",
@@ -127,7 +127,7 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
-    slug: "how-ai-improves-your-dating-profile",
+    slug: "comment-coach-ameliore-profil-rencontre",
     title: "Comment ton coach améliore ton profil de rencontre",
     excerpt:
       "Ce qu'un coach de rencontre peut vraiment faire de différent par rapport à l'avis d'un ami ou une checklist générique.",
@@ -272,6 +272,88 @@ export const BLOG_POSTS: BlogPost[] = [
         heading: "Entraîne-toi avant que ça compte vraiment",
         body: [
           "Si tu bloques régulièrement au même endroit, le Coach de conversation de Flirtcraft analyse ta conversation réelle et propose 3 relances adaptées à ton style, et le Simulateur de match te permet de t'entraîner face à ton coach avant de retenter sur une vraie conversation.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "exemple-bio-tinder-homme",
+    title: "20 exemples de bio Tinder pour homme qui donnent vraiment envie de matcher",
+    excerpt:
+      "« 6 pieds sous terre, je mesure 1m80 » ne fonctionne plus depuis longtemps. Voici des structures de bio Tinder qui marchent vraiment pour un profil masculin, et pourquoi.",
+    publishedAt: "2026-03-05",
+    readingMinutes: 6,
+    sections: [
+      {
+        heading: "Pourquoi la plupart des bios Tinder pour homme se ressemblent toutes",
+        body: [
+          "« 1m80, j'aime les voyages et le sport, on verra la suite » — ce genre de bio n'est pas mauvaise en soi, elle est juste interchangeable. N'importe quel homme sur l'application pourrait l'écrire mot pour mot, ce qui veut dire qu'elle ne donne à personne de raison précise de swiper à droite plutôt qu'à gauche.",
+          "Une bonne bio Tinder pour homme n'a pas besoin d'être drôle à tout prix ni de sonner comme une punchline de stand-up. Elle a juste besoin d'un détail que toi seul pourrais écrire.",
+        ],
+      },
+      {
+        heading: "5 exemples qui fonctionnent (et pourquoi)",
+        body: [
+          "« Je peux t'expliquer pourquoi [ton équipe/hobby] a raison de perdre tous les week-ends, mais je te préviens, c'est un sujet sensible. » — une opinion assumée, avec assez d'auto-dérision pour ne pas sonner prétentieux.",
+          "« J'ai un plan sérieux pour visiter tous les pays qui ont un mot en trop dans leur nom officiel. Actuellement à 2/12. » — spécifique, absurde juste ce qu'il faut, et facile à relancer.",
+          "« Ingénieur la semaine, DJ amateur le week-end, la transition entre les deux est encore un chantier. » — donne deux facettes concrètes plutôt qu'une liste de qualités vagues.",
+          "« Je cuisine bien exactement trois plats. Demande-moi lequel avant de me juger. » — crée une question toute prête pour le premier message.",
+          "« Cherche quelqu'un pour valider que oui, j'ai raison de mettre de l'ananas sur ma pizza. » — un débat léger, universellement compris, qui appelle une réponse immédiate.",
+        ],
+      },
+      {
+        heading: "La structure qui marche presque à chaque fois",
+        body: [
+          "Un détail concret et un peu inattendu sur toi, suivi d'une pointe d'humour ou d'auto-dérision, terminé par une question ou une ouverture claire. Pas besoin des trois éléments dans cet ordre exact, mais une bio qui n'a aucun des trois se lit comme une fiche d'identité, pas comme une invitation à écrire.",
+          "Évite les négations (« pas ici pour un plan cul », « pas fan des jeux »). Elles définissent ce que tu n'es pas, jamais ce que tu es, et donnent un ton défensif dès la première ligne.",
+        ],
+      },
+      {
+        heading: "Le piège : une bio qui ne colle pas à tes photos",
+        body: [
+          "Une bio drôle sur un profil aux photos ternes (ou l'inverse) crée une dissonance qui coûte des matchs — le cerveau détecte l'incohérence même sans pouvoir la nommer. La bio et les photos doivent raconter la même histoire.",
+          "Le générateur de bio Tinder de Flirtcraft écrit des bios dans plusieurs styles à partir de ton vrai profil (pas d'un modèle générique), pour que le résultat sonne comme toi, pas comme une liste d'exemples recopiés.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "exemple-bio-tinder-femme",
+    title: "20 exemples de bio Tinder pour femme qui donnent vraiment envie de matcher",
+    excerpt:
+      "Une bio Tinder pour femme n'a pas besoin d'être défensive ni générique pour se démarquer. Voici des exemples qui fonctionnent, et la structure derrière.",
+    publishedAt: "2026-03-12",
+    readingMinutes: 6,
+    sections: [
+      {
+        heading: "Le problème des bios trop défensives ou trop vagues",
+        body: [
+          "Beaucoup de bios Tinder pour femme partent d'un bon réflexe — filtrer les profils qui ne conviennent pas — mais finissent par sonner comme une liste d'interdictions (« pas de photos torse nu », « ne réponds pas si tu ne sais pas écrire »). Ça filtre, mais ça donne aussi un ton froid dès la première ligne, avant même d'avoir montré qui tu es.",
+          "À l'inverse, une bio trop vague (« j'aime rire, voyager, profiter de la vie ») ne filtre rien du tout et ne donne à personne de quoi t'écrire un message qui ne soit pas générique.",
+        ],
+      },
+      {
+        heading: "5 exemples qui fonctionnent (et pourquoi)",
+        body: [
+          "« Je collectionne les théories non scientifiques sur pourquoi les gens perdent toujours une chaussette. La tienne est la bienvenue. » — intrigant, léger, et appelle une réponse immédiate.",
+          "« Ex-danseuse classique reconvertie en experte du canapé le dimanche. Les deux me vont très bien. » — deux facettes concrètes, avec de l'auto-dérision.",
+          "« Je peux te battre à peu près à n'importe quel jeu de société, sauf ceux où je perds, ceux-là on ne les compte pas. » — montre de la personnalité et de l'humour sans en faire trop.",
+          "« Cherche quelqu'un capable de me convaincre que sa série préférée est meilleure que la mienne. Bon courage. » — challenge amusant, facile à relancer en premier message.",
+          "« Trois voyages prévus cette année, zéro plan précis pour aucun. Si tu es plutôt du genre à improviser aussi. » — dit quelque chose de réel sur ta façon de vivre, pas juste « j'aime voyager ».",
+        ],
+      },
+      {
+        heading: "La structure qui marche presque à chaque fois",
+        body: [
+          "Un détail concret sur toi (une habitude, une passion, une contradiction assumée), une touche d'humour, puis une ouverture claire — question, défi léger, ou invitation à réagir. La bio n'a pas besoin de tout dire sur toi ; elle a juste besoin de donner une prise pour démarrer une vraie conversation.",
+          "Si tu veux filtrer certains profils, fais-le en creux plutôt qu'en négation directe : préciser ce que tu cherches vraiment (une vraie conversation, quelqu'un de curieux, etc.) filtre presque aussi bien que « pas de », sans le ton froid.",
+        ],
+      },
+      {
+        heading: "Le piège : une bio qui ne colle pas à tes photos",
+        body: [
+          "Une bio pleine d'humour sur un profil aux photos très sérieuses (ou l'inverse) crée un décalage que les gens ressentent sans toujours pouvoir l'expliquer — et ça coûte des matchs. La bio doit raconter la même histoire que les photos, pas une histoire différente à côté.",
+          "Le générateur de bio Tinder de Flirtcraft propose plusieurs bios à partir de ton vrai profil (pas d'un modèle générique), pour que le résultat te ressemble vraiment plutôt que de sonner comme un exemple recopié.",
         ],
       },
     ],

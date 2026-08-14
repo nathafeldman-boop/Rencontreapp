@@ -30,7 +30,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Flirtcraft est un coach de rencontre disponible 24h/24 : analyse de profil, optimisation photo, génération de bio, coaching de conversation, et un simulateur d'entraînement en direct.",
   path: "/ai-dating-coach",
-  keywords: ["coach de rencontre ia", "application coach de rencontre", "assistant de rencontre ia", "coach de rencontre en ligne"],
+  keywords: ["coach de rencontre", "application coach de rencontre", "assistant de rencontre", "coach de rencontre en ligne"],
 });
 
 const FEATURES = [

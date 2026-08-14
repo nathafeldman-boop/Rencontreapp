@@ -44,6 +44,21 @@ const nextConfig: NextConfig = {
   // (not webpack/turbopack-bundled) or the build tries to trace/inline it
   // like a plain JS module and breaks. Used by fetch-photo-as-data-url.ts.
   serverExternalPackages: ["sharp"],
+  // These 4 blog posts originally shipped with English slugs on an
+  // all-French site — renamed to French for SEO (URL keyword match +
+  // consistency), redirected in case any link was already shared.
+  async redirects() {
+    return [
+      { source: "/blog/how-to-get-more-tinder-matches", destination: "/blog/avoir-plus-de-matchs-tinder", permanent: true },
+      { source: "/blog/best-tinder-photos", destination: "/blog/meilleures-photos-tinder", permanent: true },
+      { source: "/blog/why-you-get-no-matches", destination: "/blog/pourquoi-aucun-match-tinder", permanent: true },
+      {
+        source: "/blog/how-ai-improves-your-dating-profile",
+        destination: "/blog/comment-coach-ameliore-profil-rencontre",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 
 import { buildMetadata } from "@/lib/seo/site";
-import { faqJsonLd } from "@/lib/seo/structured-data";
+import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/structured-data";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Button } from "@/components/ui/button";
 import { FAQ_CATEGORIES, findFaqCategory } from "@/lib/content/faq-hub";
@@ -37,6 +37,12 @@ export default async function FaqCategoryPage({ params }: CategoryPageProps) {
   return (
     <main className="flex-1 px-6 py-16 sm:py-24">
       <JsonLd data={faqJsonLd(category.entries.map((e) => ({ question: e.question, answer: e.answer })))} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Questions", path: "/questions" },
+          { name: category.title, path: `/questions/${category.slug}` },
+        ])}
+      />
 
       <div className="mx-auto max-w-2xl">
         <Link href="/questions" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">

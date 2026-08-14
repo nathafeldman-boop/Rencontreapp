@@ -45,7 +45,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Génère 5 bios Tinder dans ton style — drôle, mystérieux, confiant, romantique, ou premium — construites à partir de ton vrai profil, gratuit à essayer.",
   path: "/tinder-bio-generator",
-  keywords: ["générateur de bio tinder", "générateur de bio ia", "générateur de bio de rencontre", "idées de bio tinder"],
+  keywords: ["générateur de bio tinder", "générateur de bio tinder gratuit", "générateur de bio de rencontre", "idées de bio tinder"],
 });
 
 export default function TinderBioGeneratorPage() {
