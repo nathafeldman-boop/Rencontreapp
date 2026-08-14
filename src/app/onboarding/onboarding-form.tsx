@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Loader2 } from "lucide-react";
 
@@ -55,8 +55,19 @@ interface FormState {
   photos: File[];
 }
 
+/**
+ * Everything but `photos` — File objects aren't JSON-serializable, so a
+ * restored draft always lands back on an empty photo picker, even if the
+ * user had gotten as far as step 8 before losing their in-progress state.
+ */
+type PersistedDraft = Omit<FormState, "photos"> & { step: number };
+
+const ONBOARDING_DRAFT_KEY = "flirtcraft_onboarding_draft";
+
 export function OnboardingForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isRestart = searchParams.get("restart") === "1";
   const [step, setStep] = useState(1);
   const [submittingAnswers, setSubmittingAnswers] = useState(false);
   const [submittingProfile, setSubmittingProfile] = useState(false);
@@ -78,6 +89,55 @@ export function OnboardingForm() {
   useEffect(() => {
     track(AnalyticsEvent.OnboardingStarted, {});
   }, []);
+
+  // Restores in-progress answers after an accidental remount — confirmed in
+  // prod: a real user reached step 8 (photos), then 34s later the form
+  // remounted from scratch (most likely a backgrounded mobile tab getting
+  // reloaded) with zero persistence anywhere, so all 7 already-answered
+  // questions were gone and they had to start over. They never did — total
+  // drop-off. `?restart=1` (the free regenerate panel's "Tout recommencer")
+  // is a deliberate fresh start, so it skips restoring and clears whatever
+  // draft was sitting there instead.
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (isRestart) {
+      sessionStorage.removeItem(ONBOARDING_DRAFT_KEY);
+      restoredRef.current = true;
+      return;
+    }
+    try {
+      const raw = sessionStorage.getItem(ONBOARDING_DRAFT_KEY);
+      if (raw) {
+        const draft = JSON.parse(raw) as PersistedDraft;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from sessionStorage on mount, not a state sync loop; the persist effect below is gated on restoredRef so it can't fire until this settles.
+        setForm((f) => ({ ...f, ...draft, photos: f.photos }));
+        setStep(draft.step);
+      }
+    } catch {
+      // Corrupted/unexpected shape — ignore, start fresh.
+    } finally {
+      restoredRef.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on mount, before the persist effect below is allowed to write.
+  }, []);
+
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    const draft: PersistedDraft = {
+      age: form.age,
+      gender: form.gender,
+      location: form.location,
+      dating_app: form.dating_app,
+      objective: form.objective,
+      weekly_matches: form.weekly_matches,
+      biggest_problem: form.biggest_problem,
+      confidence: form.confidence,
+      hobbies: form.hobbies,
+      bio: form.bio,
+      step,
+    };
+    sessionStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify(draft));
+  }, [form, step]);
 
   const uploadStepTracked = useRef(false);
   useEffect(() => {
@@ -213,6 +273,7 @@ export function OnboardingForm() {
         );
       }
 
+      sessionStorage.removeItem(ONBOARDING_DRAFT_KEY);
       router.push("/analyze");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Une erreur est survenue.");
