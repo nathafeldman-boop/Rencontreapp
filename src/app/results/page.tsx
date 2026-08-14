@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ResultsView, type ResultsData } from "@/components/results/results-view";
+import { getActiveSubscription } from "@/lib/subscriptions/get-active-subscription";
+import { MAX_FREE_REGENERATIONS } from "@/lib/ai/free-regenerations";
 import type { Recommendation } from "@/types/database.types";
 
 const DEMO_RESULTS: ResultsData = {
@@ -57,7 +59,7 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const [{ data: analysis }, { data: problemAnswer }, { data: profile }] = await Promise.all([
+    const [{ data: analysis }, { data: problemAnswer }, { data: profile }, subscription] = await Promise.all([
       supabase
         .from("analyses")
         .select(
@@ -76,13 +78,28 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
       user
         ? supabase
             .from("profiles")
-            .select("dating_app")
+            .select("id, bio, dating_app")
             .eq("user_id", user.id)
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle()
         : Promise.resolve({ data: null }),
+      user ? getActiveSubscription(supabase) : Promise.resolve(null),
     ]);
+
+    // Free regeneration ("changer quelques trucs ou régénérer" before
+    // paying) only applies to a real, non-subscribed profile — never shown
+    // for the demo fallback below, and never counted against a paying
+    // user, who has their own credit-gated re-analysis from the dashboard.
+    let regenerationsRemaining: number | null = null;
+    if (profile && !subscription) {
+      const { count } = await supabase
+        .from("analyses")
+        .select("id", { count: "exact", head: true })
+        .eq("profile_id", profile.id);
+      const regenerationsUsed = Math.max((count ?? 1) - 1, 0);
+      regenerationsRemaining = Math.max(MAX_FREE_REGENERATIONS - regenerationsUsed, 0);
+    }
 
     if (analysis) {
       const data: ResultsData = {
@@ -98,6 +115,8 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
         isSimulated: analysis.is_simulated,
         biggestProblem: problemAnswer?.answer,
         datingApp: profile?.dating_app,
+        currentBio: profile?.bio ?? null,
+        regenerationsRemaining,
       };
       return <ResultsView data={data} />;
     }

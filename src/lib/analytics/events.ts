@@ -34,6 +34,7 @@ export const AnalyticsEvent = {
   // ---- Retention ---------------------------------------------------------
   DashboardViewed: "dashboard_viewed",
   AnalysisRepeated: "analysis_repeated",
+  FreeRegenerationUsed: "free_regeneration_used",
   AiCoachUsed: "ai_coach_used",
   BioGenerated: "bio_generated",
   BioApplied: "bio_applied",
@@ -83,6 +84,7 @@ export interface AnalyticsEventProps {
 
   [AnalyticsEvent.DashboardViewed]: { has_active_plan: boolean };
   [AnalyticsEvent.AnalysisRepeated]: { overall_score: number };
+  [AnalyticsEvent.FreeRegenerationUsed]: { mode: "same" | "edited_bio"; overall_score: number; regenerations_remaining: number };
   [AnalyticsEvent.AiCoachUsed]: { conversation_score: number };
   [AnalyticsEvent.BioGenerated]: { style: string };
   [AnalyticsEvent.BioApplied]: { style: string };

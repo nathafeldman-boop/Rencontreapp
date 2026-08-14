@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScoreReveal } from "@/components/results/score-reveal";
+import { RegeneratePanel } from "@/components/results/regenerate-panel";
 import { ShareScoreCard } from "@/components/dashboard/share-score-card";
 import { FeedbackWidget } from "@/components/feedback/feedback-widget";
 import { useClipboardCopy } from "@/hooks/use-clipboard-copy";
@@ -44,6 +45,9 @@ export interface ResultsData {
   isSimulated: boolean;
   biggestProblem?: string;
   datingApp?: DatingApp | null;
+  currentBio?: string | null;
+  /** null = regeneration doesn't apply here (demo, or already subscribed). */
+  regenerationsRemaining?: number | null;
 }
 
 const SUB_SCORE_LABELS = { photo: "Photos", bio: "Bio", attractiveness: "Attractivité", conversation: "Conversation" };
@@ -355,6 +359,10 @@ export function ResultsView({ data }: { data: ResultsData }) {
             <ArrowRight />
           </Link>
         </Button>
+
+        {typeof data.regenerationsRemaining === "number" && (
+          <RegeneratePanel currentBio={data.currentBio ?? ""} remaining={data.regenerationsRemaining} />
+        )}
       </motion.div>
 
       {!isFabricated && (
