@@ -217,6 +217,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   },
   {
     slug: "choisir-son-application",
+    relatedLinks: [
+      { label: "Guide profil Tinder", path: "/tinder" },
+      { label: "Guide profil Hinge", path: "/hinge" },
+      { label: "Guide profil Bumble", path: "/bumble" },
+    ],
     title: "Choisir son application de rencontre",
     description: "Tinder, Bumble, Hinge : ce qui les différencie vraiment, et comment savoir laquelle correspond à ce que tu cherches.",
     entries: [

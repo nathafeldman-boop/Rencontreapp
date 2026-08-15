@@ -28,6 +28,12 @@ export function Footer() {
           <Link href="/tinder" className="hover:text-foreground">
             Tinder
           </Link>
+          <Link href="/hinge" className="hover:text-foreground">
+            Hinge
+          </Link>
+          <Link href="/bumble" className="hover:text-foreground">
+            Bumble
+          </Link>
           <Link href="/questions" className="hover:text-foreground">
             Questions
           </Link>

@@ -183,6 +183,7 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "prompts-hinge-qui-marchent",
+    relatedLinks: [{ label: "Le guide complet profil Hinge", path: "/hinge" }],
     title: "Comment écrire des prompts Hinge qui donnent vraiment envie de répondre",
     excerpt:
       "Sur Hinge, le prompt que tu choisis compte autant que ce que tu réponds. Voici comment éviter les réponses génériques qui se noient dans la masse.",
