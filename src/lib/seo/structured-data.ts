@@ -28,6 +28,16 @@ export function softwareApplicationJsonLd() {
   };
 }
 
+/** Homepage-only — Google associates a single WebSite entity with the domain from wherever it first sees it; the homepage is the conventional place. */
+export function websiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: SITE_URL,
+  };
+}
+
 export function faqJsonLd(items: { question: string; answer: string }[]) {
   return {
     "@context": "https://schema.org",

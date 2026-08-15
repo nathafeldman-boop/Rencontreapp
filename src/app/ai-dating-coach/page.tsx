@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Testimonials } from "@/components/marketing/testimonials";
 import { JsonLd } from "@/components/seo/json-ld";
-import { faqJsonLd } from "@/lib/seo/structured-data";
+import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/structured-data";
 import { buildMetadata } from "@/lib/seo/site";
 
 const FAQ = [
@@ -45,6 +45,7 @@ export default function AiDatingCoachPage() {
   return (
     <main className="flex-1">
       <JsonLd data={faqJsonLd(FAQ)} />
+      <JsonLd data={breadcrumbJsonLd([{ name: "Coach de rencontre", path: "/ai-dating-coach" }])} />
 
       <section className="px-6 pt-20 pb-16 sm:pt-28">
         <div className="mx-auto flex max-w-xl flex-col items-center text-center">

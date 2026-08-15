@@ -4,6 +4,8 @@ import { ArrowRight } from "lucide-react";
 
 import { buildMetadata } from "@/lib/seo/site";
 import { Button } from "@/components/ui/button";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = buildMetadata({
   title: "Qu'est-ce que Flirtcraft ?",
@@ -15,6 +17,7 @@ export const metadata: Metadata = buildMetadata({
 export default function AboutPage() {
   return (
     <main className="flex-1 px-6 py-16 sm:py-24">
+      <JsonLd data={breadcrumbJsonLd([{ name: "À propos", path: "/a-propos" }])} />
       <div className="mx-auto flex max-w-2xl flex-col gap-10">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Qu&apos;est-ce que Flirtcraft ?</h1>

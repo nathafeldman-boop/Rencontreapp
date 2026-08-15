@@ -4,6 +4,8 @@ import { ArrowRight } from "lucide-react";
 
 import { buildMetadata } from "@/lib/seo/site";
 import { FAQ_CATEGORIES } from "@/lib/content/faq-hub";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = buildMetadata({
   title: "Questions sur les applications de rencontre — Photos, bio, matchs, conversation",
@@ -15,6 +17,7 @@ export const metadata: Metadata = buildMetadata({
 export default function QuestionsHubPage() {
   return (
     <main className="flex-1 px-6 py-16 sm:py-24">
+      <JsonLd data={breadcrumbJsonLd([{ name: "Questions", path: "/questions" }])} />
       <div className="mx-auto max-w-3xl">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Questions sur les profils de rencontre

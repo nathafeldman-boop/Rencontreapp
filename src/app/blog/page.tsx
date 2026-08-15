@@ -4,6 +4,8 @@ import { ArrowRight } from "lucide-react";
 
 import { BLOG_POSTS } from "@/lib/content/blog-posts";
 import { buildMetadata } from "@/lib/seo/site";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = buildMetadata({
   title: "Conseils de rencontre & astuces de profil",
@@ -14,6 +16,7 @@ export const metadata: Metadata = buildMetadata({
 export default function BlogIndexPage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
+      <JsonLd data={breadcrumbJsonLd([{ name: "Blog", path: "/blog" }])} />
       <h1 className="text-3xl font-semibold tracking-tight">Conseils de rencontre & astuces de profil</h1>
       <p className="mt-2 text-muted-foreground">Des conseils précis et pratiques — pas des listes génériques.</p>
 

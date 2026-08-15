@@ -1,6 +1,8 @@
 import dynamic from "next/dynamic";
 
 import { Hero } from "@/components/marketing/hero";
+import { JsonLd } from "@/components/seo/json-ld";
+import { websiteJsonLd } from "@/lib/seo/structured-data";
 
 /**
  * Below-the-fold sections, code-split from the Hero's critical bundle.
@@ -18,6 +20,7 @@ const FinalCta = dynamic(() => import("@/components/marketing/final-cta").then((
 export default function LandingPage() {
   return (
     <main className="flex-1">
+      <JsonLd data={websiteJsonLd()} />
       <Hero />
       <Testimonials />
       <GameplayPreview />
