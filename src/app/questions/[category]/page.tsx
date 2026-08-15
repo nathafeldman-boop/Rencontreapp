@@ -65,6 +65,20 @@ export default async function FaqCategoryPage({ params }: CategoryPageProps) {
           ))}
         </div>
 
+        {category.relatedLinks && category.relatedLinks.length > 0 && (
+          <div className="mt-10 flex flex-wrap gap-2">
+            {category.relatedLinks.map((link) => (
+              <Link
+                key={link.path}
+                href={link.path}
+                className="rounded-full border border-border px-3.5 py-1.5 text-sm text-muted-foreground hover:border-primary hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        )}
+
         <div className="mt-12 rounded-xl border border-border bg-secondary/30 p-6 text-center">
           <h2 className="font-medium">Envie d&apos;un avis précis sur ton propre profil ?</h2>
           <p className="mt-1 text-sm text-muted-foreground">

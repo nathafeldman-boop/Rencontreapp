@@ -9,6 +9,8 @@ export interface FaqCategory {
   title: string;
   description: string;
   entries: FaqEntry[];
+  /** Optional cross-links to the relevant pillar/tool page — rendered above the CTA. Populated where a natural link exists; absent elsewhere rather than forced. */
+  relatedLinks?: { label: string; path: string }[];
 }
 
 /**
@@ -21,6 +23,7 @@ export interface FaqCategory {
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     slug: "photos-de-profil",
+    relatedLinks: [{ label: "Le guide complet profil Tinder", path: "/tinder" }],
     title: "Photos de profil",
     description:
       "Quelles photos choisir, dans quel ordre, et pourquoi certaines photos qui te plaisent à toi ne convertissent pas du tout sur une app de rencontre.",
@@ -119,6 +122,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   },
   {
     slug: "bio-et-description",
+    relatedLinks: [
+      { label: "Le guide complet bio Tinder", path: "/bio-tinder" },
+      { label: "Génère ta bio en quelques secondes", path: "/tinder-bio-generator" },
+    ],
     title: "Bio & description",
     description: "Ce qui rend une bio mémorable, ce qui la rend invisible, et comment écrire quelque chose auquel on a envie de répondre.",
     entries: [
@@ -271,6 +278,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   },
   {
     slug: "manque-de-matchs",
+    relatedLinks: [
+      { label: "Le guide complet profil Tinder", path: "/tinder" },
+      { label: "Pourquoi tu n'as aucun match", path: "/blog/pourquoi-aucun-match-tinder" },
+    ],
     title: "Pas assez de matchs",
     description: "Les vraies raisons pour lesquelles un profil ne reçoit pas de matchs, et ce qui a réellement un impact.",
     entries: [

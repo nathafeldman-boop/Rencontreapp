@@ -14,5 +14,5 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default function TinderProfileReviewPage() {
-  return <AppReviewLanding content={content} />;
+  return <AppReviewLanding content={content} pillarLink={{ label: "Voir le guide complet profil Tinder", path: "/tinder" }} />;
 }

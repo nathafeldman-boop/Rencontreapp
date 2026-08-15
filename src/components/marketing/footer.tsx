@@ -25,6 +25,9 @@ export function Footer() {
           © {new Date().getFullYear()} {SITE_NAME}. Tous droits réservés.
         </p>
         <nav className="flex items-center gap-4">
+          <Link href="/tinder" className="hover:text-foreground">
+            Tinder
+          </Link>
           <Link href="/questions" className="hover:text-foreground">
             Questions
           </Link>

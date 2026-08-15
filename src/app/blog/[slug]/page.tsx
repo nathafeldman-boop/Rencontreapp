@@ -79,6 +79,20 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
       </article>
 
+      {post.relatedLinks && post.relatedLinks.length > 0 && (
+        <div className="mt-10 flex flex-wrap gap-2">
+          {post.relatedLinks.map((link) => (
+            <Link
+              key={link.path}
+              href={link.path}
+              className="rounded-full border border-border px-3.5 py-1.5 text-sm text-muted-foreground hover:border-primary hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      )}
+
       <div className="mt-12 rounded-xl border border-primary/30 bg-accent p-6 text-center">
         <p className="font-medium text-accent-foreground">Découvre ce que ça donne sur ton propre profil</p>
         <div className="mt-4">

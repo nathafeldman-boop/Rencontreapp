@@ -16,7 +16,14 @@ const STEPS = [
   { title: "Obtiens ton score", description: "Vois exactement ce qui fonctionne et ce qu'il faut corriger en premier." },
 ];
 
-export function AppReviewLanding({ content }: { content: AppReviewContent }) {
+export function AppReviewLanding({
+  content,
+  pillarLink,
+}: {
+  content: AppReviewContent;
+  /** Optional link to the app's pillar guide page (e.g. /tinder) — only set once that page exists, so Hinge/Bumble render nothing extra until theirs do. */
+  pillarLink?: { label: string; path: string };
+}) {
   return (
     <main className="flex-1">
       <JsonLd data={faqJsonLd(content.faq)} />
@@ -43,6 +50,11 @@ export function AppReviewLanding({ content }: { content: AppReviewContent }) {
             </span>{" "}
             profils analysés, et ça continue
           </p>
+          {pillarLink && (
+            <Link href={pillarLink.path} className="mt-3 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
+              {pillarLink.label}
+            </Link>
+          )}
         </div>
       </section>
 

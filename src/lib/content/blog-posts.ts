@@ -10,6 +10,8 @@ export interface BlogPost {
   publishedAt: string; // ISO date
   readingMinutes: number;
   sections: BlogSection[];
+  /** Optional cross-links to the relevant pillar/tool/FAQ page — rendered above the CTA. Populated where a natural link exists; absent elsewhere rather than forced. */
+  relatedLinks?: { label: string; path: string }[];
 }
 
 export const BLOG_POSTS: BlogPost[] = [
@@ -20,6 +22,11 @@ export const BLOG_POSTS: BlogPost[] = [
       "Les matchs ne viennent pas de la chance — ils viennent d'un profil structuré pour convertir les swipes. Voici ce qui fait vraiment bouger le chiffre.",
     publishedAt: "2026-01-15",
     readingMinutes: 6,
+    relatedLinks: [
+      { label: "Le guide complet profil Tinder", path: "/tinder" },
+      { label: "Pourquoi tu n'as aucun match", path: "/blog/pourquoi-aucun-match-tinder" },
+      { label: "Questions sur les photos de profil", path: "/questions/photos-de-profil" },
+    ],
     sections: [
       {
         heading: "Ta première photo fait 80% du travail",
@@ -53,6 +60,10 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "meilleures-photos-tinder",
+    relatedLinks: [
+      { label: "Le guide complet profil Tinder", path: "/tinder" },
+      { label: "Questions sur les photos de profil", path: "/questions/photos-de-profil" },
+    ],
     title: "Les meilleures photos Tinder à utiliser (et ce qu'il faut éviter)",
     excerpt:
       "Toutes les bonnes photos ne sont pas de bonnes photos Tinder. Voici ce qui fonctionne vraiment, photo par photo.",
@@ -88,6 +99,10 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "pourquoi-aucun-match-tinder",
+    relatedLinks: [
+      { label: "Le guide complet profil Tinder", path: "/tinder" },
+      { label: "Questions sur le manque de matchs", path: "/questions/manque-de-matchs" },
+    ],
     title: "Pourquoi tu n'as aucun match (alors que tu n'es pas moche)",
     excerpt:
       "L'attractivité explique moins l'écart de matchs que ce que les gens pensent. Voici ce qui cloche généralement en réalité.",
@@ -278,6 +293,10 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "exemple-bio-tinder-homme",
+    relatedLinks: [
+      { label: "Le guide complet bio Tinder", path: "/bio-tinder" },
+      { label: "Génère ta bio en quelques secondes", path: "/tinder-bio-generator" },
+    ],
     title: "20 exemples de bio Tinder pour homme qui donnent vraiment envie de matcher",
     excerpt:
       "« 6 pieds sous terre, je mesure 1m80 » ne fonctionne plus depuis longtemps. Voici des structures de bio Tinder qui marchent vraiment pour un profil masculin, et pourquoi.",
@@ -319,6 +338,10 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "exemple-bio-tinder-femme",
+    relatedLinks: [
+      { label: "Le guide complet bio Tinder", path: "/bio-tinder" },
+      { label: "Génère ta bio en quelques secondes", path: "/tinder-bio-generator" },
+    ],
     title: "20 exemples de bio Tinder pour femme qui donnent vraiment envie de matcher",
     excerpt:
       "Une bio Tinder pour femme n'a pas besoin d'être défensive ni générique pour se démarquer. Voici des exemples qui fonctionnent, et la structure derrière.",
