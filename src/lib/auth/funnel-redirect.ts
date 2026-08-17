@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
 import { getActiveSubscription } from "@/lib/subscriptions/get-active-subscription";
 import { hasReferralBonusAccess } from "@/lib/referrals/access";
+import { UNLIMITED_REGENERATION_USER_IDS } from "@/lib/ai/free-regenerations";
 
 /**
  * Where an already-authenticated visitor belongs right now, based on how
@@ -34,6 +35,12 @@ export async function getFunnelRedirect(
     .maybeSingle();
 
   if (!analysis) return "/analyze";
+
+  // Content-creation demo accounts (see UNLIMITED_REGENERATION_USER_IDS)
+  // must never land on /paywall — they have no subscription on purpose, but
+  // still belong back on their results with the free regenerate panel, not
+  // funneled toward checkout like a real non-subscribed user.
+  if (UNLIMITED_REGENERATION_USER_IDS.has(userId)) return `/results?id=${analysis.id}`;
 
   const subscription = await getActiveSubscription(supabase);
   if (subscription) return "/dashboard";
