@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ResultsView, type ResultsData } from "@/components/results/results-view";
 import { getActiveSubscription } from "@/lib/subscriptions/get-active-subscription";
 import { signPhotoUrls } from "@/lib/supabase/signed-photo-urls";
-import { MAX_FREE_REGENERATIONS } from "@/lib/ai/free-regenerations";
+import { MAX_FREE_REGENERATIONS, UNLIMITED_REGENERATION_USER_IDS } from "@/lib/ai/free-regenerations";
 import type { Recommendation } from "@/types/database.types";
 
 const DEMO_RESULTS: ResultsData = {
@@ -100,7 +100,10 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
         signPhotoUrls(supabase, profile.photos ?? []),
       ]);
       const regenerationsUsed = Math.max((count ?? 1) - 1, 0);
-      regenerationsRemaining = Math.max(MAX_FREE_REGENERATIONS - regenerationsUsed, 0);
+      regenerationsRemaining =
+        user && UNLIMITED_REGENERATION_USER_IDS.has(user.id)
+          ? MAX_FREE_REGENERATIONS
+          : Math.max(MAX_FREE_REGENERATIONS - regenerationsUsed, 0);
       currentPhotos = (profile.photos ?? [])
         .filter((path) => signedUrls[path])
         .map((path) => ({ path, url: signedUrls[path] }));

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { rescoreProfile } from "@/lib/ai/rescore-profile";
 import { getActiveSubscription } from "@/lib/subscriptions/get-active-subscription";
-import { MAX_FREE_REGENERATIONS } from "@/lib/ai/free-regenerations";
+import { MAX_FREE_REGENERATIONS, UNLIMITED_REGENERATION_USER_IDS } from "@/lib/ai/free-regenerations";
 import { trackServer } from "@/lib/analytics/server";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { apiError, apiSuccess, apiValidationError } from "@/lib/api/response";
@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
   // The initial analysis from onboarding already counts as one row, so the
   // first MAX_FREE_REGENERATIONS *additional* rows are what's free here.
   const regenerationsUsed = Math.max((count ?? 1) - 1, 0);
-  if (regenerationsUsed >= MAX_FREE_REGENERATIONS) {
+  const isUnlimited = UNLIMITED_REGENERATION_USER_IDS.has(user.id);
+  if (!isUnlimited && regenerationsUsed >= MAX_FREE_REGENERATIONS) {
     return apiError(
       `Tu as utilisé tes ${MAX_FREE_REGENERATIONS} régénérations gratuites pour ce profil — passe à l'abonnement pour continuer à l'affiner.`,
       403
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
     return apiError("Impossible de régénérer cette analyse — vérifie que tes photos sont bien envoyées.", 422);
   }
 
-  const regenerationsRemaining = MAX_FREE_REGENERATIONS - (regenerationsUsed + 1);
+  const regenerationsRemaining = isUnlimited ? MAX_FREE_REGENERATIONS : MAX_FREE_REGENERATIONS - (regenerationsUsed + 1);
   trackServer(user.id, AnalyticsEvent.FreeRegenerationUsed, {
     mode: editedBio && editedPhotos ? "edited_bio_and_photos" : editedBio ? "edited_bio" : editedPhotos ? "edited_photos" : "same",
     overall_score: result.overallScore,
